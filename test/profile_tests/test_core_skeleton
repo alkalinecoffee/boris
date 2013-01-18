@@ -1,0 +1,107 @@
+require 'setup_tests'
+
+class WindowsCoreTest < Test::Unit::TestCase
+  context 'a Windows target' do
+    setup do
+      @target_name = '0.0.0.0'
+      @target = Target.new(@target_name)
+      @active_connection = @target.active_connection = instance_of(WMIConnector)
+
+      @target.detect_profile
+    end
+
+    should 'detect when a target should use the Win2008 profile' do
+      assert_equal(Profiles::Win2008, @target.target_profile)
+    end
+
+    context 'being scanned' do
+      setup do
+      end
+
+      context 'for file system information' do
+        setup do
+        end
+
+        should 'return file system information via #get_file_systems' do
+        end
+      end
+
+      context 'for hardware information' do
+        setup do
+        end
+
+        should 'return hardware information via #get_hardware' do
+        end
+      end
+
+      context 'for hosted shares' do
+        setup do
+        end
+
+        should 'return hosted share information via #get_hosted_shares' do
+        end
+      end
+
+      context 'for installed applications' do
+        setup do
+        end
+
+        should 'return installed applications via #get_installed_applications' do
+        end
+      end
+
+      context 'for installed patches' do
+        should 'parse out the patches from the registry location for applications' do
+        end
+      end
+
+      context 'for installed services' do
+        setup do
+        end
+
+        should 'return service information via #get_installed_services' do
+        end
+      end
+
+      context 'for local users and groups' do
+        should 'allow us to detect the user name of an account from its guid via #get_username' do
+        end
+
+        should 'return local user groups and accounts via #get_local_user_groups if the server is not a domain controller' do
+        end
+      end
+      
+      context 'for network identification' do
+        setup do
+        end
+
+        should 'return the network identification via #get_network_id' do
+        end
+      end
+
+      context 'for network interfaces' do
+        setup do
+        end
+
+        should 'return ethernet interface information via #get_network_interfaces' do
+        end
+
+        should 'return fibre channel interface information via #get_network_interfaces' do
+        end
+      end
+
+      context 'for operating system information' do
+        setup do
+        end
+
+        should 'return operating system information via #get_operating_system' do
+        end
+      end
+
+      context 'for system roles' do
+        should 'return a list of system roles via #get_system_roles' do
+        end
+      end
+    end
+  end
+end
