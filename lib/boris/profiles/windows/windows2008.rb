@@ -1,6 +1,6 @@
 require 'boris/profiles/windows_core'
 
-module Boris; module Profiles
+module Boris; module Profiles; module Windows
     module Windows2008
       include Windows
       
@@ -16,4 +16,4 @@ module Boris; module Profiles
         @operating_system[:features] = @active_connection.values_at('SELECT Name FROM Win32_ServerFeature').map {|f| f[:name]}
       end
     end
-end; end
+end; end; end

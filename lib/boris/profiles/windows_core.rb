@@ -245,8 +245,7 @@ module Boris; module Profiles
 
         @local_user_groups.each do |group|
           
-          members = @active_connection.values_at("SELECT * FROM Win32_GroupUser WHERE
-            GroupComponent = \"Win32_Group.Domain='#{@network_id[:hostname]}',Name='#{group[:name]}'\"")
+          members = @active_connection.values_at("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{@network_id[:hostname]}',Name='#{group[:name]}'\"")
 
           members.each do |member|
             hostname, username = member[:partcomponent].within_quotes
@@ -262,7 +261,6 @@ module Boris; module Profiles
       network_data = @active_connection.value_at('SELECT Domain, Name FROM Win32_ComputerSystem')
       @network_id[:domain] = network_data[:domain]
       @network_id[:hostname] = network_data[:name]
-      
     end
 
     def get_network_interfaces
@@ -398,8 +396,6 @@ module Boris; module Profiles
     def get_operating_system
       super
 
-      puts self.inspect
-
       os_data = @active_connection.value_at('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem')
       @operating_system[:date_installed] = DateTime.parse(os_data[:installdate])
       @operating_system[:kernel] = os_data[:version]
@@ -413,8 +409,6 @@ module Boris; module Profiles
       os_data[:caption].sub!(/20[0-9]*/) {|y| "#{y} #{edition}"} if edition
       
       @operating_system[:version] = os_data[:caption]
-
-      # get features
     end
     
     def get_product_key(app_name, guid=nil)

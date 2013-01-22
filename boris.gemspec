@@ -66,7 +66,7 @@ Gem::Specification.new do |s|
     test/profile_tests/test_redhat.rb
     test/profile_tests/test_solaris.rb
     test/profile_tests/test_unix_core.rb
-    test/profile_tests/test_windows_core.rb
+    test/profile_tests/test_windows.rb
   }
 
 end
