@@ -1,20 +1,18 @@
+class BorisLogger < Logger
+  def initialize(output)
+    super(output)
+
+    self.datetime_format = '%m-%d-%Y %H:%M:%S'
+
+    self.formatter = proc do |severity, time, progname, msg|
+      sprintf("%-6s %-20s %-20s %-s\n", severity, time, progname, msg)
+    end
+  end
+end
+
 module Boris
   module Lumberjack
     attr_accessor :logger
-
-    class MiniLog < Logger
-      attr_accessor :host
-
-      def initialize(output)
-        super(output)
-
-        self.datetime_format = '%m-%d-%Y %H:%M:%S'
-
-        self.formatter = proc do |severity, time, progname, msg|
-          "#{sprintf('%-6s %-20s %-20s %-s', severity, time, progname, msg)}\n"
-        end
-      end
-    end
 
     def debug(msg)
       logger.add(Logger::DEBUG, append_target_name(msg), facility) if logger && logger.debug?

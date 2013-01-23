@@ -29,8 +29,7 @@ module Boris
 
       @options = Options.new(options)
 
-      self.logger = MiniLog.new(STDERR)
-      self.logger.host = host
+      self.logger = BorisLogger.new(STDERR)
 
       if @options[:log_level]
         self.logger.level = case @options[:log_level]
