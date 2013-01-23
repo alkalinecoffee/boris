@@ -29,10 +29,10 @@ module Boris
 
       @options = Options.new(options)
 
-      self.logger = BorisLogger.new(STDERR)
+      @logger = BorisLogger.new(STDERR)
 
       if @options[:log_level]
-        self.logger.level = case @options[:log_level]
+        @logger.level = case @options[:log_level]
         when :debug then Logger::DEBUG
         when :info then Logger::INFO
         when :warn then Logger::WARN
@@ -65,20 +65,20 @@ module Boris
           
           case conn_type
           when :snmp
-            @active_connection = SNMPConnector.new(@host, cred, @options, logger).establish_connection
+            @active_connection = SNMPConnector.new(@host, cred, @options, @logger).establish_connection
             warn 'snmp not available' if !@active_connection
             # we won't add snmp to the @unavailable_connection_types array, as it
             # could respond later with another community string
           when :ssh
             begin
-              @active_connection = SSHConnector.new(@host, cred, @options, logger).establish_connection
+              @active_connection = SSHConnector.new(@host, cred, @options, @logger).establish_connection
             rescue
               warn 'ssh not available'
               @unavailable_connection_types << :ssh
             end unless @unavailable_connection_types.include?(:ssh)
           when :wmi
             begin
-              @active_connection = WMIConnector.new(@host, cred, @options, logger).establish_connection
+              @active_connection = WMIConnector.new(@host, cred, @options, @logger).establish_connection
             rescue
               warn 'wmi not available'
               @unavailable_connection_types << :wmi
