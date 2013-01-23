@@ -33,7 +33,7 @@ module Boris
     def values_at(request, request_pty=false)
       super(request)
       
-      output_buffer = []
+      return_data = []
       
       reconnect = false
 
@@ -44,7 +44,7 @@ module Boris
           elsif data =~ /permission denied/i
             warn "permission denied within request (#{request})... #{data}"
           else
-            output_buffer << data
+            return_data << data
           end
         end
         
@@ -55,7 +55,7 @@ module Boris
 
         chan.on_close do |ch|
           # channel was closed, typically done by cisco switches... so we'll quietly reconnect later
-          debug 'channel closed prematurely (will reconnect)'
+          info 'channel closed prematurely (will reconnect)'
           reconnect = true
         end
         
@@ -67,15 +67,17 @@ module Boris
 
         chan.exec(request)
       end
+
       chan.wait
-      debug 'data received successfully'
+
+      info "#{return_data.size} lines returned"
       
       if reconnect
         debug 'preparing to refresh connection'
         establish_connection
       end
 
-      output_buffer
+      return_data
     end
   end
 end

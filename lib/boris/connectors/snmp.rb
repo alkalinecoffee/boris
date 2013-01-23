@@ -34,6 +34,8 @@ module Boris
         row.each {|item| return_data << {:name=>item.name.to_s, :value=>item.value}}
       end
 
+      info "#{return_data.size} values returned"
+
       return_data
     end
   end

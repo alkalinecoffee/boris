@@ -58,34 +58,44 @@ module Boris
       @active_connection = nil
 
       creds_to_try.each do |cred|
-        break if @active_connection
+        if @active_connection
+          debug 'active connection established, will not try any more credentials'
+          break
+        end
+
+        debug "using credential (#{cred[:user]})"
 
         cred[:connection_types].each do |conn_type|
-          break if @active_connection
+          if @active_connection
+            debug 'active connection established, will not try any more connection types'
+            break
+          end
+
+          debug "attempting connection via #{conn_type}"
           
           case conn_type
           when :snmp
             @active_connection = SNMPConnector.new(@host, cred, @options, @logger).establish_connection
-            warn 'snmp not available' if !@active_connection
+            info 'snmp not available' if !@active_connection
             # we won't add snmp to the @unavailable_connection_types array, as it
             # could respond later with another community string
           when :ssh
             begin
               @active_connection = SSHConnector.new(@host, cred, @options, @logger).establish_connection
             rescue
-              warn 'ssh not available'
+              info 'ssh not available (will not try again for this host)'
               @unavailable_connection_types << :ssh
             end unless @unavailable_connection_types.include?(:ssh)
           when :wmi
             begin
               @active_connection = WMIConnector.new(@host, cred, @options, @logger).establish_connection
             rescue
-              warn 'wmi not available'
+              info 'wmi not available (will not try again for this host)'
               @unavailable_connection_types << :wmi
             end unless @unavailable_connection_types.include?(:wmi)
           end
 
-          debug "connection established via #{conn_type}" if @active_connection
+          info "connection established via #{conn_type}" if @active_connection
         end
       end
 
@@ -98,15 +108,16 @@ module Boris
 
       @target_profile = nil
       @options[:profiles].each do |profile|
+        debug "testing profile: #{profile}"
         if profile.matches_target?(@active_connection)
-          debug "suitable profile found (#{profile})"
           @target_profile = profile
-        end
-      end
 
-      if @target_profile
-        self.extend @target_profile
-        debug 'profile prepared successfully'
+          debug "suitable profile found (#{@target_profile})"
+          
+          self.extend @target_profile
+          
+          debug "profile set to #{@target_profile}"
+        end
       end
 
       @target_profile
@@ -127,15 +138,15 @@ module Boris
       
       debug 'detecting if wmi is available'
       connection_method = :wmi if tcp_port_responding?(PORT_DEFAULTS[:wmi])
-      warn 'wmi does not appear to be responding'
+      info 'wmi does not appear to be responding'
 
       if !connection_method
         debug 'detecting if ssh is available'
         connection_method = :ssh if tcp_port_responding?(PORT_DEFAULTS[:ssh])
-        warn 'ssh does not appear to be responding'
+        info 'ssh does not appear to be responding'
       end
 
-      warn 'failed to detect connection method' if !connection_method
+      info 'failed to detect connection method' if !connection_method
       connection_method
     end
 
@@ -146,18 +157,20 @@ module Boris
 
       begin
         conn = TCPSocket.new(@host, port)
-        debug "port #{port} is responding"
+        info "port #{port} is responding"
         true
       rescue
-        debug "port #{port} is not responding"
+        info "port #{port} is not responding"
         false
       ensure
         conn.close
+        debug "connection to port closed"
       end
 
       status
     end
 
+    # JSON.parse(json_string, :symbolize_names=>true)
     def to_json
       vars_to_omit = [:@logger, :@options, :@unavailable_connection_types]
       
@@ -167,8 +180,11 @@ module Boris
           json[var.to_s.delete('@')] = self.instance_variable_get(var)
       end
 
-      JSON.generate(json)
-      # JSON.parse(json_string, :symbolize_names=>true)
+      generated_json = JSON.generate(json)
+
+      debug "json generated successfully"
+
+      generated_json
     end
   end
 end

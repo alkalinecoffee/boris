@@ -23,7 +23,7 @@ module Boris; module Profiles
     end
 
     def retrieve_all
-      debug "retrieving all configuration items"
+      debug 'retrieving all configuration items'
 
       get_file_systems
       get_hardware
@@ -35,6 +35,8 @@ module Boris; module Profiles
       get_network_id
       get_network_interfaces
       get_operating_system
+
+      debug 'all items retrieved successfully'
 
       scrub_data! if @options[:auto_scrub_data]
     end
@@ -115,10 +117,12 @@ module Boris; module Profiles
     end
 
     def get_file_systems
+      debug 'preparing to fetch file systems'
       @file_systems = []
     end
 
     def get_hardware
+      debug 'preparing to fetch hardware'
       @hardware = [
         :cpu_architecture,
         :cpu_core_count,
@@ -135,26 +139,32 @@ module Boris; module Profiles
     end
 
     def get_hosted_shares
+      debug 'preparing to fetch hosted shares'
       @hosted_shares = []
     end
 
     def get_installed_applications
+      debug 'preparing to fetch installed applications'
       @installed_applications = []
     end
 
     def get_installed_patches
+      debug 'preparing to fetch installed patches'
       @installed_patches = []
     end
 
     def get_installed_services
+      debug 'preparing to fetch installed_services'
       @installed_services = []
     end
 
     def get_local_user_groups
+      debug 'preparing to fetch users and groups'
       @local_user_groups = []
     end
 
     def get_network_id
+      debug 'preparing to fetch network id'
       @network_id = [
         :domain,
         :hostname
@@ -162,10 +172,12 @@ module Boris; module Profiles
     end
 
     def get_network_interfaces
+      debug 'preparing to fetch network_interfaces'
       @network_interfaces = []
     end
 
     def get_operating_system
+      debug 'preparing to fetch operating system'
       @operating_system = [
         :date_installed,
         :kernel,

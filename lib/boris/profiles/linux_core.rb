@@ -49,6 +49,8 @@ module Boris; module Profiles
         @hardware[:model] = hardware_data.grep(/product name/i)[0].after_colon
         @hardware[:serial] = hardware_data.grep(/serial number/i)[0].after_colon
         @hardware[:vendor] = hardware_data.grep(/manufacturer/i)[0].after_colon
+      else
+        info 'no hardware information available (give me sudo access for dmidecode!)'
       end
     end
 
@@ -115,7 +117,6 @@ module Boris; module Profiles
       found_fibre_interfaces = ports.join("\n").split('--').grep(/fibre channel/i)
 
       if found_ethernet_interfaces.any?
-
         # get info on all ethernet interfaces
         ethernet_mapping_data = @active_connection.values_at(%q{ls /sys/class/net | awk '{cmd="readlink -f /sys/class/net/" $1 "/device/"; cmd | getline link; print $1 "|" link}'})
         link_properties = @active_connection.values_at(%q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
@@ -145,7 +146,6 @@ module Boris; module Profiles
           h[:status] = (ip_config[0] =~ /,up,/i && status =~ /up/) ? 'up' : 'down'
 
           if h[:status] == 'up'
-
             h[:current_speed_mbps] = interface_config.grep(/\/speed\|/)[0].after_pipe.to_i
             h[:duplex] = interface_config.grep(/\/duplex\|/)[0].after_pipe
             
@@ -163,7 +163,6 @@ module Boris; module Profiles
       end
 
       if found_fibre_interfaces.any?
-
         fibre_mapping_data = @active_connection.values_at("find /sys/devices/pci* -regex '.*fc_host/host[0-9]'")
         interface_config = @active_connection.values_at(%q{find -L /sys/class/fc_host/ -mindepth 2 -maxdepth 2 | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
 

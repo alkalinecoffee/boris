@@ -36,6 +36,7 @@ module Boris
         if error.message =~ /access is denied/i
           warn "connection failed (connection made but credentials not accepted with user #{@user})"
         else
+          warn "connection failed (#{error.message})"
           raise error
         end
       end
@@ -53,7 +54,7 @@ module Boris
     end
 
     def value_at(request, conn=:wmi)
-      values_at(request, conn).first
+      values_at(request, conn)[0]
     end
 
     def values_at(request, conn=:wmi)
@@ -80,12 +81,14 @@ module Boris
         end
       end
 
-      debug "#{return_data.size} values returned"
+      info "#{return_data.size} values returned"
 
       return return_data
     end
 
     def has_access_for(key_path, permission_to_check=nil)
+      debug "checking for registry read access for #{key_path}"
+
       access_params = @registry.Methods_('CheckAccess').inParameters.SpawnInstance_
 
       access_params.hDefKey = 9
@@ -98,6 +101,8 @@ module Boris
     def registry_subkeys_at(key_path)
       return_data = []
 
+      debug "reading registry subkeys at path #{key_path}"
+
       if has_access_for(key_path, KEY_ENUMERATE_SUB_KEYS)
         in_params = @registry.Methods_('EnumKey').inParameters.SpawnInstance_
         in_params.hDefKey = HKEY_LOCAL_MACHINE
@@ -107,7 +112,7 @@ module Boris
           return_data << key_path + '\\' + key
         end
       else
-        debug "no access for enumerating keys at (#{key_path})"
+        info "no access for enumerating keys at (#{key_path})"
       end
 
       return return_data
@@ -115,6 +120,8 @@ module Boris
 
     def registry_values_at(key_path)
       values = Hash.new
+
+      debug "reading registry values at path #{key_path}"
 
       if has_access_for(key_path, KEY_QUERY_VALUE)
         in_params = @registry.Methods_('EnumValues').inParameters.SpawnInstance_
@@ -145,7 +152,7 @@ module Boris
           end
         end
       else
-        debug "no access for enumerating values at (#{key_path})"
+        info "no access for enumerating values at (#{key_path})"
       end
 
       return values
