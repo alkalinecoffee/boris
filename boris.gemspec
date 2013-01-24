@@ -5,8 +5,8 @@ Gem::Specification.new do |s|
   s.description       = s.summary + ' Boris allows you to write programs for logging into and pulling information off of various server platforms, appliances, and other types of networked devices, producing clean and consistent data ideal for configuration managment usage.'
 
   s.author            = 'Joe Martin'
-  s.email             = 'sharkwavemedia@gmail.com'
-  s.homepage          = ''
+  s.email             = 'jwmartin83@gmail.com'
+  s.homepage          = 'https://github.com/alkalinecoffee/boris'
 
   s.required_ruby_version = '>= 1.9.3'
 
