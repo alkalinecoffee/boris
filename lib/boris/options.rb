@@ -6,6 +6,7 @@ module Boris
       @options = {}
 
       # set our defaults
+      @options[:auto_ssh_reconnect] ||= false
       @options[:auto_scrub_data] ||= true
       @options[:connection_types] ||= VALID_CONNECTION_TYPES
       @options[:credentials] ||= []
