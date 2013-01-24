@@ -3,10 +3,13 @@ require 'boris/connectors'
 module Boris
   class SSHConnector < Connector
     def initialize(host, cred, options, logger=nil)
-      super(host, cred, options, logger)
-
       @ssh_options = options[:ssh_options]
       @ssh_options[:password] = @password if @password
+
+      invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
+      raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
+
+      super(host, cred, options, logger)
     end
     
     def establish_connection
@@ -48,6 +51,12 @@ module Boris
       reconnect = false
 
       chan = @transport.open_channel do |chan|
+        if request_pty
+          debug 'requsting pty'
+          chan.request_pty()
+          debug 'pty successfully requested'
+        end
+
         chan.on_data do |ch, data|
           if request =~ /^sudo / && data =~ /password for/i
             warn "target is asking for password on request (#{request})"
@@ -63,29 +72,12 @@ module Boris
           warn "message written to STDERR on request (#{request})... #{data}"
         end
 
-        chan.on_close do |ch|
-          # channel was closed, typically done by cisco switches... so we'll quietly reconnect later
-          info 'channel closed prematurely (will reconnect)'
-          reconnect = true
-        end
-        
-        if request_pty
-          debug 'requsting pty'
-          chan.request_pty()
-          debug 'pty successfully requested'
-        end
-
         chan.exec(request)
       end
 
       chan.wait
 
       info "#{return_data.size} row(s) returned"
-      
-      if reconnect
-        debug 'preparing to refresh connection'
-        establish_connection
-      end
 
       limit = return_data.size if limit.nil?
 
