@@ -32,7 +32,7 @@ module Boris
 
       amount = limit == 1 ? 'single value' : 'multiple values'
 
-      debug "issing request for #{amount} (#{request[0..40]}...)"
+      debug "issuing request for #{amount} (#{request.inspect})"
     end
 
     def close

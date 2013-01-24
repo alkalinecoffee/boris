@@ -37,10 +37,13 @@ module Boris; module Profiles
 
       cpu_data = @connector.values_at('cat /proc/cpuinfo | egrep -i "processor|vendor|mhz|name|cores"')
       @hardware[:cpu_physical_count] = cpu_data.grep(/processor/i).last.after_colon.to_i + 1
-      @hardware[:cpu_core_count] = cpu_data.grep(/cpu cores/i)[0].after_colon.to_i
       @hardware[:cpu_model] = cpu_data.grep(/model name/i)[0].after_colon
       @hardware[:cpu_vendor] = cpu_data.grep(/vendor_id/i)[0].after_colon
       @hardware[:cpu_speed_mhz] = cpu_data.grep(/cpu mhz/i)[0].after_pipe.to_i
+
+      # cpu cores aren't always displayed via /proc/cpuinfo
+      cpu_cores = cpu_data.grep(/cpu cores/i)[0]
+      @hardware[:cpu_core_count] = cpu_cores.after_colon.to_i if cpu_cores
 
       memory_data = @connector.value_at("cat /proc/meminfo | grep -i memtotal | awk '{print $2 / 1024}'")
       @hardware[:memory_installed_mb] = memory_data.to_i
@@ -94,17 +97,13 @@ module Boris; module Profiles
     def get_network_id
       super
 
-      hostname = @connector.value_at('hostname')
+      hostname = @connector.value_at('hostname').split('.')
+      @network_id[:hostname] = hostname.shift
+
       domain = @connector.value_at('domainname')
       domain = nil if domain =~ /\(none\)/i
-      
-      if hostname =~ /\./
-        hostname = hostname.split('.').shift
-        domain = hostname.join('.')
-      end
 
-      @network_id[:hostname] = hostname
-      @network_id[:domain] = domain
+      @network_id[:domain] = domain.nil? ? hostname.join('.') : domain
     end
 
     def get_network_interfaces

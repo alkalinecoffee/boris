@@ -1,4 +1,5 @@
 class String
+  include Boris
 
   def after_colon
     generic_after(':')

@@ -2,7 +2,6 @@ require 'boris/profiles/unix_core'
 
 module Boris; module Profiles
   module Solaris
-    
     include UNIX
     
     SOLARIS_ZONE_MODEL = 'Oracle Virtual Platform'
@@ -202,7 +201,7 @@ module Boris; module Profiles
             h[:model] = 'Virtual Ethernet Adapter'
             h[:vendor] = VENDOR_ORACLE
           else
-            prtpicl_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {$1=$1; split($0, str, /\t/); print str[1] "|" str[2];}}'}
+            prtpicl_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {first=$1; $1=""; print first "|" $0}}'}
 
             prtpicl_command.gsub!(/network/, 'obp-device') if @platform == :x86
 

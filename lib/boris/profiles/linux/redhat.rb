@@ -9,7 +9,8 @@ module Boris; module Profiles
       end
 
       def self.matches_target?(connector)
-        return true if connector.value_at(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}) =~ /redhat/i
+        release_data = connector.values_at(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).join(' ')
+        return true if release_data =~ /redhat/i
       end
 
       def get_file_systems; super; end
@@ -24,7 +25,7 @@ module Boris; module Profiles
       def get_installed_applications
         super
         
-        application_data = @connector.values_at("rpm -qa --queryformat '%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n' | sort")
+        application_data = @connector.values_at('rpm -qa --queryformat "%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n" | sort')
 
         application_data.each do |application|
           application = application.split('|')

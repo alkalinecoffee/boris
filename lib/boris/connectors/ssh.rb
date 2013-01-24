@@ -46,10 +46,10 @@ module Boris
     def values_at(request, request_pty=false, limit=nil)
       super(request, limit)
       
+      error_messages = []
+      reconnect = false
       return_data = []
       
-      reconnect = false
-
       chan = @transport.open_channel do |chan|
         if request_pty
           debug 'requsting pty'
@@ -59,23 +59,30 @@ module Boris
 
         chan.on_data do |ch, data|
           if request =~ /^sudo / && data =~ /password for/i
-            warn "target is asking for password on request (#{request})"
+            warn "target is asking for password for this request"
           elsif data =~ /permission denied/i
-            warn "permission denied within request (#{request})... #{data}"
+            warn "permission denied for this request (#{data.gsub(/\n|\s+/, ', ')})"
           else
             return_data << data
+            #return_data.concat(data.split(/\n/))
           end
         end
         
         # called when something is written to stderr
         chan.on_extended_data do |ch, type, data|
-          warn "message written to STDERR on request (#{request})... #{data}"
+          error_messages.concat(data.split(/\n/))
         end
 
         chan.exec(request)
       end
 
       chan.wait
+
+      if !error_messages.empty?
+        warn "message written to STDERR for this request (#{error_messages.join('. ')})"
+      end
+
+      return_data = return_data.join.split(/\n/)
 
       info "#{return_data.size} row(s) returned"
 
