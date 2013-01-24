@@ -288,7 +288,7 @@ class SolarisCoreTest < ProfileTestSetup
 
           @kstat_command = %q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}'}
 
-          @prtpicl_ethernet_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {$1=$1; split($0, str, /\t/); print str[1] "|" str[2];}}'}
+          @prtpicl_ethernet_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {first=$1; $1=""; print first "|" $0}}'}
 
           @fcinfo_command = %q{/usr/local/bin/sudo /usr/sbin/fcinfo hba-port | egrep -i "wwn|device name|model|manufacturer|driver name|state|current speed" | nawk '{$1=$1; if(tolower($1) ~ /^node/) print $0 "\n"; else print $0;}'}
           

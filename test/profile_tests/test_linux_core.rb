@@ -143,17 +143,24 @@ class LinuxCoreTest < ProfileTestSetup
       end
 
       context 'for network identification' do
-        setup do
-          @expected_data = {:domain=>'mydomain.com', :hostname=>'SERVER01'}
-        end
-
-        should 'return the domain and hostname via #get_network_id' do
-          @connector.stubs(:value_at).with('hostname').returns(@expected_data[:hostname])
-          @connector.stubs(:value_at).with('domainname').returns(@expected_data[:domain])
+        should 'return the hostname and domain via #get_network_id when hostname and domain are properly returned' do
+          expected_data = {:domain=>'mydomain.com', :hostname=>'SERVER01'}
+          @connector.stubs(:value_at).with('hostname').returns(expected_data[:hostname])
+          @connector.stubs(:value_at).with('domainname').returns(expected_data[:domain])
 
           @target.get_network_id
 
-          assert_equal(@expected_data, @target.network_id)
+          assert_equal(expected_data, @target.network_id)
+        end
+
+        should 'return the hostname and domain via #get_network_id when hostname and domain in a single string' do
+          expected_data = {:domain=>'mydomain.com', :hostname=>'SERVER01'}
+          @connector.stubs(:value_at).with('hostname').returns("#{expected_data[:hostname]}.#{expected_data[:domain]}")
+          @connector.stubs(:value_at).with('domainname').returns(nil)
+
+          @target.get_network_id
+          
+          assert_equal(expected_data, @target.network_id)
         end
       end
 

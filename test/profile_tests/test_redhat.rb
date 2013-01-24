@@ -5,7 +5,7 @@ class RedHatCoreTest < ProfileTestSetup
     setup do
       @connector = @target.connector = instance_of(SSHConnector)
 
-      @connector.stubs(:value_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).returns('redhat')
+      @connector.stubs(:values_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).returns(['redhat'])
       @target.options[:profiles] = [Profiles::RedHat]
       @target.detect_profile
     end
@@ -58,7 +58,7 @@ class RedHatCoreTest < ProfileTestSetup
         end
 
         should 'return installed applications via #get_installed_applications' do
-          application_command = "rpm -qa --queryformat '%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n' | sort"
+          application_command = 'rpm -qa --queryformat "%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n" | sort'
 
           @connector.stubs(:values_at).with(application_command).returns(@application_data)
 
