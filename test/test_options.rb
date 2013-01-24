@@ -7,7 +7,6 @@ class OptionsTest < Test::Unit::TestCase
     end
 
     should 'be modifiable via the options hash' do
-      @options[:auto_ssh_reconnect] = true
       @options[:auto_scrub_data] = false
       @options[:connection_types] = [:ssh, :wmi]
       @options[:credentials] = [{:user=>'someuser'}]
@@ -16,7 +15,6 @@ class OptionsTest < Test::Unit::TestCase
       @options[:snmp_options] = {:MibModules=>['IF-MIB']}
       @options[:ssh_options] = {:keys=>'~/.ssh/my_private_key', :verbose=>:debug}
 
-      assert_equal(true, @options[:auto_ssh_reconnect])
       assert_equal(false, @options[:auto_scrub_data])
       assert_equal([:ssh, :wmi], @options[:connection_types])
       assert_equal([{:user=>'someuser'}], @options[:credentials])
