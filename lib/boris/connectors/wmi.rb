@@ -2,7 +2,6 @@ require 'boris/connectors'
 
 module Boris
   class WMIConnector < Connector
-
     attr_accessor :wmi, :root_wmi, :registry
 
     HKEY_LOCAL_MACHINE = '&H80000002'
@@ -32,14 +31,27 @@ module Boris
         debug 'connection to registry successful'
 
         debug 'all required connections established'
+        @connected = @reconnectable = true
+
       rescue WIN32OLERuntimeError => error
+        @connected = false
         if error.message =~ /access is denied/i
           warn "connection failed (connection made but credentials not accepted with user #{@user})"
+          @reconnectable = true
+        elsif error.message =~ /rpc server is unavailable/i
+          warn 'connection failed (rpc server not available)'
+          @reconnectable = false
         else
-          warn "connection failed (#{error.message})"
-          raise error
+          warn "connection failed (#{error.message.gsub(/\n\s*/, '. ')})"
+          @reconnectable = true
         end
       end
+
+      if @reconnectable == true
+        info 'connection available for retry'
+      elsif @reconnectable == false
+        info 'connection does not seem to be available (so we will not retry)'
+      end unless @transport
 
       return self
     end
@@ -54,11 +66,11 @@ module Boris
     end
 
     def value_at(request, conn=:wmi)
-      values_at(request, conn)[0]
+      values_at(request, conn, limit=1)[0]
     end
 
-    def values_at(request, conn=:wmi)
-      super(request)
+    def values_at(request, conn=:wmi, limit=nil)
+      super(request, limit)
       
       rows = case conn
       when :root_wmi
@@ -69,7 +81,11 @@ module Boris
 
       return_data = []
 
+      i = 0
+
       rows.each do |row|
+        i += 1
+
         row.Properties_.each do |property|
           if property.Name =~ /^attributes/i && property.Value.kind_of?(WIN32OLE)
             row.Attributes.Properties_.each do |property|
@@ -79,9 +95,11 @@ module Boris
             return_data << {property.Name.downcase.to_sym => property.Value}
           end
         end
+
+        break if (limit.nil? && i == limit)
       end
 
-      info "#{return_data.size} values returned"
+      info "#{return_data.size} row(s) returned"
 
       return return_data
     end

@@ -20,7 +20,7 @@ module Boris
     attr_reader :target_profile
     attr_reader :unavailable_connection_types
 
-    attr_accessor :active_connection
+    attr_accessor :connector
     attr_accessor :options
     attr_accessor :logger
 
@@ -49,16 +49,16 @@ module Boris
 
     def connect
       raise InvalidOption, 'no credentials specified' if @options[:credentials].empty?
-      raise ConnectionAlreadyActive, 'a connect attempt has been made when active connection already exists' if @active_connection
+      raise ConnectionAlreadyActive, 'a connect attempt has been made when active connection already exists' if @connector
 
       debug 'preparing to connect'
 
       creds_to_try = @options[:credentials].reject {|cred| (cred[:connection_types] && @options[:connection_types]).empty?}
 
-      @active_connection = nil
+      @connector = nil
 
       creds_to_try.each do |cred|
-        if @active_connection
+        if @connector
           debug 'active connection established, will not try any more credentials'
           break
         end
@@ -66,57 +66,70 @@ module Boris
         debug "using credential (#{cred[:user]})"
 
         cred[:connection_types].each do |conn_type|
-          if @active_connection
+          if @connector
             debug 'active connection established, will not try any more connection types'
             break
           end
 
-          debug "attempting connection via #{conn_type}"
-          
           case conn_type
           when :snmp
-            @active_connection = SNMPConnector.new(@host, cred, @options, @logger).establish_connection
-            info 'snmp not available' if !@active_connection
+            @connector = SNMPConnector.new(@host, cred, @options, @logger).establish_connection
+            
             # we won't add snmp to the @unavailable_connection_types array, as it
             # could respond later with another community string
           when :ssh
-            begin
-              @active_connection = SSHConnector.new(@host, cred, @options, @logger).establish_connection
-            rescue
-              info 'ssh not available (will not try again for this host)'
-              @unavailable_connection_types << :ssh
-            end unless @unavailable_connection_types.include?(:ssh)
+            if !@unavailable_connection_types.include?(:ssh)
+              @connector = SSHConnector.new(@host, cred, @options, @logger).establish_connection
+            
+              if @connector.connected? == false && @connector.reconnectable == false
+                @unavailable_connection_types << :ssh
+              end
+            end
           when :wmi
-            begin
-              @active_connection = WMIConnector.new(@host, cred, @options, @logger).establish_connection
-            rescue
-              info 'wmi not available (will not try again for this host)'
-              @unavailable_connection_types << :wmi
-            end unless @unavailable_connection_types.include?(:wmi)
+            if !@unavailable_connection_types.include?(:wmi)
+              @connector = WMIConnector.new(@host, cred, @options, @logger).establish_connection
+            
+              if @connector.connected? == false && @connector.reconnectable == false
+                @unavailable_connection_types << :wmi
+              end
+            end
           end
 
-          info "connection established via #{conn_type}" if @active_connection
+          info "connection established via #{conn_type}" if @connector.connected?
         end
       end
 
-      @active_connection
+      @connector
+    end
+
+    def connected?
+      @connector.connected
     end
 
     def detect_profile
       raise InvalidOption, 'no profiles loaded' if @options[:profiles].empty? || @options[:profiles].nil?
-      raise NoActiveConnection, 'no active connection' if !@active_connection
+      raise NoActiveConnection, 'no active connection' if @connector.connected? == false
+
+      #profiles_to_test = []
+      #@options[:profiles]. - #any that don't match the connection type
 
       @target_profile = nil
-      @options[:profiles].each do |profile|
-        debug "testing profile: #{profile}"
-        if profile.matches_target?(@active_connection)
-          @target_profile = profile
 
-          debug "suitable profile found (#{@target_profile})"
-          
-          self.extend @target_profile
-          
-          debug "profile set to #{@target_profile}"
+      @options[:profiles].each do |profile|
+        break if @target_profile
+
+        if profile.connection_type == @connector.class
+          debug "testing profile: #{profile}"
+
+          if profile.matches_target?(@connector)
+            @target_profile = profile
+
+            debug "suitable profile found (#{@target_profile})"
+            
+            self.extend @target_profile
+            
+            debug "profile set to #{@target_profile}"
+          end
         end
       end
 
@@ -124,7 +137,7 @@ module Boris
     end
 
     def disconnect
-      @active_connection.close
+      @connector.close
     end
 
     def force_profile_to(profile)
@@ -140,13 +153,13 @@ module Boris
       connection_method = :wmi if tcp_port_responding?(PORT_DEFAULTS[:wmi])
       info 'wmi does not appear to be responding'
 
-      if !connection_method
+      if connection_method.nil?
         debug 'detecting if ssh is available'
         connection_method = :ssh if tcp_port_responding?(PORT_DEFAULTS[:ssh])
         info 'ssh does not appear to be responding'
       end
 
-      info 'failed to detect connection method' if !connection_method
+      info 'failed to detect connection method' if connection_method.nil?
       connection_method
     end
 
@@ -158,13 +171,12 @@ module Boris
       begin
         conn = TCPSocket.new(@host, port)
         info "port #{port} is responding"
-        true
-      rescue
-        info "port #{port} is not responding"
-        false
-      ensure
         conn.close
         debug "connection to port closed"
+        status = true
+      rescue
+        info "port #{port} is not responding"
+        status = false
       end
 
       status

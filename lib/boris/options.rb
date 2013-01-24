@@ -11,7 +11,7 @@ module Boris
       @options[:credentials] ||= []
       @options[:log_level] ||= :fatal
       @options[:profiles] ||= [Profiles::RedHat, Profiles::Solaris]
-      @options[:profiles] << [Profiles::Windows::Windows2003, Profiles::Windows::Windows2008, Profiles::Windows::Windows2012] if PLATFORM == :win32
+      @options[:profiles].concat([Profiles::Windows::Windows2003, Profiles::Windows::Windows2008, Profiles::Windows::Windows2012]) if PLATFORM == :win32
       @options[:snmp_options] ||= {}
       @options[:ssh_options] ||= {}
 

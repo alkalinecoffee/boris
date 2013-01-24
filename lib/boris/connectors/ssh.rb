@@ -2,8 +2,8 @@ require 'boris/connectors'
 
 module Boris
   class SSHConnector < Connector
-    def initialize(target_name, cred, options, logger=nil)
-      super(target_name, cred, options, logger)
+    def initialize(host, cred, options, logger=nil)
+      super(host, cred, options, logger)
 
       @ssh_options = options[:ssh_options]
       @ssh_options[:password] = @password if @password
@@ -13,25 +13,35 @@ module Boris
       super
 
       begin
-        @transport = Net::SSH.start(@target_name, @user, @ssh_options)
+        @transport = Net::SSH.start(@host, @user, @ssh_options)
         debug 'connection established'
+        @connected = @reconnectable = true
       rescue Net::SSH::AuthenticationFailed
         warn "connection failed (connection made but credentials not accepted with user #{@user})"
+        @reconnectable = true
       rescue Net::SSH::HostKeyMismatch
         warn 'connection failed (host key mismatch)'
-      rescue Net::SSH::Exception => error
+        @reconnectable = false
+      rescue => error
         warn "connection failed (#{error.message})"
-      end unless @connection_unavailable
+        @reconnectable = true
+      end
+
+      if @reconnectable == true
+        info 'connection available for retry'
+      elsif @reconnectable == false
+        info 'connection does not seem to be available (so we will not retry)'
+      end unless @transport
 
       return self
     end
 
     def value_at(request, request_pty=false)
-      values_at(request, request_pty)[0]
+      values_at(request, request_pty, 1)[0]
     end
     
-    def values_at(request, request_pty=false)
-      super(request)
+    def values_at(request, request_pty=false, limit=nil)
+      super(request, limit)
       
       return_data = []
       
@@ -70,14 +80,16 @@ module Boris
 
       chan.wait
 
-      info "#{return_data.size} lines returned"
+      info "#{return_data.size} row(s) returned"
       
       if reconnect
         debug 'preparing to refresh connection'
         establish_connection
       end
 
-      return_data
+      limit = return_data.size if limit.nil?
+
+      return_data[0..limit]
     end
   end
 end

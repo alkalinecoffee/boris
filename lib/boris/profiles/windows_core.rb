@@ -24,17 +24,21 @@ module Boris; module Profiles
       :speedduplex
     ]
 
-    def self.matches_target?(active_connection)
-      return true if active_connection.value_at('SELECT Name FROM Win32_OperatingSystem')[:name] =~ /windows/i
+    def self.connection_type
+      Boris::WMIConnector
+    end
+
+    def self.matches_target?(connector)
+      return true if connector.value_at('SELECT Name FROM Win32_OperatingSystem')[:name] =~ /windows/i
     end
 
     def get_file_systems
       super
 
-      logical_disks = @active_connection.values_at('SELECT Antecedent, Dependent FROM Win32_LogicalDiskToPartition')
-      disk_partitions = @active_connection.values_at('SELECT Antecedent, Dependent FROM Win32_DiskDriveToDiskPartition')
-      physical_drives = @active_connection.values_at('SELECT DeviceID, Model FROM Win32_DiskDrive')
-      disk_space = @active_connection.values_at('SELECT FreeSpace, Name, Size FROM Win32_LogicalDisk WHERE DriveType=3')
+      logical_disks = @connector.values_at('SELECT Antecedent, Dependent FROM Win32_LogicalDiskToPartition')
+      disk_partitions = @connector.values_at('SELECT Antecedent, Dependent FROM Win32_DiskDriveToDiskPartition')
+      physical_drives = @connector.values_at('SELECT DeviceID, Model FROM Win32_DiskDrive')
+      disk_space = @connector.values_at('SELECT FreeSpace, Name, Size FROM Win32_LogicalDisk WHERE DriveType=3')
       
       disk_space.each do |ds|
         h = file_system_template
@@ -71,16 +75,16 @@ module Boris; module Profiles
     def get_hardware
       super
 
-      serial_data = @active_connection.value_at('SELECT SerialNumber, SMBIOSBIOSVersion FROM Win32_BIOS')
+      serial_data = @connector.value_at('SELECT SerialNumber, SMBIOSBIOSVersion FROM Win32_BIOS')
       @hardware[:serial] = serial_data[:serialnumber]
       @hardware[:firmware_version] = serial_data[:smbiosbiosversion]
 
-      system_data = @active_connection.value_at('SELECT Manufacturer, Model, TotalPhysicalMemory FROM Win32_ComputerSystem')
+      system_data = @connector.value_at('SELECT Manufacturer, Model, TotalPhysicalMemory FROM Win32_ComputerSystem')
       @hardware[:vendor] = system_data[:manufacturer]
       @hardware[:model] = system_data[:model]
       @hardware[:memory_installed_mb] = system_data[:totalphysicalmemory].to_i / 1024 / 1024
 
-      cpu_data = @active_connection.values_at('SELECT * FROM Win32_Processor')
+      cpu_data = @connector.values_at('SELECT * FROM Win32_Processor')
 
       @hardware[:cpu_physical_count] = cpu_data.size
 
@@ -97,7 +101,7 @@ module Boris; module Profiles
     def get_hosted_shares
       super
 
-      share_data = @active_connection.values_at('SELECT Name, Path FROM Win32_Share WHERE Type = 0')
+      share_data = @connector.values_at('SELECT Name, Path FROM Win32_Share WHERE Type = 0')
       share_data.each do |share|
         h = hosted_share_template
         h[:name] = share[:name]
@@ -112,11 +116,11 @@ module Boris; module Profiles
       @patches_from_registry = []
 
       [APP32_KEYPATH, APP64_KEYPATH].each do |app_path|
-        @active_connection.registry_subkeys_at(app_path).each do |app_key|
+        @connector.registry_subkeys_at(app_path).each do |app_key|
 
           h = installed_application_template
 
-          app_values = @active_connection.registry_values_at(app_key)
+          app_values = @connector.registry_values_at(app_key)
 
           h[:date_installed] = DateTime.parse(app_values[:installdate]) if app_values[:installdate].kind_of?(String)
 
@@ -138,7 +142,7 @@ module Boris; module Profiles
       # look for some other popular applications not found in the usual spots
 
       # Oracle (RDMS, AppServer (AS), Client)
-      oracle_keys = @active_connection.registry_subkeys_at(ORACLE_KEYPATH)
+      oracle_keys = @connector.registry_subkeys_at(ORACLE_KEYPATH)
       oracle_keys.each do |app_key|
         if app_key =~ /^key_ora(db|home)/i
           app_values = registry_values_at(app_key)
@@ -158,7 +162,7 @@ module Boris; module Profiles
       super
 
       # get patches via wmi
-      patch_data = @active_connection.values_at('SELECT Description, HotFixID, InstalledBy, InstalledOn, ServicePackInEffect
+      patch_data = @connector.values_at('SELECT Description, HotFixID, InstalledBy, InstalledOn, ServicePackInEffect
         FROM Win32_QuickFixEngineering')
 
       patch_data.each do |patch|
@@ -183,8 +187,8 @@ module Boris; module Profiles
         @patches_from_registry = []
 
         [APP32_KEYPATH, APP64_KEYPATH].each do |app_path|
-          @active_connection.registry_subkeys_at(app_path).each do |app_key|
-            app_values = @active_connection.registry_values_at(app_key)
+          @connector.registry_subkeys_at(app_path).each do |app_key|
+            app_values = @connector.registry_values_at(app_key)
             if app_values[:displayname] =~ /^kb|\(kb\d+/i
               @patches_from_registry << {:key_path=>app_key, :values=>app_values}
             end
@@ -215,7 +219,7 @@ module Boris; module Profiles
     def get_installed_services
       super
 
-      service_data = @active_connection.values_at('SELECT Name, PathName, StartMode FROM Win32_Service')
+      service_data = @connector.values_at('SELECT Name, PathName, StartMode FROM Win32_Service')
       service_data.each do |service|
         h = installed_service_template
         h[:name] = service[:name]
@@ -240,12 +244,12 @@ module Boris; module Profiles
 
         groups = []
 
-        group_data = @active_connection.values_at("SELECT Name FROM Win32_Group WHERE Domain = '#{@network_id[:hostname]}'")
+        group_data = @connector.values_at("SELECT Name FROM Win32_Group WHERE Domain = '#{@network_id[:hostname]}'")
         group_data.each {|group| @local_user_groups << {:name=>group[:name], :members=>[]}}
 
         @local_user_groups.each do |group|
           
-          members = @active_connection.values_at("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{@network_id[:hostname]}',Name='#{group[:name]}'\"")
+          members = @connector.values_at("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{@network_id[:hostname]}',Name='#{group[:name]}'\"")
 
           members.each do |member|
             hostname, username = member[:partcomponent].within_quotes
@@ -258,7 +262,7 @@ module Boris; module Profiles
     def get_network_id
       super
 
-      network_data = @active_connection.value_at('SELECT Domain, Name FROM Win32_ComputerSystem')
+      network_data = @connector.value_at('SELECT Domain, Name FROM Win32_ComputerSystem')
       @network_id[:domain] = network_data[:domain]
       @network_id[:hostname] = network_data[:name]
     end
@@ -267,7 +271,7 @@ module Boris; module Profiles
       super
 
       # retrieve ethernet interfaces
-      ethernet_interfaces = @active_connection.values_at('SELECT Index, MACAddress, Manufacturer, NetConnectionID, NetConnectionStatus, ProductName FROM Win32_NetworkAdapter WHERE NetConnectionID IS NOT NULL')
+      ethernet_interfaces = @connector.values_at('SELECT Index, MACAddress, Manufacturer, NetConnectionID, NetConnectionStatus, ProductName FROM Win32_NetworkAdapter WHERE NetConnectionID IS NOT NULL')
 
       ethernet_interfaces.each do |interface_profile|
         h = network_interface_template
@@ -286,7 +290,7 @@ module Boris; module Profiles
         h[:vendor] = interface_profile[:manufacturer]
 
         # retrieve config for this interface
-        interface_config = @active_connection.value_at("SELECT DNSServerSearchOrder, IPAddress, IPSubnet, SettingID FROM Win32_NetworkAdapterConfiguration WHERE Index = #{index}")
+        interface_config = @connector.value_at("SELECT DNSServerSearchOrder, IPAddress, IPSubnet, SettingID FROM Win32_NetworkAdapterConfiguration WHERE Index = #{index}")
         guid = interface_config[:settingid]
         h[:dns_servers] = interface_config[:dnsserversearchorder]
 
@@ -302,7 +306,7 @@ module Boris; module Profiles
         # for each value and see if it exists.  if it exists, then we dig deeper into the subkeys
         # of this NIC's driver registry key and get the translated value from the list of options
         # (found in the \Enum subkey)
-        interface_driver_config = @active_connection.registry_values_at(cfg_keypath)
+        interface_driver_config = @connector.registry_values_at(cfg_keypath)
         h[:auto_negotiate] = false
         duplex_reg_value = interface_driver_config.select {|key, val| DUPLEX_REG_VALS.include?(key)}
 
@@ -310,7 +314,7 @@ module Boris; module Profiles
           h[:auto_negotiate] = true
           h[:duplex] = 'auto'
         else
-          duplex_value = @active_connection.registry_values_at(cfg_keypath + "\\Ndi\\params\\#{duplex_reg_value.keys[0]}\\Enum")
+          duplex_value = @connector.registry_values_at(cfg_keypath + "\\Ndi\\params\\#{duplex_reg_value.keys[0]}\\Enum")
           duplex_value = duplex_value.select{|key, val| key.to_s == duplex_reg_value.values[0].to_s}.values[0]
 
           if duplex_value =~ /auto|default/i
@@ -330,16 +334,16 @@ module Boris; module Profiles
         h[:model_id] = '0x' + hardware_ids[1].join
 
         # retrieve mtu
-        mtu_data = @active_connection.registry_values_at(TCPIP_CFG_KEYPATH + "\\#{guid}")
+        mtu_data = @connector.registry_values_at(TCPIP_CFG_KEYPATH + "\\#{guid}")
         h[:mtu] = mtu_data[:mtu] if mtu_data.has_key?(:mtu)
 
         # translate the adapter guid to it's internal device name (usually prefixed with a DEVICE\)
-        device_guid = @active_connection.registry_values_at(cfg_keypath + '\\Linkage')[:export]
-        adapter_name_data = @active_connection.value_at("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{device_guid}'", :root_wmi)
+        device_guid = @connector.registry_values_at(cfg_keypath + '\\Linkage')[:export]
+        adapter_name_data = @connector.value_at("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{device_guid}'", :root_wmi)
         internal_adapter_name = adapter_name_data[:instancename]
 
         # now with the internal adapter name, we can grab the connection speed.
-        speed_data = @active_connection.value_at("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{internal_adapter_name}'", :root_wmi)
+        speed_data = @connector.value_at("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{internal_adapter_name}'", :root_wmi)
         h[:current_speed_mbps] = speed_data[:ndislinkspeed] / 10000
 
         @network_interfaces << h
@@ -349,9 +353,9 @@ module Boris; module Profiles
       # retrieve fibre channel interfaces. for windows 2003, this only works if the hbaapi is
       # available, which can be installed by the fibre controller software provided by the
       # vendor, or is installed as a separate package (fcinfo from microsoft)
-      fibre_interface_profiles = @active_connection.values_at('SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes', :root_wmi)
+      fibre_interface_profiles = @connector.values_at('SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes', :root_wmi)
 
-      fibre_interfaces = @active_connection.values_at('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi)
+      fibre_interfaces = @connector.values_at('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi)
 
       fibre_interfaces.each do |fibre_interface|
         h = network_interface_template
@@ -396,7 +400,7 @@ module Boris; module Profiles
     def get_operating_system
       super
 
-      os_data = @active_connection.value_at('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem')
+      os_data = @connector.value_at('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem')
       @operating_system[:date_installed] = DateTime.parse(os_data[:installdate])
       @operating_system[:kernel] = os_data[:version]
       @operating_system[:license_key] = get_product_key('microsoft windows')
@@ -425,7 +429,7 @@ module Boris; module Profiles
           debug 'attempting to retrieve ms exchange product key'
 
           key_path = 'SOFTWARE\Microsoft\Exchange\Setup'
-          product_key = @active_connection.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
+          product_key = @connector.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
 
         when app_name =~ /office/i
 
@@ -439,7 +443,7 @@ module Boris; module Profiles
           end
 
           key_path = "SOFTWARE\\Microsoft\\Office\\#{version_code}.0\\Registration\\#{guid}"
-          product_key = @active_connection.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
+          product_key = @connector.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
 
         when app_name =~ /sql server/i
 
@@ -449,7 +453,7 @@ module Boris; module Profiles
 
           key_path = 'SOFTWARE\Microsoft\Microsoft SQL Server'
           
-          @active_connection.registry_subkeys_at(key_path).each do |key|
+          @connector.registry_subkeys_at(key_path).each do |key|
 
             if key =~ /mssql(\.|10|11)/i
 
@@ -462,7 +466,7 @@ module Boris; module Profiles
 
               if version_code
                 key_path = "#{key_path}\\#{version_code}\\ProductID"
-                product_key = @active_connection.registry_values_at(key_path)[:digitalproductid]
+                product_key = @connector.registry_values_at(key_path)[:digitalproductid]
                 product_key = product_key.to_ms_product_key unless !product_key
               end
             end
@@ -480,14 +484,14 @@ module Boris; module Profiles
           end
 
           key_path = "SOFTWARE\\Microsoft\\VisualStudio\\#{version_code}.0\\Registration"
-          product_key = @active_connection.registry_values_at(key_path)[:pidkey].scan(/.{5}/).join('-')
+          product_key = @connector.registry_values_at(key_path)[:pidkey].scan(/.{5}/).join('-')
 
         when app_name =~ /^microsoft windows$/i
 
           debug 'attempting to retrieve ms windows product key'
 
           key_path = 'SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-          product_key = @active_connection.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
+          product_key = @connector.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
         
         end
 
@@ -504,7 +508,7 @@ module Boris; module Profiles
     def get_username(guid)
       username = guid
       
-      user = @active_connection.value_at("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'")
+      user = @connector.value_at("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'")
       username = user[:caption] if user[:sid] == guid
 
       return username
@@ -517,7 +521,7 @@ module Boris; module Profiles
       case
       when app_name =~ /sql server/i
         # grab the edition (standard, enterprise, etc)
-        app_edition = active_connection.registry_values_at('SOFTWARE\Microsoft\Microsoft SQL Server\Setup')[:edition]
+        app_edition = connector.registry_values_at('SOFTWARE\Microsoft\Microsoft SQL Server\Setup')[:edition]
 
         app_name = if app_name =~ /\(64\-bit\)/i
           app_name.sub('(64-bit)', "#{app_edition} (64-bit)")

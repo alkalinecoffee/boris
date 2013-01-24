@@ -2,8 +2,10 @@ module Boris
   class Connector
     include Lumberjack
 
-    attr_reader :options
+    attr_reader :connected
     attr_reader :host
+    attr_reader :options
+    attr_reader :reconnectable
 
     def initialize(host, cred, options, logger=nil)
       debug 'creating connection object'
@@ -12,24 +14,30 @@ module Boris
       @user = cred[:user]
       @password = cred[:password]
       @connection_unavailable = false
+      @connected = false
 
       @logger = logger
+    end
+
+    def connected?
+      @connected
     end
 
     def establish_connection
       debug 'attempting connection'
     end
 
-    def value_at(request)
-      debug "issuing request for a single value (#{request[0..30]}...)"
-    end
+    def values_at(request, limit)
+      raise ArgumentError, "invalid limit specified (#{limit})" if (!limit.nil? && limit < 1)
 
-    def values_at(request)
-      debug "issing request for multiple values (#{request[0..30]}...)"
+      amount = limit == 1 ? 'single value' : 'multiple values'
+
+      debug "issing request for #{amount} (#{request[0..40]}...)"
     end
 
     def close
       debug 'closing connection to host'
+      @connected = false
     end
   end
 end

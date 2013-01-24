@@ -6,9 +6,13 @@ module Boris; module Profiles
     include UNIX
     
     SOLARIS_ZONE_MODEL = 'Oracle Virtual Platform'
+
+    def self.connection_type
+      UNIX.connection_type
+    end
     
-    def self.matches_target?(active_connection)
-      return true if active_connection.value_at('uname') =~ /sunos/i
+    def self.matches_target?(connector)
+      return true if connector.value_at('uname') =~ /sunos/i
     end
 
     def get_hardware
@@ -23,24 +27,24 @@ module Boris; module Profiles
       elsif @platform == :sparc
         @hardware[:vendor] = VENDOR_ORACLE
 
-        @hardware[:firmware_version] = @active_connection.value_at(%q{/usr/platform/`uname -m`/sbin/prtdiag -v | egrep -i "^obp" | awk '{print $2}'})
-        model_data = @active_connection.value_at('/usr/sbin/prtconf -b | grep banner-name')
+        @hardware[:firmware_version] = @connector.value_at(%q{/usr/platform/`uname -m`/sbin/prtdiag -v | egrep -i "^obp" | awk '{print $2}'})
+        model_data = @connector.value_at('/usr/sbin/prtconf -b | grep banner-name')
         @hardware[:model] = model_data.after_colon
       else
-        @hardware[:firmware_version] = @active_connection.value_at('/usr/sbin/smbios -t SMB_TYPE_BIOS | grep -i "version string"').after_colon
-        model_data = @active_connection.values_at("/usr/sbin/smbios -t SMB_TYPE_SYSTEM | egrep -i 'manufacturer|product|serial'")
+        @hardware[:firmware_version] = @connector.value_at('/usr/sbin/smbios -t SMB_TYPE_BIOS | grep -i "version string"').after_colon
+        model_data = @connector.values_at("/usr/sbin/smbios -t SMB_TYPE_SYSTEM | egrep -i 'manufacturer|product|serial'")
         @hardware[:vendor] = model_data.grep(/manufacturer/i)[0].after_colon
         @hardware[:model] = model_data.grep(/product/i)[0].after_colon
         @hardware[:serial] = model_data.grep(/serial number/i)[0].after_colon
       end
 
-      memory_data = @active_connection.value_at("/usr/sbin/prtconf | egrep -i 'memory size' | awk '{print $3}'")
+      memory_data = @connector.value_at("/usr/sbin/prtconf | egrep -i 'memory size' | awk '{print $3}'")
       @hardware[:memory_installed_mb] = memory_data.to_i
 
-      cpu_arch_data = @active_connection.values_at("isainfo -v | egrep -i applications | awk '{print $1}'")
+      cpu_arch_data = @connector.values_at("isainfo -v | egrep -i applications | awk '{print $1}'")
       @hardware[:cpu_architecture] = cpu_arch_data.include?('64-bit') ? 64 : 32
 
-      cpu_data = @active_connection.values_at(%q{kstat -m cpu_info | nawk '{if($1~/^(chip_id|core_id|clock_mhz|vendor_id|brand)/) {sub($1, $1"|"); print $0}}'})
+      cpu_data = @connector.values_at(%q{kstat -m cpu_info | nawk '{if($1~/^(chip_id|core_id|clock_mhz|vendor_id|brand)/) {sub($1, $1"|"); print $0}}'})
 
       @hardware[:cpu_physical_count] = cpu_data.grep(/chip_id/i).uniq.size
       @hardware[:cpu_core_count] = cpu_data.grep(/core_id/i).uniq.size / @hardware[:cpu_physical_count]
@@ -57,7 +61,7 @@ module Boris; module Profiles
     def get_hosted_shares
       super
 
-      share_data = @active_connection.values_at(%q{nawk '{system("df -k | grep " $2)}' /usr/sbin/shares | nawk '{print $NF "|" $1}'})
+      share_data = @connector.values_at(%q{nawk '{system("df -k | grep " $2)}' /usr/sbin/shares | nawk '{print $NF "|" $1}'})
       share_data.each do |share|
         h = hosted_share_template
         share = share.split('|')
@@ -70,7 +74,7 @@ module Boris; module Profiles
     def get_installed_applications
       super
 
-      application_data = @active_connection.values_at("pkginfo -il -c application | egrep -i '^$|(name|version|basedir|vendor|instdate):'")
+      application_data = @connector.values_at("pkginfo -il -c application | egrep -i '^$|(name|version|basedir|vendor|instdate):'")
       application_data.split("\n\n").each do |application|
 
         application = application.split("\n")
@@ -92,7 +96,7 @@ module Boris; module Profiles
       # get list of patch install directories and their modified date.  this will be our de-facto
       # list of installed patches on a host.
 
-      patch_directories = @active_connection.values_at(%q{ls -ego /var/sadm/patch | grep -v '^total' | nawk '{print $NF "|" $4 " " $5 " " $6 " " $7}'})
+      patch_directories = @connector.values_at(%q{ls -ego /var/sadm/patch | grep -v '^total' | nawk '{print $NF "|" $4 " " $5 " " $6 " " $7}'})
 
       patch_directories.each do |directory|
         
@@ -110,7 +114,7 @@ module Boris; module Profiles
     def get_installed_services
       super
 
-      service_data = @active_connection.values_at("svcs -a | nawk '{print $NF}'")
+      service_data = @connector.values_at("svcs -a | nawk '{print $NF}'")
       service_data.each do |service|
         h = installed_service_template
         h[:name] = service
@@ -129,7 +133,7 @@ module Boris; module Profiles
 
       ## ETHERNET
       # first, grab the link properties for all connections via the kstat command
-      link_properties = @active_connection.values_at(%q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}'})
+      link_properties = @connector.values_at(%q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}'})
 
       # now create a definitive list of interfaces found on this host.  to do this, we pull
       # the interfaces from the link_properties (kstat cmd) output.
@@ -142,14 +146,14 @@ module Boris; module Profiles
       if found_ethernet_interfaces.any?
 
         # get some basic info that will apply to all ethernet interfaces
-        dns_servers = @active_connection.values_at("cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'")
+        dns_servers = @connector.values_at("cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'")
 
         # then get ethernet interface config from ifconfig
-        interface_configs = @active_connection.values_at(%q{/sbin/ifconfig -a | egrep 'flags|inet|zone' | nawk '{if($2~/^flags/ && $1!~/^(lo|dman|sppp)/) {current_line=$0; getline; {if($1!~/^zone/) {$1=$1; print current_line "\n" $0 "\n"}}}}'}).join("\n").strip.split(/\n\n/)
+        interface_configs = @connector.values_at(%q{/sbin/ifconfig -a | egrep 'flags|inet|zone' | nawk '{if($2~/^flags/ && $1!~/^(lo|dman|sppp)/) {current_line=$0; getline; {if($1!~/^zone/) {$1=$1; print current_line "\n" $0 "\n"}}}}'}).join("\n").strip.split(/\n\n/)
 
         # now get the macs of active ethernet connections (for backup in cases where we
         # can't get macs from prtpicl)
-        mac_mapping = @active_connection.values_at(%q{/usr/bin/netstat -pn | grep SP | nawk '{print $1 "|" $2 "|" toupper($5)}'})
+        mac_mapping = @connector.values_at(%q{/usr/bin/netstat -pn | grep SP | nawk '{print $1 "|" $2 "|" toupper($5)}'})
 
         # if this host is in a child zone, drop any interfaces that are not found in the ifconfig
         # command output (since these would likely be picked up when scanning the zone host)
@@ -198,7 +202,7 @@ module Boris; module Profiles
 
             prtpicl_command.gsub!(/network/, 'obp-device') if @platform == :x86
 
-            hardware_details = @active_connection.values_at(prtpicl_command).join("\n").split(/\n\n/)
+            hardware_details = @connector.values_at(prtpicl_command).join("\n").split(/\n\n/)
 
             hardware = hardware_details.grep(/driver-name\|.*#{fi[:driver]}/).grep(/instance\|.*#{fi[:instance]}/)[0].split(/\n/)
 
@@ -246,7 +250,7 @@ module Boris; module Profiles
       end
 
       ## FIBRE CHANNEL
-      found_fibre_interfaces = @active_connection.values_at(%q{/usr/local/bin/sudo /usr/sbin/fcinfo hba-port | egrep -i "wwn|device name|model|manufacturer|driver name|state|current speed" | nawk '{$1=$1; if(tolower($1) ~ /^node/) print $0 "\n"; else print $0;}'})
+      found_fibre_interfaces = @connector.values_at(%q{/usr/local/bin/sudo /usr/sbin/fcinfo hba-port | egrep -i "wwn|device name|model|manufacturer|driver name|state|current speed" | nawk '{$1=$1; if(tolower($1) ~ /^node/) print $0 "\n"; else print $0;}'})
       found_fibre_interfaces = found_fibre_interfaces.join("\n").split(/\n\n/)
       
       found_fibre_interfaces.each do |hba|
@@ -275,10 +279,10 @@ module Boris; module Profiles
     def get_operating_system
       super
 
-      install_log_date = @active_connection.value_at("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}")
+      install_log_date = @connector.value_at("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}")
       @operating_system[:date_installed] = DateTime.parse(install_log_date)
 
-      os_data = @active_connection.value_at('uname -rv').split
+      os_data = @connector.value_at('uname -rv').split
       @operating_system[:kernel] = os_data[1]
       @operating_system[:name] = 'Oracle Solaris'
       @operating_system[:version] = os_data[0]
@@ -287,12 +291,12 @@ module Boris; module Profiles
     private
     
     def detect_platform
-      platform = @active_connection.values_at('showrev').grep(/application architecture/i)[0].after_colon
+      platform = @connector.values_at('showrev').grep(/application architecture/i)[0].after_colon
       @platform = platform =~ /sparc/i ? :sparc : :x86
     end
 
     def detect_zone
-      zone = @active_connection.values_at('/usr/sbin/zoneadm list')
+      zone = @connector.values_at('/usr/sbin/zoneadm list')
       @zone = zone.include?('global') ? :global : :child
     end
   end

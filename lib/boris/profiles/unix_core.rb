@@ -4,15 +4,19 @@ module Boris; module Profiles
   module UNIX
     include Structure
 
-    def self.matches_target?(active_connection)
-      return true if active_connection.value_at('uname -a') !~ /linux/i
+    def self.connection_type
+      Boris::SSHConnector
+    end
+
+    def self.matches_target?(connector)
+      return true if connector.value_at('uname -a') !~ /linux/i
     end
 
     def get_file_systems
       super
 
       file_system_command = %q{df -kl 2>/dev/null | grep ^/ | nawk '{print $1 "|" $2 / 1024 "|" $3 / 1024 "|" $6}'}
-      @active_connection.values_at(file_system_command).each do |file_system|
+      @connector.values_at(file_system_command).each do |file_system|
         h = file_system_template
         file_system = file_system.split('|')
 
@@ -34,8 +38,8 @@ module Boris; module Profiles
     def get_local_user_groups
       super
 
-      user_data = @active_connection.values_at('cat /etc/passwd')
-      group_data = @active_connection.values_at('cat /etc/group')
+      user_data = @connector.values_at('cat /etc/passwd')
+      group_data = @connector.values_at('cat /etc/group')
 
       users = []
       groups = []
@@ -62,8 +66,8 @@ module Boris; module Profiles
     def get_network_id
       super
 
-      hostname = @active_connection.value_at('hostname')
-      domain = @active_connection.value_at('domainname')
+      hostname = @connector.value_at('hostname')
+      domain = @connector.value_at('domainname')
       domain = nil if domain =~ /\(none\)/i
       
       if hostname =~ /\./

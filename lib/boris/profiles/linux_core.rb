@@ -4,15 +4,19 @@ module Boris; module Profiles
   module Linux
     include Structure
 
-    def self.matches_target?(active_connection)
-      return true if active_connection.value_at('uname -a') =~ /linux/i
+    def self.connection_type
+      Boris::SSHConnector
+    end
+
+    def self.matches_target?(connector)
+      return true if connector.value_at('uname -a') =~ /linux/i
     end
 
     def get_file_systems
       super
 
       file_system_command = %q{df -P -T | grep "^/" | awk '{print $1 "|" $3 / 1024 "|" $5 / 1024 "|" $7}'}
-      @active_connection.values_at(file_system_command).each do |file_system|
+      @connector.values_at(file_system_command).each do |file_system|
         h = file_system_template
         file_system = file_system.split("|")
 
@@ -28,20 +32,20 @@ module Boris; module Profiles
     def get_hardware
       super
 
-      cpu_arch_data = @active_connection.value_at('uname -m')
+      cpu_arch_data = @connector.value_at('uname -m')
       @hardware[:cpu_architecture] = cpu_arch_data =~ /ia|_(64)/ ? 64 : 32
 
-      cpu_data = @active_connection.values_at('cat /proc/cpuinfo | egrep -i "processor|vendor|mhz|name|cores"')
+      cpu_data = @connector.values_at('cat /proc/cpuinfo | egrep -i "processor|vendor|mhz|name|cores"')
       @hardware[:cpu_physical_count] = cpu_data.grep(/processor/i).last.after_colon.to_i + 1
       @hardware[:cpu_core_count] = cpu_data.grep(/cpu cores/i)[0].after_colon.to_i
       @hardware[:cpu_model] = cpu_data.grep(/model name/i)[0].after_colon
       @hardware[:cpu_vendor] = cpu_data.grep(/vendor_id/i)[0].after_colon
       @hardware[:cpu_speed_mhz] = cpu_data.grep(/cpu mhz/i)[0].after_pipe.to_i
 
-      memory_data = @active_connection.value_at("cat /proc/meminfo | grep -i memtotal | awk '{print $2 / 1024}'")
+      memory_data = @connector.value_at("cat /proc/meminfo | grep -i memtotal | awk '{print $2 / 1024}'")
       @hardware[:memory_installed_mb] = memory_data.to_i
 
-      hardware_data = @active_connection.values_at('/usr/bin/sudo /usr/sbin/dmidecode -t 0,1,4')
+      hardware_data = @connector.values_at('/usr/bin/sudo /usr/sbin/dmidecode -t 0,1,4')
       if hardware_data.any?
         # grab the cpu speed again (because its value is usually more useful/relevant than that found via /proc/cpuinfo)
         @hardware[:cpu_speed_mhz] = hardware_data.grep(/current speed/i)[0].after_colon.scan(/\d/).join.to_i
@@ -62,8 +66,8 @@ module Boris; module Profiles
     def get_local_user_groups
       super
 
-      user_data = @active_connection.values_at('cat /etc/passwd')
-      group_data = @active_connection.values_at('cat /etc/group')
+      user_data = @connector.values_at('cat /etc/passwd')
+      group_data = @connector.values_at('cat /etc/group')
 
       users = []
       groups = []
@@ -90,8 +94,8 @@ module Boris; module Profiles
     def get_network_id
       super
 
-      hostname = @active_connection.value_at('hostname')
-      domain = @active_connection.value_at('domainname')
+      hostname = @connector.value_at('hostname')
+      domain = @connector.value_at('domainname')
       domain = nil if domain =~ /\(none\)/i
       
       if hostname =~ /\./
@@ -107,20 +111,20 @@ module Boris; module Profiles
       super
 
       # grab the make/model/slot info for all ethernet/fc ports
-      ports = @active_connection.values_at('/sbin/lspci -mmv | egrep -i "class:[[:space:]]*(ethernet controller|fibre channel)" -B1 -A5')
+      ports = @connector.values_at('/sbin/lspci -mmv | egrep -i "class:[[:space:]]*(ethernet controller|fibre channel)" -B1 -A5')
 
       ## ETHERNET
       # get some basic info that will apply to all ethernet interfaces
-      dns_servers = @active_connection.values_at("cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'")
+      dns_servers = @connector.values_at("cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'")
 
       found_ethernet_interfaces = ports.join("\n").split('--').grep(/ethernet controller/i)
       found_fibre_interfaces = ports.join("\n").split('--').grep(/fibre channel/i)
 
       if found_ethernet_interfaces.any?
         # get info on all ethernet interfaces
-        ethernet_mapping_data = @active_connection.values_at(%q{ls /sys/class/net | awk '{cmd="readlink -f /sys/class/net/" $1 "/device/"; cmd | getline link; print $1 "|" link}'})
-        link_properties = @active_connection.values_at(%q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
-        ip_addr_data = @active_connection.values_at('/sbin/ip addr')
+        ethernet_mapping_data = @connector.values_at(%q{ls /sys/class/net | awk '{cmd="readlink -f /sys/class/net/" $1 "/device/"; cmd | getline link; print $1 "|" link}'})
+        link_properties = @connector.values_at(%q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
+        ip_addr_data = @connector.values_at('/sbin/ip addr')
 
         found_ethernet_interfaces.each do |interface|
           interface = interface.split("\n")
@@ -163,8 +167,8 @@ module Boris; module Profiles
       end
 
       if found_fibre_interfaces.any?
-        fibre_mapping_data = @active_connection.values_at("find /sys/devices/pci* -regex '.*fc_host/host[0-9]'")
-        interface_config = @active_connection.values_at(%q{find -L /sys/class/fc_host/ -mindepth 2 -maxdepth 2 | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
+        fibre_mapping_data = @connector.values_at("find /sys/devices/pci* -regex '.*fc_host/host[0-9]'")
+        interface_config = @connector.values_at(%q{find -L /sys/class/fc_host/ -mindepth 2 -maxdepth 2 | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
 
         found_fibre_interfaces.each do |interface|
           interface = interface.split("\n")

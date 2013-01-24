@@ -4,8 +4,12 @@ module Boris; module Profiles
     module RedHat
       include Linux
 
-      def self.matches_target?(active_connection)
-        return true if active_connection.value_at(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1') =~ /redhat/i})
+      def self.connection_type
+        Linux.connection_type
+      end
+
+      def self.matches_target?(connector)
+        return true if connector.value_at(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}) =~ /redhat/i
       end
 
       def get_file_systems; super; end
@@ -20,7 +24,7 @@ module Boris; module Profiles
       def get_installed_applications
         super
         
-        application_data = @active_connection.values_at("rpm -qa --queryformat '%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n' | sort")
+        application_data = @connector.values_at("rpm -qa --queryformat '%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n' | sort")
 
         application_data.each do |application|
           application = application.split('|')
@@ -40,7 +44,7 @@ module Boris; module Profiles
 
       def get_installed_services
         super
-        service_data = @active_connection.values_at('/sbin/chkconfig --list')
+        service_data = @connector.values_at('/sbin/chkconfig --list')
 
         service_data.each do |service|
           h = installed_service_template
@@ -57,9 +61,9 @@ module Boris; module Profiles
       def get_operating_system
         super
 
-        os_install_date = @active_connection.value_at("rpm -qa basesystem --queryformat '%{INSTALLTIME:date}\n'")
-        kernel_version = @active_connection.value_at('uname -r')
-        os_data = @active_connection.values_at('lsb_release -a | egrep -i "description|release"')
+        os_install_date = @connector.value_at("rpm -qa basesystem --queryformat '%{INSTALLTIME:date}\n'")
+        kernel_version = @connector.value_at('uname -r')
+        os_data = @connector.values_at('lsb_release -a | egrep -i "description|release"')
 
         @operating_system[:date_installed] = DateTime.parse(os_install_date)
         @operating_system[:kernel] = kernel_version
