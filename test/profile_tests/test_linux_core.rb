@@ -3,9 +3,9 @@ require 'setup_tests'
 class LinuxCoreTest < ProfileTestSetup
   context 'a Linux target' do
     setup do
-      @active_connection = @target.active_connection = instance_of(SSHConnector)
+      @connector = @target.connector = instance_of(SSHConnector)
       
-      @active_connection.stubs(:value_at).with('uname -a').returns('GNU/Linux')
+      @connector.stubs(:value_at).with('uname -a').returns('GNU/Linux')
       @target.options[:profiles] = [Profiles::Linux]
       @target.detect_profile
     end
@@ -42,7 +42,7 @@ class LinuxCoreTest < ProfileTestSetup
         should 'return file system information via #get_file_systems' do
           file_system_command = %q{df -P -T | grep "^/" | awk '{print $1 "|" $3 / 1024 "|" $5 / 1024 "|" $7}'}
 
-          @active_connection.stubs(:values_at).with(file_system_command).returns(@file_system_data)
+          @connector.stubs(:values_at).with(file_system_command).returns(@file_system_data)
 
           @target.get_file_systems
 
@@ -53,10 +53,10 @@ class LinuxCoreTest < ProfileTestSetup
       context 'for hardware information' do
         setup do
           @cpu_arch_command = 'uname -m'
-          @active_connection.stubs(:value_at).with(@cpu_arch_command).returns('x86_64')
+          @connector.stubs(:value_at).with(@cpu_arch_command).returns('x86_64')
 
           @memory_command = "cat /proc/meminfo | grep -i memtotal | awk '{print $2 / 1024}'"
-          @active_connection.stubs(:value_at).with(@memory_command).returns('1024')
+          @connector.stubs(:value_at).with(@memory_command).returns('1024')
           
           @cpu_command = 'cat /proc/cpuinfo | egrep -i "processor|vendor|mhz|name|cores"'
           @cpu_data = %q{
@@ -71,7 +71,7 @@ class LinuxCoreTest < ProfileTestSetup
             cpu MHz         : 2212.0
             cpu cores       : 2
           }.split(/\n/)
-          @active_connection.stubs(:values_at).with(@cpu_command).returns(@cpu_data)
+          @connector.stubs(:values_at).with(@cpu_command).returns(@cpu_data)
           
           @dmidecode_command = '/usr/bin/sudo /usr/sbin/dmidecode -t 0,1,4'
           @dmidecode_data = %q{
@@ -82,7 +82,7 @@ class LinuxCoreTest < ProfileTestSetup
             Manufacturer: AuthenticAMD
             Current Speed: 2200 MHz
           }.split(/\n/)
-          @active_connection.stubs(:values_at).with(@dmidecode_command).returns(@dmidecode_data)
+          @connector.stubs(:values_at).with(@dmidecode_command).returns(@dmidecode_data)
 
           @expected_data = {
             :cpu_architecture=>64,
@@ -133,8 +133,8 @@ class LinuxCoreTest < ProfileTestSetup
         end
 
         should 'return local user groups and accounts via #get_local_user_groups if the server is not a domain controller' do
-          @active_connection.stubs(:values_at).with('cat /etc/passwd').returns(@user_data)
-          @active_connection.stubs(:values_at).with('cat /etc/group').returns(@group_data)
+          @connector.stubs(:values_at).with('cat /etc/passwd').returns(@user_data)
+          @connector.stubs(:values_at).with('cat /etc/group').returns(@group_data)
 
           @target.get_local_user_groups
 
@@ -148,8 +148,8 @@ class LinuxCoreTest < ProfileTestSetup
         end
 
         should 'return the domain and hostname via #get_network_id' do
-          @active_connection.stubs(:value_at).with('hostname').returns(@expected_data[:hostname])
-          @active_connection.stubs(:value_at).with('domainname').returns(@expected_data[:domain])
+          @connector.stubs(:value_at).with('hostname').returns(@expected_data[:hostname])
+          @connector.stubs(:value_at).with('domainname').returns(@expected_data[:domain])
 
           @target.get_network_id
 
@@ -166,7 +166,7 @@ class LinuxCoreTest < ProfileTestSetup
 
           @dns_server_command = "cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'"
           @dns_server_data = ['192.168.1.1', '192.168.1.2']
-          @active_connection.stubs(:values_at).with(@dns_server_command).returns(@dns_server_data)
+          @connector.stubs(:values_at).with(@dns_server_command).returns(@dns_server_data)
 
           @fibre_mapping_command = "find /sys/devices/pci* -regex '.*fc_host/host[0-9]'"
           @fibre_config_command = %q{find -L /sys/class/fc_host/ -mindepth 2 -maxdepth 2 | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'}
@@ -218,13 +218,13 @@ class LinuxCoreTest < ProfileTestSetup
             SDevice:        VMXNET Ethernet Controller
             PhySlot:        33
           }.split(/\n/)
-          @active_connection.stubs(:values_at).with(@hardware_command).returns(hardware_data)
+          @connector.stubs(:values_at).with(@hardware_command).returns(hardware_data)
 
           ethernet_mapping_data = [
             'eth0|/sys/devices/pci0000:00/0000:00:11.0/0000:02:00.0',
             'eth1|/sys/devices/pci0000:00/0000:00:11.0/0000:02:01.0'
           ]
-          @active_connection.stubs(:values_at).with(@ethernet_mapping_command).returns(ethernet_mapping_data)
+          @connector.stubs(:values_at).with(@ethernet_mapping_command).returns(ethernet_mapping_data)
 
           link_properties = %q{
             /sys/class/net/eth0/address|01:01:01:01:01:01
@@ -240,7 +240,7 @@ class LinuxCoreTest < ProfileTestSetup
             /sys/class/net/eth1/operstate|down
             /sys/class/net/eth1/mtu|1500
           }.split(/\n/)
-          @active_connection.stubs(:values_at).with(@link_properties_command).returns(link_properties)
+          @connector.stubs(:values_at).with(@link_properties_command).returns(link_properties)
 
           ip_addr_data = %q{
             1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue
@@ -259,7 +259,7 @@ class LinuxCoreTest < ProfileTestSetup
             3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast state DOWN qlen 1000
               link/ether 01:01:01:01:01:01 brd ff:ff:ff:ff:ff:ff
           }.split(/\n/)
-          @active_connection.stubs(:values_at).with(@ip_addr_command).returns(ip_addr_data)
+          @connector.stubs(:values_at).with(@ip_addr_command).returns(ip_addr_data)
 
           @target.get_network_interfaces
           assert_equal(@expected_data, @target.network_interfaces)
@@ -297,10 +297,10 @@ class LinuxCoreTest < ProfileTestSetup
             SDevice:        Device 0149
             Rev:    02
           }.split(/\n/)
-          @active_connection.stubs(:values_at).with(@hardware_command).returns(hardware_data)
+          @connector.stubs(:values_at).with(@hardware_command).returns(hardware_data)
 
           fibre_mapping_data = ['/sys/devices/pci0000:04/0000:04:09.0/0000:05:0d.0/host1/fc_host/host1']
-          @active_connection.stubs(:values_at).with(@fibre_mapping_command).returns(fibre_mapping_data)
+          @connector.stubs(:values_at).with(@fibre_mapping_command).returns(fibre_mapping_data)
 
           fibre_config_data = %q{
             /sys/class/fc_host/host1/node_name|0x00000000aaaaaaaa
@@ -309,7 +309,7 @@ class LinuxCoreTest < ProfileTestSetup
             /sys/class/fc_host/host1/speed|2 Gbit
             /sys/class/fc_host/host1/fabric_name|0x00000000aaaaaaaa
           }.strip.split(/\n/)
-          @active_connection.stubs(:values_at).with(@fibre_config_command).returns(fibre_config_data)
+          @connector.stubs(:values_at).with(@fibre_config_command).returns(fibre_config_data)
 
           @target.get_network_interfaces
           assert_equal(@expected_data, @target.network_interfaces)

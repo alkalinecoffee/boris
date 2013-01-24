@@ -3,9 +3,9 @@ require 'setup_tests'
 class UNIXCoreTest < ProfileTestSetup
   context 'a UNIX target' do
     setup do
-      @active_connection = @target.active_connection = instance_of(SSHConnector)
+      @connector = @target.connector = instance_of(SSHConnector)
       
-      @active_connection.stubs(:value_at).with('uname -a').returns('some_flavor_of_unix')
+      @connector.stubs(:value_at).with('uname -a').returns('some_flavor_of_unix')
       @target.options[:profiles] = [Profiles::UNIX]
       @target.detect_profile
     end
@@ -42,7 +42,7 @@ class UNIXCoreTest < ProfileTestSetup
         should 'return file system information via #get_file_systems' do
           file_system_command = %q{df -kl 2>/dev/null | grep ^/ | nawk '{print $1 "|" $2 / 1024 "|" $3 / 1024 "|" $6}'}
 
-          @active_connection.stubs(:values_at).with(file_system_command).returns(@file_system_data)
+          @connector.stubs(:values_at).with(file_system_command).returns(@file_system_data)
 
           @target.get_file_systems
 
@@ -82,8 +82,8 @@ class UNIXCoreTest < ProfileTestSetup
         end
 
         should 'return local user groups and accounts via #get_local_user_groups if the server is not a domain controller' do
-          @active_connection.stubs(:values_at).with('cat /etc/passwd').returns(@user_data)
-          @active_connection.stubs(:values_at).with('cat /etc/group').returns(@group_data)
+          @connector.stubs(:values_at).with('cat /etc/passwd').returns(@user_data)
+          @connector.stubs(:values_at).with('cat /etc/group').returns(@group_data)
 
           @target.get_local_user_groups
 
@@ -97,8 +97,8 @@ class UNIXCoreTest < ProfileTestSetup
         end
 
         should 'return the domain and hostname via #get_network_id' do
-          @active_connection.stubs(:value_at).with('hostname').returns(@expected_data[:hostname])
-          @active_connection.stubs(:value_at).with('domainname').returns(@expected_data[:domain])
+          @connector.stubs(:value_at).with('hostname').returns(@expected_data[:hostname])
+          @connector.stubs(:value_at).with('domainname').returns(@expected_data[:domain])
 
           @target.get_network_id
 

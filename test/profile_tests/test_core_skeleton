@@ -5,7 +5,7 @@ class WindowsCoreTest < Test::Unit::TestCase
     setup do
       @target_name = '0.0.0.0'
       @target = Target.new(@target_name)
-      @active_connection = @target.active_connection = instance_of(WMIConnector)
+      @connector = @target.connector = instance_of(WMIConnector)
 
       @target.detect_profile
     end

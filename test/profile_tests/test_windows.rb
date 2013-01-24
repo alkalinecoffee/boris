@@ -5,15 +5,19 @@ class WindowsCoreTest < ProfileTestSetup
 
   context 'a Windows target' do
     setup do
-      @active_connection = @target.active_connection = instance_of(WMIConnector)
+      @connector = @target.connector = instance_of(WMIConnector)
 
-      @active_connection.stubs(:value_at).with('SELECT Name FROM Win32_OperatingSystem').returns({:name=>'Windows Server 2008'})
+      @connector.stubs(:value_at).with('SELECT Name FROM Win32_OperatingSystem').returns({:name=>'Windows Server 2008'})
       @target.options[:profiles] = [Profiles::Windows]
       @target.detect_profile
     end
 
     context 'being scanned' do
       setup do
+      end
+
+      should 'error if an invalid limit for query is specified' do
+        asser_raise(ArgumentError, @connector.values_at('select * from something', '5'))
       end
 
       context 'for file system information' do
@@ -59,10 +63,10 @@ class WindowsCoreTest < ProfileTestSetup
         end
 
         should 'return file system information via #get_file_systems' do
-          @active_connection.stubs(:values_at).with(@logical_disks_qry).returns(@logical_disks_data)
-          @active_connection.stubs(:values_at).with(@partition_mapping_qry).returns(@partition_mapping_data)
-          @active_connection.stubs(:values_at).with(@physical_disks_qry).returns(@physical_disks_data)
-          @active_connection.stubs(:values_at).with(@disk_partitions_qry).returns(@disk_partitions_data)
+          @connector.stubs(:values_at).with(@logical_disks_qry).returns(@logical_disks_data)
+          @connector.stubs(:values_at).with(@partition_mapping_qry).returns(@partition_mapping_data)
+          @connector.stubs(:values_at).with(@physical_disks_qry).returns(@physical_disks_data)
+          @connector.stubs(:values_at).with(@disk_partitions_qry).returns(@disk_partitions_data)
 
           @target.get_file_systems
 
@@ -111,9 +115,9 @@ class WindowsCoreTest < ProfileTestSetup
         end
 
         should 'return hardware information via #get_hardware' do
-          @active_connection.stubs(:value_at).with(@bios_qry).returns(@bios_data)
-          @active_connection.stubs(:value_at).with(@model_qry).returns(@model_data)
-          @active_connection.stubs(:values_at).with(@cpu_qry).returns(@cpu_data)
+          @connector.stubs(:value_at).with(@bios_qry).returns(@bios_data)
+          @connector.stubs(:value_at).with(@model_qry).returns(@model_data)
+          @connector.stubs(:values_at).with(@cpu_qry).returns(@cpu_data)
 
           @target.get_hardware
 
@@ -127,7 +131,7 @@ class WindowsCoreTest < ProfileTestSetup
         end
 
         should 'return hosted share information via #get_hosted_shares' do
-          @active_connection.stubs(:values_at).with('SELECT Name, Path FROM Win32_Share WHERE Type = 0').returns(@expected_data)
+          @connector.stubs(:values_at).with('SELECT Name, Path FROM Win32_Share WHERE Type = 0').returns(@expected_data)
           @target.get_hosted_shares
           assert_equal(@expected_data, @target.hosted_shares)
         end
@@ -158,8 +162,8 @@ class WindowsCoreTest < ProfileTestSetup
               key_path = 'SOFTWARE\Microsoft\Microsoft SQL Server'
 
               versions.each do |version|
-                @active_connection.stubs(:registry_subkeys_at).returns(["#{key_path}\\#{version[:instance]}"])
-                @active_connection.stubs(:registry_values_at).with("#{key_path}\\#{version[:code]}\\ProductID").returns({:digitalproductid=>@product_key_binary})
+                @connector.stubs(:registry_subkeys_at).returns(["#{key_path}\\#{version[:instance]}"])
+                @connector.stubs(:registry_values_at).with("#{key_path}\\#{version[:code]}\\ProductID").returns({:digitalproductid=>@product_key_binary})
                 assert_equal(@expected_product_key, @target.get_product_key(version[:name]))
               end
             end
@@ -167,7 +171,7 @@ class WindowsCoreTest < ProfileTestSetup
 
           context 'in the visual studio family' do
             setup do
-              @active_connection.stubs(:registry_values_at).at_least_once.returns({:pidkey=>@expected_product_key.gsub(/-/, '')})
+              @connector.stubs(:registry_values_at).at_least_once.returns({:pidkey=>@expected_product_key.gsub(/-/, '')})
             end
 
             should 'detect the product key for various Visual Studio editions' do
@@ -178,7 +182,7 @@ class WindowsCoreTest < ProfileTestSetup
 
           context "in the exchange/office/windows families" do
             setup do
-              @active_connection.stubs(:registry_values_at).at_least_once.returns({:digitalproductid=>@product_key_binary})
+              @connector.stubs(:registry_values_at).at_least_once.returns({:digitalproductid=>@product_key_binary})
             end
 
             should 'detect the product key for various Exchange editions' do
@@ -218,16 +222,16 @@ class WindowsCoreTest < ProfileTestSetup
             :version=>application_data[:displayversion]
           }
 
-          @active_connection.stubs(:registry_subkeys_at).with(Profiles::Windows::ORACLE_KEYPATH).returns([])
+          @connector.stubs(:registry_subkeys_at).with(Profiles::Windows::ORACLE_KEYPATH).returns([])
 
-          @active_connection.stubs(:registry_subkeys_at).with(Profiles::Windows::APP32_KEYPATH).returns([])
-          @active_connection.stubs(:registry_subkeys_at).with(Profiles::Windows::APP64_KEYPATH).returns([key_path])
+          @connector.stubs(:registry_subkeys_at).with(Profiles::Windows::APP32_KEYPATH).returns([])
+          @connector.stubs(:registry_subkeys_at).with(Profiles::Windows::APP64_KEYPATH).returns([key_path])
 
           sql_key_path = 'SOFTWARE\Microsoft\Microsoft SQL Server'
-          @active_connection.stubs(:registry_subkeys_at).with(sql_key_path).returns(["#{sql_key_path}\\mssql10.1"])
-          @active_connection.stubs(:registry_values_at).with("#{sql_key_path}\\100\\ProductID").returns({})
-          @active_connection.stubs(:registry_values_at).with("#{sql_key_path}\\Setup").returns({})
-          @active_connection.stubs(:registry_values_at).with(key_path).returns(application_data)
+          @connector.stubs(:registry_subkeys_at).with(sql_key_path).returns(["#{sql_key_path}\\mssql10.1"])
+          @connector.stubs(:registry_values_at).with("#{sql_key_path}\\100\\ProductID").returns({})
+          @connector.stubs(:registry_values_at).with("#{sql_key_path}\\Setup").returns({})
+          @connector.stubs(:registry_values_at).with(key_path).returns(application_data)
 
           @target.get_installed_applications
 
@@ -258,11 +262,11 @@ class WindowsCoreTest < ProfileTestSetup
             {:date_installed=>DateTime.parse(registry_patch_data[:installdate]), :installed_by=>nil, :patch_code=>registry_patch_data[:displayname]}
           ]
 
-          @active_connection.stubs(:values_at).returns([wmi_patch_data])
+          @connector.stubs(:values_at).returns([wmi_patch_data])
 
-          @active_connection.stubs(:registry_subkeys_at).with(Profiles::Windows::APP32_KEYPATH).returns([registry_patch_key_path])
-          @active_connection.stubs(:registry_subkeys_at).with(Profiles::Windows::APP64_KEYPATH).returns([])
-          @active_connection.stubs(:registry_values_at).with(registry_patch_key_path).returns(registry_patch_data)
+          @connector.stubs(:registry_subkeys_at).with(Profiles::Windows::APP32_KEYPATH).returns([registry_patch_key_path])
+          @connector.stubs(:registry_subkeys_at).with(Profiles::Windows::APP64_KEYPATH).returns([])
+          @connector.stubs(:registry_values_at).with(registry_patch_key_path).returns(registry_patch_data)
 
           @target.get_installed_patches
 
@@ -286,7 +290,7 @@ class WindowsCoreTest < ProfileTestSetup
         end
 
         should 'return service information via #get_installed_services' do
-          @active_connection.stubs(:values_at).with('SELECT Name, PathName, StartMode FROM Win32_Service').returns(@service_data)
+          @connector.stubs(:values_at).with('SELECT Name, PathName, StartMode FROM Win32_Service').returns(@service_data)
           
           @target.get_installed_services
           assert_equal(@expected_data, @target.installed_services)
@@ -298,7 +302,7 @@ class WindowsCoreTest < ProfileTestSetup
         should 'allow us to detect the user name of an account from its guid via #get_username' do
           user_data = {:caption=>'username', :sid=>'S-1-1-1'}
 
-          @active_connection.stubs(:value_at).with("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{user_data[:sid]}'").returns(user_data)
+          @connector.stubs(:value_at).with("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{user_data[:sid]}'").returns(user_data)
 
           assert_equal(user_data[:caption], @target.get_username(user_data[:sid]))
         end
@@ -318,10 +322,10 @@ class WindowsCoreTest < ProfileTestSetup
           @target.instance_variable_set(:@network_id, {:domain=>'mydomain.com', :hostname=>hostname})
           @target.instance_variable_set(:@system_roles, [])
           
-          @active_connection.stubs(:values_at).with('SELECT Roles FROM Win32_ComputerSystem').returns([{:roles=>[]}])
+          @connector.stubs(:values_at).with('SELECT Roles FROM Win32_ComputerSystem').returns([{:roles=>[]}])
 
-          @active_connection.stubs(:values_at).with("SELECT Name FROM Win32_Group WHERE Domain = '#{hostname}'").returns([{:name=>'Users'}])
-          @active_connection.stubs(:values_at).with("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{hostname}',Name='#{group}'\"").returns(wmi_member_data)
+          @connector.stubs(:values_at).with("SELECT Name FROM Win32_Group WHERE Domain = '#{hostname}'").returns([{:name=>'Users'}])
+          @connector.stubs(:values_at).with("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{hostname}',Name='#{group}'\"").returns(wmi_member_data)
 
           @target.get_local_user_groups
 
@@ -335,7 +339,7 @@ class WindowsCoreTest < ProfileTestSetup
         end
 
         should 'return the domain and hostname via #get_network_id' do
-          @active_connection.stubs(:value_at).with('SELECT Domain, Name FROM Win32_ComputerSystem').returns(@expected_data)
+          @connector.stubs(:value_at).with('SELECT Domain, Name FROM Win32_ComputerSystem').returns(@expected_data)
           @target.get_network_id
 
           assert_equal(@target.network_id[:domain], @expected_data[:domain])
@@ -383,8 +387,8 @@ class WindowsCoreTest < ProfileTestSetup
 
           expected_ethernet_data = @expected_ethernet_data[0]
           
-          @active_connection.stubs(:values_at).with('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi).returns([])
-          @active_connection.stubs(:values_at).with('SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes', :root_wmi).returns([])
+          @connector.stubs(:values_at).with('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi).returns([])
+          @connector.stubs(:values_at).with('SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes', :root_wmi).returns([])
 
           ethernet_guid = '{1234ABCD}'
           nic_keypath = Profiles::Windows::NIC_CFG_KEYPATH
@@ -397,7 +401,7 @@ class WindowsCoreTest < ProfileTestSetup
             :productname=>expected_ethernet_data[:model]
           }]
 
-          @active_connection.stubs(:values_at).with('SELECT Index, MACAddress, Manufacturer, NetConnectionID, NetConnectionStatus, ProductName FROM Win32_NetworkAdapter WHERE NetConnectionID IS NOT NULL').returns(ethernet_data)
+          @connector.stubs(:values_at).with('SELECT Index, MACAddress, Manufacturer, NetConnectionID, NetConnectionStatus, ProductName FROM Win32_NetworkAdapter WHERE NetConnectionID IS NOT NULL').returns(ethernet_data)
 
           adapter_config_data = {
             :dnsserversearchorder=>expected_ethernet_data[:dns_servers],
@@ -405,30 +409,30 @@ class WindowsCoreTest < ProfileTestSetup
             :ipsubnet=>expected_ethernet_data[:ip_addresses].collect{|ip| ip[:subnet]}[0],
             :settingid=>ethernet_guid
           }
-          @active_connection.stubs(:value_at).with("SELECT DNSServerSearchOrder, IPAddress, IPSubnet, SettingID FROM Win32_NetworkAdapterConfiguration WHERE Index = #{ethernet_data[0][:index]}").returns(adapter_config_data)
+          @connector.stubs(:value_at).with("SELECT DNSServerSearchOrder, IPAddress, IPSubnet, SettingID FROM Win32_NetworkAdapterConfiguration WHERE Index = #{ethernet_data[0][:index]}").returns(adapter_config_data)
 
           enum_adapter_data = {:devicename=>"\\DEVICE\\#{ethernet_guid}", :instancename=>expected_ethernet_data[:model]}
 
           nic_cfg_path = nic_keypath + "\\0001"
 
-          @active_connection.stubs(:registry_values_at).with(nic_cfg_path + '\Linkage').returns(:export=>enum_adapter_data[:devicename])
+          @connector.stubs(:registry_values_at).with(nic_cfg_path + '\Linkage').returns(:export=>enum_adapter_data[:devicename])
 
-          @active_connection.stubs(:registry_values_at).with(nic_cfg_path).returns({:matchingdeviceid=>'pci\\ven_1234&dev_1234', :speedduplex=>1})
-          @active_connection.stubs(:registry_subkeys_at).with(nic_cfg_path + "\\Ndi\\params").returns([nic_cfg_path + '\\SpeedDuplex'])
-          @active_connection.stubs(:registry_values_at).with(nic_cfg_path + "\\Ndi\\params\\speedduplex\\Enum").returns({'1'.to_sym=>'1000Mbps/Full Duplex'})
+          @connector.stubs(:registry_values_at).with(nic_cfg_path).returns({:matchingdeviceid=>'pci\\ven_1234&dev_1234', :speedduplex=>1})
+          @connector.stubs(:registry_subkeys_at).with(nic_cfg_path + "\\Ndi\\params").returns([nic_cfg_path + '\\SpeedDuplex'])
+          @connector.stubs(:registry_values_at).with(nic_cfg_path + "\\Ndi\\params\\speedduplex\\Enum").returns({'1'.to_sym=>'1000Mbps/Full Duplex'})
 
-          @active_connection.stubs(:value_at).with("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{enum_adapter_data[:devicename]}'", :root_wmi).returns(enum_adapter_data)
+          @connector.stubs(:value_at).with("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{enum_adapter_data[:devicename]}'", :root_wmi).returns(enum_adapter_data)
           linkspeed_data = {:instancename=>expected_ethernet_data[:model], :ndislinkspeed=>10000000}
-          @active_connection.stubs(:value_at).with("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{expected_ethernet_data[:model]}'", :root_wmi).returns(linkspeed_data)
+          @connector.stubs(:value_at).with("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{expected_ethernet_data[:model]}'", :root_wmi).returns(linkspeed_data)
 
-          @active_connection.stubs(:registry_values_at).with(Profiles::Windows::TCPIP_CFG_KEYPATH + "\\#{ethernet_guid}").returns({:mtu=>1400})
+          @connector.stubs(:registry_values_at).with(Profiles::Windows::TCPIP_CFG_KEYPATH + "\\#{ethernet_guid}").returns({:mtu=>1400})
 
           @target.get_network_interfaces
           assert_equal(@expected_ethernet_data, @target.network_interfaces)
         end
 
         should 'return fibre channel interface information via #get_network_interfaces' do
-          @active_connection.stubs(:values_at).with('SELECT Index, MACAddress, Manufacturer, NetConnectionID, NetConnectionStatus, ProductName FROM Win32_NetworkAdapter WHERE NetConnectionID IS NOT NULL').returns([])
+          @connector.stubs(:values_at).with('SELECT Index, MACAddress, Manufacturer, NetConnectionID, NetConnectionStatus, ProductName FROM Win32_NetworkAdapter WHERE NetConnectionID IS NOT NULL').returns([])
 
           hba_data = {
             :instancename=>'pci\\ven_1234&dev_1234',
@@ -445,9 +449,9 @@ class WindowsCoreTest < ProfileTestSetup
             :portwwn=>wwn
           }
 
-          @active_connection.stubs(:values_at).with('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi).returns([hba_data])
+          @connector.stubs(:values_at).with('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi).returns([hba_data])
 
-          @active_connection.stubs(:values_at).with("SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes", :root_wmi).returns([hba_profile])
+          @connector.stubs(:values_at).with("SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes", :root_wmi).returns([hba_profile])
 
           @target.get_network_interfaces
 
@@ -473,8 +477,8 @@ class WindowsCoreTest < ProfileTestSetup
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 148, 135, 143, 209]
 
-          @active_connection.stubs(:value_at).with('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem').returns(@os_data)
-          @active_connection.stubs(:registry_values_at).with('SOFTWARE\Microsoft\Windows NT\CurrentVersion').returns({:digitalproductid=>product_key_binary})
+          @connector.stubs(:value_at).with('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem').returns(@os_data)
+          @connector.stubs(:registry_values_at).with('SOFTWARE\Microsoft\Windows NT\CurrentVersion').returns({:digitalproductid=>product_key_binary})
 
           @expected_data = {
             :date_installed=>DateTime.parse(@os_data[:installdate]),
@@ -498,13 +502,13 @@ class WindowsCoreTest < ProfileTestSetup
             @target.extend(Profiles::Windows::Windows2008)
             @features_qry = 'SELECT Name FROM Win32_ServerFeature'
             @features_data = [{:name=>'File Server'}, {:name=>'Print Server'}]
-            @active_connection.stubs(:values_at).with(@features_qry).returns(@features_data)
+            @connector.stubs(:values_at).with(@features_qry).returns(@features_data)
 
             @expected_data[:features] = @features_data.map{|h| h[:name]}
           end
 
           should 'return the enabled OS features of the OS (only for windows 2008)' do
-            @active_connection.stubs(:values_at).with(@features_qry).returns(@features_data)
+            @connector.stubs(:values_at).with(@features_qry).returns(@features_data)
             @target.get_operating_system
             assert_equal(@expected_data, @target.operating_system)
           end
@@ -521,14 +525,14 @@ class WindowsCoreTest < ProfileTestSetup
       #       'TerminalServicesLicenseServer'
       #     ]
 
-      #     @active_connection.stubs(:value_at).with('SELECT Roles FROM Win32_ComputerSystem').returns({:roles=>['Primary_Domain_Controller']})
-      #     @active_connection.stubs(:registry_values_at).with(Profiles::Windows::IIS_KEYPATH).returns({:majorversion=>7})
+      #     @connector.stubs(:value_at).with('SELECT Roles FROM Win32_ComputerSystem').returns({:roles=>['Primary_Domain_Controller']})
+      #     @connector.stubs(:registry_values_at).with(Profiles::Windows::IIS_KEYPATH).returns({:majorversion=>7})
       #     oracle_key = "#{Profiles::Windows::ORACLE_KEYPATH}\\KEY_OracleHome11g"
-      #     @active_connection.stubs(:registry_subkeys_at).with(Profiles::Windows::ORACLE_KEYPATH).returns([oracle_key])
-      #     @active_connection.stubs(:registry_values_at).with(oracle_key).returns({:oracle_group_name=>'Oracle - Orahome11g'})
+      #     @connector.stubs(:registry_subkeys_at).with(Profiles::Windows::ORACLE_KEYPATH).returns([oracle_key])
+      #     @connector.stubs(:registry_values_at).with(oracle_key).returns({:oracle_group_name=>'Oracle - Orahome11g'})
 
-      #     @active_connection.stubs(:value_at).with('SELECT TerminalServerMode FROM Win32_TerminalServiceSetting').returns({:terminalservermode=>1})
-      #     @active_connection.stubs(:value_at).with("SELECT * FROM Win32_Service WHERE Caption = 'Terminal Server Licensing'").returns(true)
+      #     @connector.stubs(:value_at).with('SELECT TerminalServerMode FROM Win32_TerminalServiceSetting').returns({:terminalservermode=>1})
+      #     @connector.stubs(:value_at).with("SELECT * FROM Win32_Service WHERE Caption = 'Terminal Server Licensing'").returns(true)
 
       #     @target.get_system_roles
       #   end

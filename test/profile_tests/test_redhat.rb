@@ -3,9 +3,9 @@ require 'setup_tests'
 class RedHatCoreTest < ProfileTestSetup
   context 'a RedHat target' do
     setup do
-      @active_connection = @target.active_connection = instance_of(SSHConnector)
+      @connector = @target.connector = instance_of(SSHConnector)
 
-      @active_connection.stubs(:value_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1') =~ /redhat/i}).returns('redhat')
+      @connector.stubs(:value_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).returns('redhat')
       @target.options[:profiles] = [Profiles::RedHat]
       @target.detect_profile
     end
@@ -60,7 +60,7 @@ class RedHatCoreTest < ProfileTestSetup
         should 'return installed applications via #get_installed_applications' do
           application_command = "rpm -qa --queryformat '%{NAME}|%{VERSION}|%{VENDOR}|%{ARCH}|%{INSTALLTIME:date}\n' | sort"
 
-          @active_connection.stubs(:values_at).with(application_command).returns(@application_data)
+          @connector.stubs(:values_at).with(application_command).returns(@application_data)
 
           @target.get_installed_applications
           assert_equal(@expected_data, @target.installed_applications)
@@ -80,7 +80,7 @@ class RedHatCoreTest < ProfileTestSetup
         end
 
         should 'return service information via #get_installed_services' do
-          @active_connection.stubs(:values_at).with('/sbin/chkconfig --list').returns(@expected_data.collect{|svc| svc[:name]})
+          @connector.stubs(:values_at).with('/sbin/chkconfig --list').returns(@expected_data.collect{|svc| svc[:name]})
 
           @target.get_installed_services
           assert_equal(@expected_data, @target.installed_services)
@@ -122,9 +122,9 @@ class RedHatCoreTest < ProfileTestSetup
         end
 
         should 'return operating system information via #get_operating_system' do
-          @active_connection.stubs(:value_at).with("rpm -qa basesystem --queryformat '%{INSTALLTIME:date}\n'").returns(@os_install_date)
-          @active_connection.stubs(:value_at).with('uname -r').returns(@kernel_data)
-          @active_connection.stubs(:values_at).with('lsb_release -a | egrep -i "description|release"').returns(@os_data)
+          @connector.stubs(:value_at).with("rpm -qa basesystem --queryformat '%{INSTALLTIME:date}\n'").returns(@os_install_date)
+          @connector.stubs(:value_at).with('uname -r').returns(@kernel_data)
+          @connector.stubs(:values_at).with('lsb_release -a | egrep -i "description|release"').returns(@os_data)
           
           @target.get_operating_system
           assert_equal(@expected_data, @target.operating_system)

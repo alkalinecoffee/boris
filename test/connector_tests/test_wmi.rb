@@ -5,7 +5,7 @@ class WMITest < Test::Unit::TestCase
     setup do
       @target_name = '0.0.0.0'
       @cred = {:user=>'someuser', :password=>'somepass'}
-      @active_connection = WMIConnector.new(@target_name, @cred, Options.new)
+      @connector = WMIConnector.new(@target_name, @cred, Options.new)
 
       @win32ole = mock('WIN32OLE')
 
@@ -16,7 +16,7 @@ class WMITest < Test::Unit::TestCase
       end
       @win32ole.stubs(:Get).with('StdRegProv').returns(@win32ole)
       
-      @active_connection.establish_connection
+      @connector.establish_connection
     end
 
     context 'to which we have already connected' do
@@ -32,13 +32,13 @@ class WMITest < Test::Unit::TestCase
       should 'allow us to get property values with a wmi query from the cimv2 namespace via #execute' do
         @property.stubs(:Name).returns('Name')
         @property.stubs(:Value).returns('Windows Server 2008')
-        assert_equal({:name=>'Windows Server 2008'}, @active_connection.value_at('SELECT Name FROM Win32_OperatingSystem'))
+        assert_equal({:name=>'Windows Server 2008'}, @connector.value_at('SELECT Name FROM Win32_OperatingSystem'))
       end
 
       should 'allow us to get property values with a wmi query from the root wmi namespace via #execute' do
         @property.stubs(:Name).returns('InstanceName')
         @property.stubs(:Value).returns('VMware Accelerated AMD PCNet Adapter')
-        assert_equal([:instancename=>'VMware Accelerated AMD PCNet Adapter'], @active_connection.values_at('SELECT * FROM MSNdis_HardwareStatus', :root_wmi))
+        assert_equal([:instancename=>'VMware Accelerated AMD PCNet Adapter'], @connector.values_at('SELECT * FROM MSNdis_HardwareStatus', :root_wmi))
       end
 
       should 'allow us to get attribute values from a wmi query via #execute' do
@@ -49,7 +49,7 @@ class WMITest < Test::Unit::TestCase
         @property.stubs(:Name).returns('PortType')
         @property.stubs(:Value).returns(1)
 
-        assert_equal([:porttype=>1], @active_connection.values_at('SELECT * FROM MSFC_FibrePortHBAAttributes', :root_wmi))
+        assert_equal([:porttype=>1], @connector.values_at('SELECT * FROM MSFC_FibrePortHBAAttributes', :root_wmi))
       end
     end
 
@@ -59,7 +59,7 @@ class WMITest < Test::Unit::TestCase
 
         win32ole = mock('win32ole')
 
-        @registry = @active_connection.registry = win32ole
+        @registry = @connector.registry = win32ole
         @registry.stubs(:Methods_).returns(win32ole)
         @registry.stubs(:inParameters).returns(win32ole)
         @registry.stubs(:SpawnInstance_).returns(win32ole)
@@ -72,23 +72,23 @@ class WMITest < Test::Unit::TestCase
         @registry.stubs(:uRequired=)
         @registry.stubs(:bGranted).returns(true)
 
-        assert(@active_connection.has_access_for('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'))
+        assert(@connector.has_access_for('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'))
       end
 
       should 'allow us to access registry keys via #subkeys_at' do
-        @active_connection.stubs(:has_access_for).returns(true)
+        @connector.stubs(:has_access_for).returns(true)
         
         @registry.stubs(:sNames).returns(['CurrentVersion'])
 
         expected_data = ['HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion']
 
-        assert_equal(expected_data, @active_connection.registry_subkeys_at('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'))
+        assert_equal(expected_data, @connector.registry_subkeys_at('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'))
       end
 
       context 'and read values' do
         setup do
           @key_path = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-          @active_connection.stubs(:has_access_for).returns(true)
+          @connector.stubs(:has_access_for).returns(true)
           @registry.stubs(:sValueName=)
           @expected_data = {}
         end
@@ -97,7 +97,7 @@ class WMITest < Test::Unit::TestCase
           @registry.stubs(:sNames).returns([])
 
           @expected_data[:key_path] = 'HKEY_LOCAL_MACHINE\i\dont\exist'
-          assert_equal({}, @active_connection.registry_values_at(@expected_data[:key_path]))
+          assert_equal({}, @connector.registry_values_at(@expected_data[:key_path]))
         end
 
         should 'allow us to access string values from the registry via #values_at' do
@@ -106,7 +106,7 @@ class WMITest < Test::Unit::TestCase
           @registry.stubs(:uValue).returns(nil)
 
           @expected_data = {:productname=>'Microsoft Windows Server 2008 R2'}
-          assert_equal(@expected_data, @active_connection.registry_values_at(@key_path))
+          assert_equal(@expected_data, @connector.registry_values_at(@key_path))
         end
 
         should 'allow us to access other values from the registry via #values_at' do
@@ -115,7 +115,7 @@ class WMITest < Test::Unit::TestCase
           @registry.stubs(:uValue).returns(123456)
 
           @expected_data = {:installdate=>123456}
-          assert_equal(@expected_data, @active_connection.registry_values_at(@key_path))
+          assert_equal(@expected_data, @connector.registry_values_at(@key_path))
         end
       end
     end

@@ -6,7 +6,7 @@ class SNMPTest < Test::Unit::TestCase
     setup do
       @target_name = '0.0.0.0'
       @cred = {:user=>'someuser', :password=>'somepass'}
-      @active_connection = SNMPConnector.new(@target_name, @cred, Options.new)
+      @connector = SNMPConnector.new(@target_name, @cred, Options.new)
 
       @transport = mock('SNMP')
 
@@ -18,17 +18,17 @@ class SNMPTest < Test::Unit::TestCase
     end
 
     should 'allow us to connect to it' do
-      assert_kind_of(SNMPConnector, @active_connection.establish_connection)
+      assert_kind_of(SNMPConnector, @connector.establish_connection)
     end
 
     context 'to which we have already connected' do
       setup do
-        @active_connection.establish_connection
+        @connector.establish_connection
       end
 
       should 'allow us to perform a simple SNMP GET' do
-        assert_equal(@expected_value, @active_connection.value_at('sysDescr'))
-        assert_equal([@expected_value], @active_connection.values_at('sysDescr'))
+        assert_equal(@expected_value, @connector.value_at('sysDescr'))
+        assert_equal([@expected_value], @connector.values_at('sysDescr'))
       end
     end
   end

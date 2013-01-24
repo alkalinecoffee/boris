@@ -89,9 +89,9 @@ class TargetTest < Test::Unit::TestCase
         connection = mock('SNMPConnector')
         SNMPConnector.any_instance.stubs(:establish_connection).returns(connection)
         @target.connect
-        @target.active_connection.stubs(:execute).with(input).returns(output)
+        @target.connector.stubs(:execute).with(input).returns(output)
 
-        assert_equal(output, @target.active_connection.execute(input))
+        assert_equal(output, @target.connector.execute(input))
       end
 
       should 'allow us to connect via SSH' do
@@ -103,9 +103,9 @@ class TargetTest < Test::Unit::TestCase
         connection = mock('SSHConnector')
         SSHConnector.any_instance.stubs(:establish_connection).returns(connection)
         @target.connect
-        @target.active_connection.stubs(:execute).with(input).returns(output)
+        @target.connector.stubs(:execute).with(input).returns(output)
 
-        assert_equal(output, @target.active_connection.execute(input))
+        assert_equal(output, @target.connector.execute(input))
        end
 
       should 'allow us to connect via WMI' do
@@ -117,9 +117,9 @@ class TargetTest < Test::Unit::TestCase
         connection = mock('WMIConnector')
         WMIConnector.any_instance.stubs(:establish_connection).returns(connection)
         @target.connect
-        @target.active_connection.stubs(:execute).with(input).returns(output)
+        @target.connector.stubs(:execute).with(input).returns(output)
 
-        assert_equal(output, @target.active_connection.execute(input))
+        assert_equal(output, @target.connector.execute(input))
       end
     end
 
@@ -127,7 +127,7 @@ class TargetTest < Test::Unit::TestCase
       setup do
         ssh_connection = mock('SSHConnector')
         @target.stubs(:connect).returns(ssh_connection)
-        @target.active_connection = ssh_connection
+        @target.connector = ssh_connection
 
         @target.options[:profiles].each do |profile|
           profile.stubs(:matches_target?).returns(false)

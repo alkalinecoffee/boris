@@ -3,9 +3,9 @@ require 'setup_tests'
 class SolarisCoreTest < ProfileTestSetup
   context 'a Solaris target' do
     setup do
-      @active_connection = @target.active_connection = instance_of(SSHConnector)
+      @connector = @target.connector = instance_of(SSHConnector)
 
-      @active_connection.stubs(:value_at).with('uname').returns('SunOS')
+      @connector.stubs(:value_at).with('uname').returns('SunOS')
       @target.options[:profiles] = [Profiles::Solaris]
       @target.detect_profile
     end
@@ -28,11 +28,11 @@ class SolarisCoreTest < ProfileTestSetup
         setup do
           @memory_command = "/usr/sbin/prtconf | egrep -i 'memory size' | awk '{print $3}'"
           @memory_data = '1024'
-          @active_connection.stubs(:value_at).with(@memory_command).returns(@memory_data)
+          @connector.stubs(:value_at).with(@memory_command).returns(@memory_data)
 
           @isainfo_command = "isainfo -v | egrep -i applications | awk '{print $1}'"
           @isainfo_data = ['64-bit', '32-bit']
-          @active_connection.stubs(:values_at).with(@isainfo_command).returns(@isainfo_data)
+          @connector.stubs(:values_at).with(@isainfo_command).returns(@isainfo_data)
 
           @sparc_model_command = '/usr/sbin/prtconf -b | grep banner-name'
           
@@ -41,8 +41,8 @@ class SolarisCoreTest < ProfileTestSetup
           
           @sparc_firmware_command = %q{/usr/platform/`uname -m`/sbin/prtdiag -v | egrep -i "^obp" | awk '{print $2}'}
           @x86_firmware_command = '/usr/sbin/smbios -t SMB_TYPE_BIOS | grep -i "version string"'
-          @active_connection.stubs(:value_at).with(@x86_firmware_command).returns('Version string: 6.0')
-          @active_connection.stubs(:value_at).with(@sparc_firmware_command).returns('6.0')
+          @connector.stubs(:value_at).with(@x86_firmware_command).returns('Version string: 6.0')
+          @connector.stubs(:value_at).with(@sparc_firmware_command).returns('6.0')
         end
 
         context 'for an x86-based platform' do
@@ -76,8 +76,8 @@ class SolarisCoreTest < ProfileTestSetup
               :vendor=>'IBM'
             }
 
-            @active_connection.stubs(:values_at).with(@showrev_command).returns(@showrev_data)
-            @active_connection.stubs(:values_at).with(@cpu_command).returns(@cpu_data)
+            @connector.stubs(:values_at).with(@showrev_command).returns(@showrev_data)
+            @connector.stubs(:values_at).with(@cpu_command).returns(@cpu_data)
           end
 
           context 'in the global zone' do
@@ -88,9 +88,9 @@ class SolarisCoreTest < ProfileTestSetup
                 Product: System x3650 M3 -[1234ABCD]-
                 Serial Number: ABCD1234
               }.strip.split(/\n/)
-              @active_connection.stubs(:values_at).with(@smbios_command).returns(@smbios_data)
+              @connector.stubs(:values_at).with(@smbios_command).returns(@smbios_data)
 
-              @active_connection.stubs(:values_at).with(@zoneadm_command).returns('global')
+              @connector.stubs(:values_at).with(@zoneadm_command).returns('global')
 
               @target.get_hardware
               assert_equal(@expected_data, @target.hardware)
@@ -126,17 +126,17 @@ class SolarisCoreTest < ProfileTestSetup
               :vendor=>VENDOR_ORACLE
             }
 
-            @active_connection.stubs(:values_at).with(@showrev_command).returns(@showrev_data)
-            @active_connection.stubs(:values_at).with(@cpu_command).returns(@cpu_data)
+            @connector.stubs(:values_at).with(@showrev_command).returns(@showrev_data)
+            @connector.stubs(:values_at).with(@cpu_command).returns(@cpu_data)
           end
 
           context 'in the global zone' do
             should 'return hardware information via #get_hardware' do
-              @active_connection.stubs(:value_at).with(@sparc_model_command).returns('banner-name: Sun Fire 480R')
+              @connector.stubs(:value_at).with(@sparc_model_command).returns('banner-name: Sun Fire 480R')
 
               @expected_data[:model] = 'Sun Fire 480R'
 
-              @active_connection.stubs(:values_at).with(@zoneadm_command).returns('global')
+              @connector.stubs(:values_at).with(@zoneadm_command).returns('global')
 
               @target.get_hardware
               assert_equal(@expected_data, @target.hardware)
@@ -148,8 +148,8 @@ class SolarisCoreTest < ProfileTestSetup
               @expected_data[:model] = 'Oracle Virtual Platform'
               @expected_data[:firmware_version] = nil
 
-              @active_connection.stubs(:values_at).with(@smbios_command).returns([])
-              @active_connection.stubs(:values_at).with(@zoneadm_command).returns('somezone')
+              @connector.stubs(:values_at).with(@smbios_command).returns([])
+              @connector.stubs(:values_at).with(@zoneadm_command).returns('somezone')
 
               @target.get_hardware
               assert_equal(@expected_data, @target.hardware)
@@ -174,7 +174,7 @@ class SolarisCoreTest < ProfileTestSetup
         should 'return hosted share information via #get_hosted_shares' do
           share_command = %q{nawk '{system("df -k | grep " $2)}' /usr/sbin/shares | nawk '{print $NF "|" $1}'}
 
-          @active_connection.stubs(:values_at).with(share_command).returns(@share_data)
+          @connector.stubs(:values_at).with(share_command).returns(@share_data)
 
           @target.get_hosted_shares
           assert_equal(@expected_data, @target.hosted_shares)
@@ -220,7 +220,7 @@ class SolarisCoreTest < ProfileTestSetup
         should 'return installed applications via #get_installed_applications' do
           application_command = "pkginfo -il -c application | egrep -i '^$|(name|version|basedir|vendor|instdate):'"
 
-          @active_connection.stubs(:values_at).with(application_command).returns(@application_data)
+          @connector.stubs(:values_at).with(application_command).returns(@application_data)
 
           @target.get_installed_applications
           assert_equal(@expected_data, @target.installed_applications)
@@ -248,7 +248,7 @@ class SolarisCoreTest < ProfileTestSetup
         should 'return installed patches via #get_installed_patches' do
           patch_dir_command = %q{ls -ego /var/sadm/patch | grep -v '^total' | nawk '{print $NF "|" $4 " " $5 " " $6 " " $7}'}
 
-          @active_connection.stubs(:values_at).with(patch_dir_command).returns([@patch_dir_data])
+          @connector.stubs(:values_at).with(patch_dir_command).returns([@patch_dir_data])
 
           @target.get_installed_patches
           assert_equal(@expected_data, @target.installed_patches)
@@ -264,7 +264,7 @@ class SolarisCoreTest < ProfileTestSetup
         end
 
         should 'return service information via #get_installed_services' do
-          @active_connection.stubs(:values_at).with("svcs -a | nawk '{print $NF}'").returns(@expected_data.collect{|svc| svc[:name]})
+          @connector.stubs(:values_at).with("svcs -a | nawk '{print $NF}'").returns(@expected_data.collect{|svc| svc[:name]})
 
           @target.get_installed_services
           assert_equal(@expected_data, @target.installed_services)
@@ -284,9 +284,9 @@ class SolarisCoreTest < ProfileTestSetup
 
           @dns_server_command = "cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'"
           @dns_server_data = ['192.168.1.1', '192.168.1.2']
-          @active_connection.stubs(:values_at).with(@dns_server_command).returns(@dns_server_data)
+          @connector.stubs(:values_at).with(@dns_server_command).returns(@dns_server_data)
 
-          @active_connection.stubs(:values_at).with(@showrev_command).returns(['Application architecture: sparc'])
+          @connector.stubs(:values_at).with(@showrev_command).returns(['Application architecture: sparc'])
 
           @kstat_command = %q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}'}
 
@@ -301,8 +301,8 @@ class SolarisCoreTest < ProfileTestSetup
 
         context 'in a standard three-interface setup' do
           setup do
-            @active_connection.stubs(:values_at).with(@fcinfo_command).returns([])
-            @active_connection.stubs(:values_at).with(@zoneadm_command).returns(['global'])
+            @connector.stubs(:values_at).with(@fcinfo_command).returns([])
+            @connector.stubs(:values_at).with(@zoneadm_command).returns(['global'])
 
             @expected_ethernet_data = []
 
@@ -347,7 +347,7 @@ class SolarisCoreTest < ProfileTestSetup
           end
 
           should 'return ethernet information for both interfaces via #get_network_interfaces' do
-            @active_connection.stubs(:values_at).with(@prtpicl_fibre_command).returns([])
+            @connector.stubs(:values_at).with(@prtpicl_fibre_command).returns([])
 
             prtpicl_ethernet_data = %q{
               :vendor-id|0x1234
@@ -368,7 +368,7 @@ class SolarisCoreTest < ProfileTestSetup
               :instance|0
               :driver-name|ce
             }.strip.split(/\n/)
-            @active_connection.stubs(:values_at).with(@prtpicl_ethernet_command).returns(prtpicl_ethernet_data)
+            @connector.stubs(:values_at).with(@prtpicl_ethernet_command).returns(prtpicl_ethernet_data)
 
             ifconfig_data = %q{
               e1000g0: flags=123456<UP,BROADCAST,RUNNING,MULTICAST,DEPRECATED,IPv4,FIXEDMTU> mtu 1500 index 2
@@ -383,7 +383,7 @@ class SolarisCoreTest < ProfileTestSetup
               nxge1:1 flags=123456<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 3
                 inet 192.168.1.7
               }.strip.split(/\n/)
-            @active_connection.stubs(:values_at).with(@ifconfig_command).returns(ifconfig_data)
+            @connector.stubs(:values_at).with(@ifconfig_command).returns(ifconfig_data)
 
             kstat_data = %q{
               e1000g:0:mac:ifspeed|1000000000
@@ -399,10 +399,10 @@ class SolarisCoreTest < ProfileTestSetup
               ce:0:mac:link_duplex|2
               ce:0:mac:link_up|1
             }.strip.split(/\n/)
-            @active_connection.stubs(:values_at).with(@kstat_command).returns(kstat_data)
+            @connector.stubs(:values_at).with(@kstat_command).returns(kstat_data)
 
             mac_mapping_data = ['e1000g0|192.168.1.5|01:01:01:01:01:01', 'ce0|192.168.1.5|01:01:01:01:01:01']
-            @active_connection.stubs(:values_at).with(@mac_mapping_command).returns(mac_mapping_data)
+            @connector.stubs(:values_at).with(@mac_mapping_command).returns(mac_mapping_data)
 
             @target.get_network_interfaces
             assert_equal(@expected_ethernet_data, @target.network_interfaces)
@@ -411,7 +411,7 @@ class SolarisCoreTest < ProfileTestSetup
 
         context 'of a child zone' do
           setup do
-            @active_connection.stubs(:values_at).with(@zoneadm_command).returns(['childzone'])
+            @connector.stubs(:values_at).with(@zoneadm_command).returns(['childzone'])
 
             @expected_ethernet_data = [@target.network_interface_template.merge({
               :current_speed_mbps=>1000,
@@ -429,7 +429,7 @@ class SolarisCoreTest < ProfileTestSetup
           end
 
           should 'return ethernet information for an interface on a zone via #get_network_interfaces' do
-            @active_connection.stubs(:values_at).with(@fcinfo_command).returns([])
+            @connector.stubs(:values_at).with(@fcinfo_command).returns([])
 
             # a child zone may show the interfaces of the host via kstat, but not via ifconfig,
             # so any active interfaces found in kstat should be ignored
@@ -437,7 +437,7 @@ class SolarisCoreTest < ProfileTestSetup
               ce1:1: flags=1000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4> mtu 1500 index 3
                 inet 192.168.1.2 netmask ffffff00 broadcast 192.168.1.1
             }.strip.split(/\n/)
-            @active_connection.stubs(:values_at).with(@ifconfig_command).returns(ifconfig_data)
+            @connector.stubs(:values_at).with(@ifconfig_command).returns(ifconfig_data)
 
             kstat_data = %q{
               ce:1:ce1:ifspeed|1000000000
@@ -449,10 +449,10 @@ class SolarisCoreTest < ProfileTestSetup
               e1000g:0:mac:link_duplex|2
               e1000g:0:mac:link_up|1
             }.strip.split(/\n/)
-            @active_connection.stubs(:values_at).with(@kstat_command).returns(kstat_data)
+            @connector.stubs(:values_at).with(@kstat_command).returns(kstat_data)
 
             mac_mapping_data = ['ce1|192.168.1.2|01:01:01:01:01:01']
-            @active_connection.stubs(:values_at).with(@mac_mapping_command).returns(mac_mapping_data)
+            @connector.stubs(:values_at).with(@mac_mapping_command).returns(mac_mapping_data)
 
             @target.get_network_interfaces
             assert_equal(@expected_ethernet_data, @target.network_interfaces)
@@ -472,10 +472,10 @@ class SolarisCoreTest < ProfileTestSetup
               :vendor=>'QLogic Corp.',
             })]
 
-            @active_connection.stubs(:values_at).with(@kstat_command).returns([])
-            @active_connection.stubs(:values_at).with(@mac_mapping_command).returns([])
-            @active_connection.stubs(:values_at).with(@ifconfig_command).returns([])
-            @active_connection.stubs(:values_at).with(@zoneadm_command).returns(['global'])
+            @connector.stubs(:values_at).with(@kstat_command).returns([])
+            @connector.stubs(:values_at).with(@mac_mapping_command).returns([])
+            @connector.stubs(:values_at).with(@ifconfig_command).returns([])
+            @connector.stubs(:values_at).with(@zoneadm_command).returns(['global'])
           end
 
           should 'return fibre interface information via #get_network_interfaces' do
@@ -489,7 +489,7 @@ class SolarisCoreTest < ProfileTestSetup
               Current Speed: 4Gb
               Node WWN: 00000000aaaaaaaa
             }.strip.split(/\n/)
-            @active_connection.stubs(:values_at).with(@fcinfo_command).returns(fcinfo_data)
+            @connector.stubs(:values_at).with(@fcinfo_command).returns(fcinfo_data)
 
             @target.get_network_interfaces
             assert_equal(@expected_fibre_data, @target.network_interfaces)
@@ -514,8 +514,8 @@ class SolarisCoreTest < ProfileTestSetup
         end
 
         should 'return operating system information via #get_operating_system' do
-          @active_connection.stubs(:value_at).with("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}").returns('Jan 1 2013')
-          @active_connection.stubs(:value_at).with('uname -rv').returns(@os_data)
+          @connector.stubs(:value_at).with("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}").returns('Jan 1 2013')
+          @connector.stubs(:value_at).with('uname -rv').returns(@os_data)
 
           @target.get_operating_system
           assert_equal(@expected_data, @target.operating_system)
