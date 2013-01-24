@@ -36,7 +36,7 @@ class SolarisCoreTest < ProfileTestSetup
 
           @sparc_model_command = '/usr/sbin/prtconf -b | grep banner-name'
           
-          @cpu_command = %q{kstat -m cpu_info | nawk '{if($1~/^(chip_id|core_id|clock_mhz|vendor_id|brand)/) {sub($1, $1"|"); print $0}}'}
+          @cpu_command = %q{kstat -m cpu_info | nawk '{if(tolower($1)~/^(chip_id|core_id|clock_mhz|vendor_id|brand)/) {sub($1, $1"|"); print $0}}'}
           @smbios_command = "/usr/sbin/smbios -t SMB_TYPE_SYSTEM | egrep -i 'manufacturer|product|serial'"
           
           @sparc_firmware_command = %q{/usr/platform/`uname -m`/sbin/prtdiag -v | egrep -i "^obp" | awk '{print $2}'}
@@ -186,8 +186,6 @@ class SolarisCoreTest < ProfileTestSetup
           @application_data = %q{
                 NAME:  The Python interpreter, libraries and utilities
              VERSION:  2.3.3
-             BASEDIR:  /usr
-              VENDOR:  Oracle Corporation
             INSTDATE:  Jan 1 2013 00:00
 
                 NAME:  The Python interpreter, libraries and utilities - development files
@@ -195,15 +193,15 @@ class SolarisCoreTest < ProfileTestSetup
              BASEDIR:  /usr
               VENDOR:  Oracle Corporation
             INSTDATE:  Jan 1 2013 00:00
-            }.strip
+            }.split(/\n/).strip
 
           @expected_data = [
             {
               :date_installed=>DateTime.parse('Jan 1 2013 00:00'),
-              :install_location=>'/usr',
+              :install_location=>nil,
               :license_key=>nil,
               :name=>'The Python interpreter, libraries and utilities',
-              :vendor=>'Oracle Corporation',
+              :vendor=>nil,
               :version=>'2.3.3'
             },
             {

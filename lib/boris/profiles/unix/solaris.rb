@@ -44,7 +44,7 @@ module Boris; module Profiles
       cpu_arch_data = @connector.values_at("isainfo -v | egrep -i applications | awk '{print $1}'")
       @hardware[:cpu_architecture] = cpu_arch_data.include?('64-bit') ? 64 : 32
 
-      cpu_data = @connector.values_at(%q{kstat -m cpu_info | nawk '{if($1~/^(chip_id|core_id|clock_mhz|vendor_id|brand)/) {sub($1, $1"|"); print $0}}'})
+      cpu_data = @connector.values_at(%q{kstat -m cpu_info | nawk '{if(tolower($1)~/^(chip_id|core_id|clock_mhz|vendor_id|brand)/) {sub($1, $1"|"); print $0}}'})
 
       @hardware[:cpu_physical_count] = cpu_data.grep(/chip_id/i).uniq.size
       @hardware[:cpu_core_count] = cpu_data.grep(/core_id/i).uniq.size / @hardware[:cpu_physical_count]
@@ -75,16 +75,20 @@ module Boris; module Profiles
       super
 
       application_data = @connector.values_at("pkginfo -il -c application | egrep -i '^$|(name|version|basedir|vendor|instdate):'")
-      application_data.split("\n\n").each do |application|
+      application_data.join("\n").split("\n\n").each do |application|
 
         application = application.split("\n")
         h = installed_application_template
 
         h[:date_installed] = DateTime.parse(application.grep(/instdate:/i)[0].split(/instdate:/i)[1])
-        h[:install_location] = application.grep(/basedir:/i)[0].after_colon
         h[:name] = application.grep(/name:/i)[0].after_colon
-        h[:vendor] = application.grep(/vendor:/i)[0].after_colon
         h[:version] = application.grep(/version:/i)[0].after_colon
+
+        # these sometimes don't show up
+        install_location = application.grep(/basedir:/i)[0]
+        h[:install_location] = install_location.after_colon if install_location
+        vendor = application.grep(/vendor:/i)[0]
+        h[:vendor] = vendor.after_colon if vendor
 
         @installed_applications << h
       end
