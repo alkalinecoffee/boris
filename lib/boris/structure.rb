@@ -13,34 +13,6 @@ module Boris; module Profiles
     attr_accessor :network_interfaces
     attr_accessor :operating_system
 
-    def self.matches_target?
-      # insert code here to emphatically determine whether this profile
-      # is suitable for using against the target
-
-      # always return false for the core module... this method should never be
-      # called by user code and kept here simply for consistency
-      false
-    end
-
-    def retrieve_all
-      debug 'retrieving all configuration items'
-
-      get_file_systems
-      get_hardware
-      get_hosted_shares
-      get_installed_applications
-      get_local_user_groups
-      get_installed_patches
-      get_installed_services
-      get_network_id
-      get_network_interfaces
-      get_operating_system
-
-      debug 'all items retrieved successfully'
-
-      scrub_data! if @options[:auto_scrub_data]
-    end
-
     def file_system_template
       [
         :capacity_mb,

@@ -146,6 +146,25 @@ module Boris
       @target_profile = profile
     end
 
+    def retrieve_all
+      debug 'retrieving all configuration items'
+
+      get_file_systems
+      get_hardware
+      get_hosted_shares
+      get_installed_applications
+      get_local_user_groups
+      get_installed_patches
+      get_installed_services
+      get_network_id
+      get_network_interfaces
+      get_operating_system
+
+      debug 'all items retrieved successfully'
+
+      scrub_data! if @options[:auto_scrub_data]
+    end
+
     def suggested_connection_method
       connection_method = nil
       
