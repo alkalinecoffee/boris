@@ -46,27 +46,14 @@ module Boris; module Profiles
         h[:capacity_mb] = ds[:size].to_i / 1024
         h[:used_space_mb] = h[:capacity_mb] - (ds[:freespace].to_i / 1024)
 
-        logical_disks.each do |ld|
-          if ld[:dependent].include?(h[:mount_point])
-            h[:file_system] = ld[:antecedent].split(/\"/)[1]
+        ld = logical_disks.select{|ld| ld[:dependent].include?(h[:mount_point])}[0]
+        h[:file_system] = ld[:antecedent].split(/\"/)[1]
 
-            disk_partitions.each do |dp|
-              if dp[:dependent].include?(h[:file_system])
-                drive_id = dp[:antecedent].split('\\').last.delete('\"')
+        dp = disk_partitions.select{|dp| dp[:dependent].include?(h[:file_system])}[0]
+        drive_id = dp[:antecedent].split('\\').last.delete('\"')
 
-                physical_drives.each do |pd|
-                  if pd[:deviceid].include?(drive_id)
-                    begin
-                      h[:san_storage] = true if pd[:model] =~ /open-v/i
-                    rescue
-                      nil
-                    end
-                  end
-                end
-              end
-            end
-          end
-        end
+        physical_drive = physical_drives.select{|pd| pd[:deviceid].include?(drive_id)}[0]
+        h[:san_storage] = true if physical_drive[:model] =~ /open-v/i
 
         @file_systems << h unless h[:file_system].nil?
       end
@@ -117,7 +104,6 @@ module Boris; module Profiles
 
       [APP32_KEYPATH, APP64_KEYPATH].each do |app_path|
         @connector.registry_subkeys_at(app_path).each do |app_key|
-
           h = installed_application_template
 
           app_values = @connector.registry_values_at(app_key)
@@ -125,7 +111,7 @@ module Boris; module Profiles
           h[:date_installed] = DateTime.parse(app_values[:installdate]) if app_values[:installdate].kind_of?(String)
 
           if app_values.has_key?(:displayname) && !(app_values[:displayname] =~ /^kb|\(kb\d+/i)
-            h[:install_location] = app_values[:installlocation] unless app_values[:installlocation].empty?
+            h[:install_location] = app_values[:installlocation] if app_values[:installlocation].nil?
             h[:license_key] = get_product_key(app_values[:displayname], app_key)
             h[:name] = concat_app_edition(app_values[:displayname])
             h[:vendor] = app_values[:publisher]
@@ -170,20 +156,19 @@ module Boris; module Profiles
         
           h = installed_patch_template
 
-          h[:patch_code] = patch[:hotfixid]
-          h[:patch_code] = patch[:servicepackineffect] if patch[:hotfixid] =~ /file 1/i
+          h[:patch_code] = patch[:hotfixid] == 'File 1' ? patch[:servicepackineffect] : patch[:hotfixid]
 
-          h[:installed_by] = patch[:installedby]
+          h[:installed_by] = patch[:installedby] unless patch[:installedby].empty?
           h[:installed_by] = get_username(patch[:installedby]) if patch[:installedby][0, 4] == 'S-1-'
 
-          h[:date_installed] = DateTime.parse(patch[:installedon])
+          h[:date_installed] = DateTime.strptime(patch[:installedon], '%m/%d/%Y') unless patch[:installedon].empty?
 
           @installed_patches << h
         end
       end
 
       # get patches from the registry (under the application keys) if necessary
-      if !@patches_from_registry
+      if @patches_from_registry.nil?
         @patches_from_registry = []
 
         [APP32_KEYPATH, APP64_KEYPATH].each do |app_path|
@@ -202,7 +187,7 @@ module Boris; module Profiles
         key_path = patch_hash[:key_path].after_slash
         patch = patch_hash[:values]
 
-        h[:date_installed] = DateTime.parse(patch[:installdate]) if patch[:installdate].kind_of?(String)
+        h[:date_installed] = DateTime.strptime(patch[:installdate], '%Y%m%d') if patch[:installdate].kind_of?(String)
         
         if key_path =~ /^kb/i
           h[:patch_code] = key_path
@@ -237,11 +222,14 @@ module Boris; module Profiles
 
       # next, let's check if this system is a domain controller, otherwise, our query results
       # may return all user accounts associated with the domain
-      get_system_roles if !@system_roles
+      if @operating_system.nil?
+        system_roles = @connector.value_at('SELECT Roles FROM Win32_ComputerSystem')[:roles]
+      else
+        system_roles = @operating_system[:roles]
+      end
 
-      if @system_roles.select{|role| role =~ /domaincontroller/i}.empty?
+      if system_roles.select{|role| role =~ /domaincontroller/i}.empty?
         # not a domain controller, so move on with retrieving users
-
         groups = []
 
         group_data = @connector.values_at("SELECT Name FROM Win32_Group WHERE Domain = '#{@network_id[:hostname]}'")
@@ -330,15 +318,16 @@ module Boris; module Profiles
         # get model/vendor ids
         hardware_ids = interface_driver_config[:matchingdeviceid].scan(/[ven|dev]_(\d{4})/i)
 
-        h[:vendor_id] = '0x' + hardware_ids[0].join
-        h[:model_id] = '0x' + hardware_ids[1].join
+        h[:vendor_id] = '0x' + hardware_ids[0].join unless hardware_ids[0].nil?
+        h[:model_id] = '0x' + hardware_ids[1].join unless hardware_ids[1].nil?
 
         # retrieve mtu
         mtu_data = @connector.registry_values_at(TCPIP_CFG_KEYPATH + "\\#{guid}")
         h[:mtu] = mtu_data[:mtu] if mtu_data.has_key?(:mtu)
 
-        # translate the adapter guid to it's internal device name (usually prefixed with a DEVICE\)
-        device_guid = @connector.registry_values_at(cfg_keypath + '\\Linkage')[:export]
+        # translate the adapter guid to it's internal device name (usually prefixed with \\DEVICE)
+        device_guid = @connector.registry_values_at(cfg_keypath + '\\Linkage')[:export][0].gsub(/\\/, '\\\\\\')
+
         adapter_name_data = @connector.value_at("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{device_guid}'", :root_wmi)
         internal_adapter_name = adapter_name_data[:instancename]
 
@@ -349,10 +338,10 @@ module Boris; module Profiles
         @network_interfaces << h
       end
 
-
       # retrieve fibre channel interfaces. for windows 2003, this only works if the hbaapi is
       # available, which can be installed by the fibre controller software provided by the
-      # vendor, or is installed as a separate package (fcinfo from microsoft)
+      # vendor, or is installed as a separate package (fcinfo from microsoft). newer versions
+      # should have it built-in by default.
       fibre_interface_profiles = @connector.values_at('SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes', :root_wmi)
 
       fibre_interfaces = @connector.values_at('SELECT InstanceName, Manufacturer, ModelDescription FROM MSFC_FCAdapterHBAAttributes', :root_wmi)
@@ -363,9 +352,9 @@ module Boris; module Profiles
         index = fibre_interface_profiles.index{|profile| profile[:instancename] == fibre_interface[:instancename]}
         profile = fibre_interface_profiles[index]
 
-        h[:fabric_name] = profile[:fabric_name].to_wwn
+        h[:fabric_name] = profile[:fabricname].to_wwn
         
-        if h[:fabric_name] == '000000000000000'
+        if h[:fabric_name] == '0000000000000000'
           h[:fabric_name] = nil
           h[:status] = 'down'
         else
@@ -400,13 +389,15 @@ module Boris; module Profiles
     def get_operating_system
       super
 
-      os_data = @connector.value_at('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem')
+      os_data = @connector.value_at('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Version FROM Win32_OperatingSystem')
       @operating_system[:date_installed] = DateTime.parse(os_data[:installdate])
       @operating_system[:kernel] = os_data[:version]
       @operating_system[:license_key] = get_product_key('microsoft windows')
       @operating_system[:name] = 'Microsoft Windows'
       @operating_system[:service_pack] = os_data[:csdversion]
-      @operating_system[:roles] = os_data[:roles]
+
+      role_data = @connector.value_at('SELECT Roles FROM Win32_ComputerSystem')
+      @operating_system[:roles] = role_data[:roles]
 
       os_data[:caption].gsub!(/microsoftr*|windows|(?<=server)r|\(r\)|edition|,/i, '').strip!
       edition = os_data[:othertypedescription]
@@ -429,7 +420,8 @@ module Boris; module Profiles
           debug 'attempting to retrieve ms exchange product key'
 
           key_path = 'SOFTWARE\Microsoft\Exchange\Setup'
-          product_key = @connector.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
+          product_key = @connector.registry_values_at(key_path)[:digitalproductid]
+          product_key = product_key.to_ms_product_key unless product_key.nil?
 
         when app_name =~ /office/i
 
@@ -443,7 +435,8 @@ module Boris; module Profiles
           end
 
           key_path = "SOFTWARE\\Microsoft\\Office\\#{version_code}.0\\Registration\\#{guid}"
-          product_key = @connector.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
+          product_key = @connector.registry_values_at(key_path)[:digitalproductid]
+          product_key = product_key.to_ms_product_key unless product_key.nil?
 
         when app_name =~ /sql server/i
 
@@ -467,7 +460,7 @@ module Boris; module Profiles
               if version_code
                 key_path = "#{key_path}\\#{version_code}\\ProductID"
                 product_key = @connector.registry_values_at(key_path)[:digitalproductid]
-                product_key = product_key.to_ms_product_key unless !product_key
+                product_key = product_key.to_ms_product_key unless product_key.nil?
               end
             end
           end
@@ -484,15 +477,16 @@ module Boris; module Profiles
           end
 
           key_path = "SOFTWARE\\Microsoft\\VisualStudio\\#{version_code}.0\\Registration"
-          product_key = @connector.registry_values_at(key_path)[:pidkey].scan(/.{5}/).join('-')
+          product_key = @connector.registry_values_at(key_path)[:pidkey]
+          product_key = product_key.scan(/.{5}/).join('-') unless product_key.nil?
 
         when app_name =~ /^microsoft windows$/i
 
           debug 'attempting to retrieve ms windows product key'
 
           key_path = 'SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-          product_key = @connector.registry_values_at(key_path)[:digitalproductid].to_ms_product_key
-        
+          product_key = @connector.registry_values_at(key_path)[:digitalproductid]
+          product_key = product_key.to_ms_product_key unless product_key.nil?
         end
 
         if product_key
