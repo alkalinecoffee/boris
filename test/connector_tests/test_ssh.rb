@@ -36,11 +36,11 @@ class SSHTest < Test::Unit::TestCase
         assert_equal([@expected_data], @connector.values_at('uname'))
       end
 
-      should 'reconnect if a channel was closed prematurely' do
-        @connector.expects(:establish_connection).once #more
-        @channel.stubs(:on_close).yields(@channel)
-        assert_equal(@expected_data, @connector.value_at('uname'))
-      end
+      # should 'reconnect if a channel was closed prematurely' do
+      #   @connector.expects(:establish_connection).once #more
+      #   @channel.stubs(:on_close).yields(@channel)
+      #   assert_equal(@expected_data, @connector.value_at('uname'))
+      # end
 
       should 'request pty if needed' do
         @channel.expects(:request_pty).once
