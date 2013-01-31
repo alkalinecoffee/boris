@@ -51,6 +51,10 @@ class WMITest < Test::Unit::TestCase
 
         assert_equal([:porttype=>1], @connector.values_at('SELECT * FROM MSFC_FibrePortHBAAttributes', :root_wmi))
       end
+
+      should 'error if an invalid limit for query is specified' do
+        assert_raise(ArgumentError) {@connector.values_at('select * from something', nil, '5')}
+      end
     end
 
     context 'to which we want to connect via the registry namespace' do
