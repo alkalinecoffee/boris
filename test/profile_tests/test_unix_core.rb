@@ -4,10 +4,9 @@ class UNIXCoreTest < ProfileTestSetup
   context 'a UNIX target' do
     setup do
       @connector = @target.connector = instance_of(SSHConnector)
-      
+      @target.stubs(:target_profile).returns(Profiles::UNIX)
+      @target.extend(Profiles::UNIX)
       @connector.stubs(:value_at).with('uname -a').returns('some_flavor_of_unix')
-      @target.options[:profiles] = [Profiles::UNIX]
-      @target.detect_profile
     end
 
     context 'being scanned' do
@@ -81,7 +80,7 @@ class UNIXCoreTest < ProfileTestSetup
           @expected_data = [{:members=>['root'], :name=>'root'}, {:members=>['usera', 'userb'], :name=>'staff'}]
         end
 
-        should 'return local user groups and accounts via #get_local_user_groups if the server is not a domain controller' do
+        should 'return local user groups and accounts via #get_local_user_groups' do
           @connector.stubs(:values_at).with('cat /etc/passwd').returns(@user_data)
           @connector.stubs(:values_at).with('cat /etc/group').returns(@group_data)
 

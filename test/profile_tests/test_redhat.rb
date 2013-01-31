@@ -4,13 +4,12 @@ class RedHatCoreTest < ProfileTestSetup
   context 'a RedHat target' do
     setup do
       @connector = @target.connector = instance_of(SSHConnector)
-
+      @target.stubs(:target_profile).returns(Profiles::RedHat)
+      @target.extend(Profiles::RedHat)
       @connector.stubs(:values_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).returns(['redhat'])
-      @target.options[:profiles] = [Profiles::RedHat]
-      @target.detect_profile
     end
 
-    should 'detect when a target should use the Solaris profile' do
+    should 'detect when a target should use the RedHat profile' do
       assert_equal(Profiles::RedHat, @target.target_profile)
     end
 
@@ -80,7 +79,7 @@ class RedHatCoreTest < ProfileTestSetup
         end
 
         should 'return service information via #get_installed_services' do
-          @connector.stubs(:values_at).with('/sbin/chkconfig --list').returns(@expected_data.collect{|svc| svc[:name]})
+          @connector.stubs(:values_at).with("/sbin/chkconfig --list | awk {'print $1'}").returns(@expected_data.collect{|svc| svc[:name]})
 
           @target.get_installed_services
           assert_equal(@expected_data, @target.installed_services)

@@ -6,18 +6,13 @@ class WindowsCoreTest < ProfileTestSetup
   context 'a Windows target' do
     setup do
       @connector = @target.connector = instance_of(WMIConnector)
-
+      @target.stubs(:target_profile).returns(Profiles::Windows)
+      @target.extend(Profiles::Windows)
       @connector.stubs(:value_at).with('SELECT Name FROM Win32_OperatingSystem').returns({:name=>'Windows Server 2008'})
-      @target.options[:profiles] = [Profiles::Windows]
-      @target.detect_profile
     end
 
     context 'being scanned' do
       setup do
-      end
-
-      should 'error if an invalid limit for query is specified' do
-        asser_raise(ArgumentError, @connector.values_at('select * from something', '5'))
       end
 
       context 'for file system information' do
@@ -244,7 +239,7 @@ class WindowsCoreTest < ProfileTestSetup
           wmi_patch_data = {
             :hotfixid=>'KB456789',
             :installedby=>'SYSTEM',
-            :installedon=>'20130101',
+            :installedon=>'1/1/2013',
             :servicepackineffect=>''
           }
 
@@ -320,9 +315,8 @@ class WindowsCoreTest < ProfileTestSetup
           expected_data = [{:name=>group, :members=>members}]
 
           @target.instance_variable_set(:@network_id, {:domain=>'mydomain.com', :hostname=>hostname})
-          @target.instance_variable_set(:@system_roles, [])
           
-          @connector.stubs(:values_at).with('SELECT Roles FROM Win32_ComputerSystem').returns([{:roles=>[]}])
+          @connector.stubs(:value_at).with('SELECT Roles FROM Win32_ComputerSystem').returns({:roles=>[]})
 
           @connector.stubs(:values_at).with("SELECT Name FROM Win32_Group WHERE Domain = '#{hostname}'").returns([{:name=>'Users'}])
           @connector.stubs(:values_at).with("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{hostname}',Name='#{group}'\"").returns(wmi_member_data)
@@ -415,13 +409,12 @@ class WindowsCoreTest < ProfileTestSetup
 
           nic_cfg_path = nic_keypath + "\\0001"
 
-          @connector.stubs(:registry_values_at).with(nic_cfg_path + '\Linkage').returns(:export=>enum_adapter_data[:devicename])
-
+          @connector.stubs(:registry_values_at).with(nic_cfg_path + '\\Linkage').returns(:export=>[enum_adapter_data[:devicename]])
           @connector.stubs(:registry_values_at).with(nic_cfg_path).returns({:matchingdeviceid=>'pci\\ven_1234&dev_1234', :speedduplex=>1})
           @connector.stubs(:registry_subkeys_at).with(nic_cfg_path + "\\Ndi\\params").returns([nic_cfg_path + '\\SpeedDuplex'])
           @connector.stubs(:registry_values_at).with(nic_cfg_path + "\\Ndi\\params\\speedduplex\\Enum").returns({'1'.to_sym=>'1000Mbps/Full Duplex'})
 
-          @connector.stubs(:value_at).with("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{enum_adapter_data[:devicename]}'", :root_wmi).returns(enum_adapter_data)
+          @connector.stubs(:value_at).with("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{enum_adapter_data[:devicename].gsub(/\\/, '\\\\\\')}'", :root_wmi).returns(enum_adapter_data)
           linkspeed_data = {:instancename=>expected_ethernet_data[:model], :ndislinkspeed=>10000000}
           @connector.stubs(:value_at).with("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{expected_ethernet_data[:model]}'", :root_wmi).returns(linkspeed_data)
 
@@ -442,7 +435,7 @@ class WindowsCoreTest < ProfileTestSetup
 
           wwn = [0, 0, 0, 0, 170, 170, 170, 170]
           hba_profile = {
-            :fabric_name=>wwn,
+            :fabricname=>wwn,
             :instancename=>hba_data[:instancename],
             :portspeed=>8,
             :nodewwn=>wwn,
@@ -466,7 +459,7 @@ class WindowsCoreTest < ProfileTestSetup
             :csdversion=>'Service Pack 2',
             :installdate=>'20130101000000.000000-000',
             :othertypedescription=>'R2',
-            :roles=>['DFS', 'Server_NT'],
+            :roles=>[],
             :version=>'5.2.3790'
           }
 
@@ -477,7 +470,8 @@ class WindowsCoreTest < ProfileTestSetup
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 148, 135, 143, 209]
 
-          @connector.stubs(:value_at).with('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Roles, Version FROM Win32_OperatingSystem').returns(@os_data)
+          @connector.stubs(:value_at).with('SELECT Roles FROM Win32_ComputerSystem').returns(:roles=>[])
+          @connector.stubs(:value_at).with('SELECT Caption, CSDVersion, InstallDate, OtherTypeDescription, Version FROM Win32_OperatingSystem').returns(@os_data)
           @connector.stubs(:registry_values_at).with('SOFTWARE\Microsoft\Windows NT\CurrentVersion').returns({:digitalproductid=>product_key_binary})
 
           @expected_data = {

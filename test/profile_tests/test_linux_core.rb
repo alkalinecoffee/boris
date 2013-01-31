@@ -4,10 +4,9 @@ class LinuxCoreTest < ProfileTestSetup
   context 'a Linux target' do
     setup do
       @connector = @target.connector = instance_of(SSHConnector)
-      
+      @target.stubs(:target_profile).returns(Profiles::Linux)
+      @target.extend(Profiles::Linux)
       @connector.stubs(:value_at).with('uname -a').returns('GNU/Linux')
-      @target.options[:profiles] = [Profiles::Linux]
-      @target.detect_profile
     end
 
     context 'being scanned' do
@@ -82,7 +81,7 @@ class LinuxCoreTest < ProfileTestSetup
             Manufacturer: AuthenticAMD
             Current Speed: 2200 MHz
           }.split(/\n/)
-          @connector.stubs(:values_at).with(@dmidecode_command).returns(@dmidecode_data)
+          @connector.stubs(:values_at).with(@dmidecode_command, true).returns(@dmidecode_data)
 
           @expected_data = {
             :cpu_architecture=>64,
@@ -168,8 +167,8 @@ class LinuxCoreTest < ProfileTestSetup
         setup do
           @hardware_command = '/sbin/lspci -mmv | egrep -i "class:[[:space:]]*(ethernet controller|fibre channel)" -B1 -A5'
           @ethernet_mapping_command = %q{ls /sys/class/net | awk '{cmd="readlink -f /sys/class/net/" $1 "/device/"; cmd | getline link; print $1 "|" link}'}
-          @link_properties_command = %q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'}
-          @ip_addr_command = '/sbin/ip addr'
+          @link_properties_command = %q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{cmd = "cat " $0 " 2>/dev/null"; cmd | getline value; print $0 "|" value;}'}
+          @ip_addr_command = %q{/sbin/ip addr | awk '{if($0 ~ /^[0-9]:/) {print "\n" $0} else {print $0}}'}
 
           @dns_server_command = "cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'"
           @dns_server_data = ['192.168.1.1', '192.168.1.2']
@@ -238,13 +237,13 @@ class LinuxCoreTest < ProfileTestSetup
             /sys/class/net/eth0/broadcast|ff:ff:ff:ff:ff:ff
             /sys/class/net/eth0/speed|1000
             /sys/class/net/eth0/duplex|full
-            /sys/class/net/eth0/operstate|up
+            /sys/class/net/eth0/carrier|1
             /sys/class/net/eth0/mtu|1500
             /sys/class/net/eth1/address|01:01:01:01:01:01
             /sys/class/net/eth1/broadcast|ff:ff:ff:ff:ff:ff
             /sys/class/net/eth1/speed|
             /sys/class/net/eth1/duplex|full
-            /sys/class/net/eth1/operstate|down
+            /sys/class/net/eth1/carrier|0
             /sys/class/net/eth1/mtu|1500
           }.split(/\n/)
           @connector.stubs(:values_at).with(@link_properties_command).returns(link_properties)
@@ -265,7 +264,7 @@ class LinuxCoreTest < ProfileTestSetup
 
             3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast state DOWN qlen 1000
               link/ether 01:01:01:01:01:01 brd ff:ff:ff:ff:ff:ff
-          }.split(/\n/)
+          }.strip.split(/\n/)
           @connector.stubs(:values_at).with(@ip_addr_command).returns(ip_addr_data)
 
           @target.get_network_interfaces

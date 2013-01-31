@@ -4,10 +4,9 @@ class SolarisCoreTest < ProfileTestSetup
   context 'a Solaris target' do
     setup do
       @connector = @target.connector = instance_of(SSHConnector)
-
+      @target.stubs(:target_profile).returns(Profiles::Solaris)
+      @target.extend(Profiles::Solaris)
       @connector.stubs(:value_at).with('uname').returns('SunOS')
-      @target.options[:profiles] = [Profiles::Solaris]
-      @target.detect_profile
     end
 
     should 'detect when a target should use the Solaris profile' do
@@ -193,7 +192,7 @@ class SolarisCoreTest < ProfileTestSetup
              BASEDIR:  /usr
               VENDOR:  Oracle Corporation
             INSTDATE:  Jan 1 2013 00:00
-            }.split(/\n/).strip
+            }.strip.split(/\n/)
 
           @expected_data = [
             {
