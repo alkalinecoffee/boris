@@ -81,8 +81,7 @@ class String
     
     vendor = self
 
-    vendor = if vendor =~ /^adobe\s*/i;                 VENDOR_ADOBE
-    elsif vendor =~ /^(amd|authenticamd)/i;             VENDOR_AMD
+    vendor = if vendor =~ /^(amd|authenticamd)/i;       VENDOR_AMD
     elsif vendor =~ /^brocade/i;                        VENDOR_BROCADE
     elsif vendor =~ /^citrix/i;                         VENDOR_CITRIX
     elsif vendor =~ /^dell/i;                           VENDOR_DELL
@@ -91,7 +90,6 @@ class String
     elsif vendor =~ /^ibm/i;                            VENDOR_IBM
     elsif vendor =~ /^(genuineintel|intel )/i;          VENDOR_INTEL
     elsif vendor =~ /^(microsoft)/i;                    VENDOR_MICROSOFT
-    elsif vendor =~ /^netiq/i;                          VENDOR_NETIQ
     elsif vendor =~ /^(oracle|sun[w]*|sun microsys)/i;  VENDOR_ORACLE
     elsif vendor =~ /^qlogic/i;                         VENDOR_QLOGIC
     elsif vendor =~ /^red\s*hat/i;                      VENDOR_REDHAT
