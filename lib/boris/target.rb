@@ -27,6 +27,7 @@ module Boris
     def initialize(host, options={})
       @host = host
 
+      options ||= {}
       @options = Options.new(options)
 
       @logger = BorisLogger.new(STDERR)
@@ -48,17 +49,18 @@ module Boris
     end
 
     def connect
-      raise InvalidOption, 'no credentials specified' if @options[:credentials].empty?
-      raise ConnectionAlreadyActive, 'a connect attempt has been made when active connection already exists' if @connector
-
+      if @connector && @connector.connected?
+        raise ConnectionAlreadyActive, 'a connect attempt has been made when active connection already exists'
+      elsif @options[:credentials].empty?
+        raise InvalidOption, 'no credentials specified'
+      end
+      
       debug 'preparing to connect'
 
-      creds_to_try = @options[:credentials].reject {|cred| (cred[:connection_types] && @options[:connection_types]).empty?}
+      #creds_to_try = @options[:credentials].reject {|cred| (cred[:connection_types] && @options[:connection_types]).empty?}
 
-      @connector = nil
-
-      creds_to_try.each do |cred|
-        if @connector
+      @options[:credentials].each do |cred|
+        if @connector && @connector.connected?
           debug 'active connection established, will not try any more credentials'
           break
         end
@@ -66,30 +68,32 @@ module Boris
         debug "using credential (#{cred[:user]})"
 
         cred[:connection_types].each do |conn_type|
-          if @connector
+          if @connector && @connector.connected?
             debug 'active connection established, will not try any more connection types'
             break
           end
 
           case conn_type
           when :snmp
-            @connector = SNMPConnector.new(@host, cred, @options, @logger).establish_connection
-            
+            @connector = SNMPConnector.new(@host, cred, @options, @logger)
+            @connector.establish_connection
             # we won't add snmp to the @unavailable_connection_types array, as it
             # could respond later with another community string
           when :ssh
             if !@unavailable_connection_types.include?(:ssh)
-              @connector = SSHConnector.new(@host, cred, @options, @logger).establish_connection
-            
-              if @connector.connected? == false && @connector.reconnectable == false
+              @connector = SSHConnector.new(@host, cred, @options, @logger)
+              @connector.establish_connection
+
+              if @connector.reconnectable == false
                 @unavailable_connection_types << :ssh
               end
             end
           when :wmi
             if !@unavailable_connection_types.include?(:wmi)
-              @connector = WMIConnector.new(@host, cred, @options, @logger).establish_connection
+              @connector = WMIConnector.new(@host, cred, @options, @logger)
+              @connector.establish_connection
             
-              if @connector.connected? == false && @connector.reconnectable == false
+              if @connector.reconnectable == false
                 @unavailable_connection_types << :wmi
               end
             end
@@ -99,7 +103,7 @@ module Boris
         end
       end
 
-      @connector
+      @connector = nil if @connector.connected? == false
     end
 
     def connected?
@@ -108,10 +112,7 @@ module Boris
 
     def detect_profile
       raise InvalidOption, 'no profiles loaded' if @options[:profiles].empty? || @options[:profiles].nil?
-      raise NoActiveConnection, 'no active connection' if @connector.connected? == false
-
-      #profiles_to_test = []
-      #@options[:profiles]. - #any that don't match the connection type
+      raise NoActiveConnection, 'no active connection' if (!@connector || @connector.connected? == false)
 
       @target_profile = nil
 
@@ -125,7 +126,7 @@ module Boris
             @target_profile = profile
 
             debug "suitable profile found (#{@target_profile})"
-            
+
             self.extend @target_profile
             
             debug "profile set to #{@target_profile}"
@@ -142,8 +143,8 @@ module Boris
 
     def force_profile_to(profile)
       self.extend profile
-      debug "profile successfully forced to #{profile}"
       @target_profile = profile
+      debug "profile successfully forced to #{profile}"
     end
 
     def retrieve_all
@@ -202,7 +203,7 @@ module Boris
     end
 
     # JSON.parse(json_string, :symbolize_names=>true)
-    def to_json
+    def to_json(pretty=false)
       vars_to_omit = [:@logger, :@options, :@unavailable_connection_types]
       
       json = {}
@@ -211,7 +212,7 @@ module Boris
           json[var.to_s.delete('@')] = self.instance_variable_get(var)
       end
 
-      generated_json = JSON.generate(json)
+      generated_json = pretty ? JSON.pretty_generate(json) : JSON.generate(json)
 
       debug "json generated successfully"
 
