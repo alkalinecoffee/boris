@@ -25,9 +25,12 @@ Let's pull some information from a RedHat Enterprise Linux server on our network
 
   target = Boris::Target.new('redhatserver01.mydomain.com')
 
-  # let's use a helper to suggest how we should connect to it (which is
-  # useful if we're not sure what kind of device this is)
+  # let's use a helper to suggest how we should connect to it (which is useful if we're not sure what
+  # kind of device this is)
   puts target.suggested_connection_method
+
+  # you can also add the logic to make the decision yourself by checking if certain TCP ports are open
+  puts target.tcp_port_responding?(22)
 
   # add credentials to try against this target
   target.options.add_credential(:user=>'joe', :password=>'mypassword', :connection_types=>[:ssh])
@@ -37,16 +40,23 @@ Let's pull some information from a RedHat Enterprise Linux server on our network
 
   if target.connected?
 
-    # detect which profile to load up (is this target running windows? solaris? or what?)
+    # detect which profile to load up (is this target running windows? solaris? or what?).  if we can't
+    # detect a suitable profile, this will throw an error
     target.detect_profile
 
     puts target.target_profile
 
-    target.retrieve_all
-    puts target.to_json(true)
+    # we can call individual methods to grab specific information we may be interested in (or call
+    # #retrieve_all to grab everything we can)
+    target.get_hardware
+
+    puts target.hardware.inspect
+
+    # finally, we can package up all of the data into json format for portability
+    puts target.to_json
   end
 
-  # target.disconnect
+  target.disconnect
 
 
 == LICENSE
