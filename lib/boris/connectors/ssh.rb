@@ -67,6 +67,10 @@ module Boris
               ch.close
               info "channel closed (we don't have a password to supply)"
             end
+          elsif data =~ /sorry, try again/i
+            ch.close
+            return_data = []
+            info "channel closed (we have a password to supply but system its not accepted)"
           elsif data =~ /permission denied/i
             warn "permission denied for this request (#{data.gsub(/\n|\s+/, ', ')})"
           else
