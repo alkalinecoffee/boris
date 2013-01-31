@@ -48,7 +48,7 @@ module Boris; module Profiles
       memory_data = @connector.value_at("cat /proc/meminfo | grep -i memtotal | awk '{print $2 / 1024}'")
       @hardware[:memory_installed_mb] = memory_data.to_i
 
-      hardware_data = @connector.values_at('/usr/bin/sudo /usr/sbin/dmidecode -t 0,1,4')
+      hardware_data = @connector.values_at('/usr/bin/sudo /usr/sbin/dmidecode -t 0,1,4', true)
       if hardware_data.any?
         # grab the cpu speed again (because its value is usually more useful/relevant than that found via /proc/cpuinfo)
         @hardware[:cpu_speed_mhz] = hardware_data.grep(/current speed/i)[0].after_colon.scan(/\d/).join.to_i
@@ -122,12 +122,12 @@ module Boris; module Profiles
       if found_ethernet_interfaces.any?
         # get info on all ethernet interfaces
         ethernet_mapping_data = @connector.values_at(%q{ls /sys/class/net | awk '{cmd="readlink -f /sys/class/net/" $1 "/device/"; cmd | getline link; print $1 "|" link}'})
-        link_properties = @connector.values_at(%q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{value=""; "cat " $1 " 2>/dev/null" | getline value; print $1 "|" value;}'})
-        ip_addr_data = @connector.values_at('/sbin/ip addr')
+        link_properties = @connector.values_at(%q{find -L /sys/class/net/ -mindepth 2 -maxdepth 2 2>/dev/null | awk '{cmd = "cat " $0 " 2>/dev/null"; cmd | getline value; print $0 "|" value;}'})
+        ip_addr_data = @connector.values_at(%q{/sbin/ip addr | awk '{if($0 ~ /^[0-9]:/) {print "\n" $0} else {print $0}}'})
 
         found_ethernet_interfaces.each do |interface|
           interface = interface.split("\n")
-
+          
           h = network_interface_template
 
           h[:dns_servers] = dns_servers
@@ -141,16 +141,26 @@ module Boris; module Profiles
           h[:name] = ethernet_mapping_data.grep(/#{pci_slot}$/)[0].before_pipe
 
           interface_config = link_properties.grep(/\/#{h[:name]}\//)
+
           h[:mac_address] = interface_config.grep(/\/address\|/)[0].after_pipe.upcase
 
-          status = interface_config.grep(/\/operstate\|/)[0].after_pipe
+          # operstate sometimes gives reports interface as 'unknown' when it is up
+          # and working.  checking the value of carrier (0 for not plugged in, 1 for
+          # plugged in) in conjunction with the 'ip' command output is a good fallback
+          wired_connection = interface_config.grep(/\/carrier\|/)[0].after_pipe
           
-          ip_config = ip_addr_data.join("\n").split(/\n\n/).grep(/^.*:\s#{h[:name]}:/)[0].split(/\n/)
-          h[:status] = (ip_config[0] =~ /,up,/i && status =~ /up/) ? 'up' : 'down'
+          ip_config = ip_addr_data.join("\n").strip.split(/\n\n/).grep(/^.*:\s#{h[:name]}:/)[0].split(/\n/)
+
+          h[:status] = (ip_config[0] =~ /,up,/i && wired_connection =~ /1/i) ? 'up' : 'down'
 
           if h[:status] == 'up'
-            h[:current_speed_mbps] = interface_config.grep(/\/speed\|/)[0].after_pipe.to_i
-            h[:duplex] = interface_config.grep(/\/duplex\|/)[0].after_pipe
+            # speed & duplex are not always available (in case of a virtual machine
+            # or hardware failure, etc)
+            speed = interface_config.grep(/\/speed\|/)[0]
+            h[:current_speed_mbps] = speed.after_pipe.to_i if speed
+
+            duplex = interface_config.grep(/\/duplex\|/)[0]
+            h[:duplex] = duplex.after_pipe if duplex
             
             h[:mtu] = interface_config.grep(/\/mtu\|/)[0].after_pipe.to_i
 
