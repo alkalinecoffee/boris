@@ -132,6 +132,8 @@ module Boris
         end
       end
 
+      raise NoProfileDetected, 'no suitable profile found' if !@target_profile
+
       @target_profile
     end
 
