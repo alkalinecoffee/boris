@@ -204,12 +204,23 @@ module Boris
 
     # JSON.parse(json_string, :symbolize_names=>true)
     def to_json(pretty=false)
-      vars_to_omit = [:@logger, :@options, :@unavailable_connection_types]
-      
       json = {}
 
-      (self.instance_variables - vars_to_omit).each do |var|
-          json[var.to_s.delete('@')] = self.instance_variable_get(var)
+      data_vars = %w{
+        file_systems
+        hardware
+        hosted_shares
+        installed_applications
+        installed_patches
+        installed_services
+        local_user_groups
+        network_id
+        network_interfaces
+        operating_system
+      }
+
+      data_vars.each do |var|
+          json[var.to_sym] = self.instance_variable_get("@#{var}".to_sym)
       end
 
       generated_json = pretty ? JSON.pretty_generate(json) : JSON.generate(json)
