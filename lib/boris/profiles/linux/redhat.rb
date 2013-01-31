@@ -45,7 +45,7 @@ module Boris; module Profiles
 
       def get_installed_services
         super
-        service_data = @connector.values_at('/sbin/chkconfig --list')
+        service_data = @connector.values_at("/sbin/chkconfig --list | awk {'print $1'}")
 
         service_data.each do |service|
           h = installed_service_template
