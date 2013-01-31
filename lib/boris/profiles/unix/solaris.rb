@@ -79,7 +79,8 @@ module Boris; module Profiles
         application = application.split("\n")
         h = installed_application_template
 
-        h[:date_installed] = DateTime.parse(application.grep(/instdate:/i)[0].split(/instdate:/i)[1])
+        date_installed = application.grep(/instdate:/i)[0].split(/instdate:/i)[1].strip
+        h[:date_installed] = DateTime.strptime(date_installed, '%b %d %Y %H:%M')
         h[:name] = application.grep(/name:/i)[0].after_colon
         h[:version] = application.grep(/version:/i)[0].after_colon
 
