@@ -4,6 +4,7 @@ class TargetTest < Test::Unit::TestCase
   context 'a Target' do
     setup do
       @target = Target.new('0.0.0.0')
+      @target.extend(Profiles::Structure)
       @cred = {:user=>'someuser', :password=>'somepass'}
     end
 
@@ -22,6 +23,18 @@ class TargetTest < Test::Unit::TestCase
 
         assert_equal({:timeout=>10}, t.options[:ssh_options])
       end
+    end
+
+    should 'allow us to call methods for retrieving all standard configuration items via #retrieve_all' do
+      @target.options[:auto_scrub_data] = false
+      @target.retrieve_all
+
+      assert_equal([], @target.file_systems)
+      assert_equal([], @target.installed_applications)
+      assert_equal([], @target.local_user_groups)
+      assert_equal([], @target.network_interfaces)
+      assert_equal([], @target.installed_patches)
+      assert_equal([], @target.hosted_shares)
     end
 
     should 'allow its data (instance variables) to be produced as json' do
@@ -61,73 +74,37 @@ class TargetTest < Test::Unit::TestCase
         assert_raise(NoActiveConnection) {@target.detect_profile}
       end
 
-      should 'attempt each connection type only once if the target does not respond to an attempt' do
+      should 'attempt an SSH and WMI connection only once if the target does not respond to an attempt' do
         @target.options.add_credential(@cred.merge!(:connection_types=>[:snmp, :ssh, :wmi]))
+        
+        Net::SSH.stubs(:start).raises(Net::SSH::HostKeyMismatch)
+        WIN32OLE.any_instance.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'rpc server is unavailable')
 
-        SNMPConnector.any_instance.expects(:establish_connection).at_most_once.returns(nil)
-        SSHConnector.any_instance.expects(:establish_connection).at_most_once.raises(ConnectionFailed)
-        WMIConnector.any_instance.expects(:establish_connection).at_most_once.raises(ConnectionFailed)
+        SSHConnector.any_instance.expects(:establish_connection).once
+        WMIConnector.any_instance.expects(:establish_connection).once
 
         @target.connect
       end
 
-      should 'attempt a connection type only once even when multiple credentials for the same connection type are supplied' do
+      should 'attempt a connection only once when connection is not available and when multiple credentials are supplied' do
         @target.options[:credentials] = [@cred.merge(:connection_types=>[:ssh])]
         @target.options[:credentials] << @cred.merge(:connection_types=>[:ssh])
 
-        SSHConnector.any_instance.expects(:establish_connection).at_most_once.raises(NoMethodError)
+        SSHConnector.any_instance.stubs(:reconnectable).returns(false)
+        SSHConnector.any_instance.expects(:establish_connection).once
 
         @target.connect
-      end
-
-      should 'allow us to connect via SNMP' do
-        input = 'sysDescr.0'
-        output = 'some returned string'
-        
-        @target.options[:credentials] = [@cred.merge(:connection_types=>[:snmp])]
-
-        connection = mock('SNMPConnector')
-        SNMPConnector.any_instance.stubs(:establish_connection).returns(connection)
-        @target.connect
-        @target.connector.stubs(:execute).with(input).returns(output)
-
-        assert_equal(output, @target.connector.execute(input))
-      end
-
-      should 'allow us to connect via SSH' do
-        input = 'uname -a'
-        output = 'some returned string'
-
-        @target.options[:credentials] = [@cred.merge(:connection_types=>[:ssh])]
-
-        connection = mock('SSHConnector')
-        SSHConnector.any_instance.stubs(:establish_connection).returns(connection)
-        @target.connect
-        @target.connector.stubs(:execute).with(input).returns(output)
-
-        assert_equal(output, @target.connector.execute(input))
-       end
-
-      should 'allow us to connect via WMI' do
-        input = 'SELECT * FROM Win32_OperatingSystem'
-        output = [:manufacturer=>'Microsoft Corporation']
-
-        @target.options[:credentials] = [@cred.merge(:connection_types=>[:wmi])]
-
-        connection = mock('WMIConnector')
-        WMIConnector.any_instance.stubs(:establish_connection).returns(connection)
-        @target.connect
-        @target.connector.stubs(:execute).with(input).returns(output)
-
-        assert_equal(output, @target.connector.execute(input))
       end
     end
 
     context 'that we have successfully connected to' do
       setup do
         ssh_connection = mock('SSHConnector')
-        @target.stubs(:connect).returns(ssh_connection)
         @target.connector = ssh_connection
+
+        @target.connector.stubs(:connected?).returns(true)
+        @target.connector.stubs(:class).returns(Connector::SSHConnector)
+        @target.stubs(:connect).returns(@target.connector)
 
         @target.options[:profiles].each do |profile|
           profile.stubs(:matches_target?).returns(false)
@@ -137,7 +114,6 @@ class TargetTest < Test::Unit::TestCase
       end
 
       should 'not find a profile if none are found to be suitable' do
-        Profiles::RedHat.stubs(:matches_target?).returns(false)
         assert_nil(@target.detect_profile)
       end
 

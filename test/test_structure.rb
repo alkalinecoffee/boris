@@ -12,18 +12,6 @@ class StructureTest < Test::Unit::TestCase
       @structure.options = Options.new
     end
 
-    should 'allow us to call methods for retrieving all standard configuration items via #retrieve_all' do
-      @structure.options[:auto_scrub_data] = false
-      @structure.retrieve_all
-
-      assert_equal([], @structure.file_systems)
-      assert_equal([], @structure.installed_applications)
-      assert_equal([], @structure.local_user_groups)
-      assert_equal([], @structure.network_interfaces)
-      assert_equal([], @structure.installed_patches)
-      assert_equal([], @structure.hosted_shares)
-    end
-
     should 'provide us with a file system template via #file_system_template' do
       expected = [
         :capacity_mb,
