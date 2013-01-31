@@ -57,8 +57,6 @@ module Boris
       
       debug 'preparing to connect'
 
-      #creds_to_try = @options[:credentials].reject {|cred| (cred[:connection_types] && @options[:connection_types]).empty?}
-
       @options[:credentials].each do |cred|
         if @connector && @connector.connected?
           debug 'active connection established, will not try any more credentials'
