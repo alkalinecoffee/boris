@@ -102,6 +102,8 @@ module Boris
       end
 
       @connector = nil if @connector.connected? == false
+
+      return @connector ? true : false
     end
 
     def connected?
