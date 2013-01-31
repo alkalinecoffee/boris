@@ -20,6 +20,8 @@ module Boris
         @connected = true
       rescue SNMP::RequestTimeout
         warn 'connection failed (connection timeout)'
+      rescue => error
+        warn "connection failed (#{error.message})"
       end
 
       return self

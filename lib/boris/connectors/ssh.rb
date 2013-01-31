@@ -52,19 +52,25 @@ module Boris
       
       chan = @transport.open_channel do |chan|
         if request_pty
-          debug 'requsting pty'
+          debug 'requsting pty...'
           chan.request_pty()
           debug 'pty successfully requested'
         end
 
         chan.on_data do |ch, data|
-          if request =~ /^sudo / && data =~ /password for/i
-            warn "target is asking for password for this request"
+          if data =~ /^\[sudo\] password for/i
+            debug 'system asking for password for sudo request'
+            if @password
+              ch.send_data "#{@password}\n"
+              debug 'password sent'
+            else
+              ch.close
+              info "channel closed (we don't have a password to supply)"
+            end
           elsif data =~ /permission denied/i
             warn "permission denied for this request (#{data.gsub(/\n|\s+/, ', ')})"
           else
             return_data << data
-            #return_data.concat(data.split(/\n/))
           end
         end
         
