@@ -4,7 +4,7 @@ module Boris
   class WMIConnector < Connector
     attr_accessor :wmi, :root_wmi, :registry
 
-    HKEY_LOCAL_MACHINE = '&H80000002'
+    HKEY_LOCAL_MACHINE = 0x80000002
     KEY_QUERY_VALUE = 1
     KEY_ENUMERATE_SUB_KEYS = 8
 
@@ -86,15 +86,19 @@ module Boris
       rows.each do |row|
         i += 1
 
+        return_hash = {}
+
         row.Properties_.each do |property|
           if property.Name =~ /^attributes/i && property.Value.kind_of?(WIN32OLE)
             row.Attributes.Properties_.each do |property|
-              return_data << {property.Name.downcase.to_sym => property.Value}
+              return_hash[property.Name.downcase.to_sym] = property.Value
             end
           else
-            return_data << {property.Name.downcase.to_sym => property.Value}
+            return_hash[property.Name.downcase.to_sym] = property.Value
           end
         end
+
+        return_data << return_hash
 
         break if (limit.nil? && i == limit)
       end
@@ -109,7 +113,7 @@ module Boris
 
       access_params = @registry.Methods_('CheckAccess').inParameters.SpawnInstance_
 
-      access_params.hDefKey = 9
+      access_params.hDefKey = HKEY_LOCAL_MACHINE
       access_params.sSubKeyName = key_path
       access_params.uRequired = permission_to_check
 
@@ -149,7 +153,10 @@ module Boris
         str_params = @registry.Methods_('GetStringValue').inParameters.SpawnInstance_
         str_params.sSubKeyName = key_path
 
-        @registry.ExecMethod_('EnumValues', in_params).sNames.each do |value|
+        subkey_values = @registry.ExecMethod_('EnumValues', in_params).sNames
+        subkey_values ||= []
+
+        subkey_values.each do |value|
           if !value.empty?
             str_params.sValueName = value
 
