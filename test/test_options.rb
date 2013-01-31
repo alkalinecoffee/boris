@@ -8,7 +8,6 @@ class OptionsTest < Test::Unit::TestCase
 
     should 'be modifiable via the options hash' do
       @options[:auto_scrub_data] = false
-      @options[:connection_types] = [:ssh, :wmi]
       @options[:credentials] = [{:user=>'someuser'}]
       @options[:log_level] = Logger::INFO
       @options[:profiles] = [:windows_core]
@@ -16,7 +15,6 @@ class OptionsTest < Test::Unit::TestCase
       @options[:ssh_options] = {:keys=>'~/.ssh/my_private_key', :verbose=>:debug}
 
       assert_equal(false, @options[:auto_scrub_data])
-      assert_equal([:ssh, :wmi], @options[:connection_types])
       assert_equal([{:user=>'someuser'}], @options[:credentials])
       assert_equal(Logger::INFO, @options[:log_level])
       assert_equal([:windows_core], @options[:profiles])

@@ -7,7 +7,6 @@ module Boris
 
       # set our defaults
       @options[:auto_scrub_data] ||= true
-      @options[:connection_types] ||= VALID_CONNECTION_TYPES
       @options[:credentials] ||= []
       @options[:log_level] ||= :fatal
       @options[:profiles] ||= [Profiles::RedHat, Profiles::Solaris]
