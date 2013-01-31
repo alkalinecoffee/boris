@@ -13,8 +13,8 @@ module Boris
       @host = host
       @user = cred[:user]
       @password = cred[:password]
-      @connection_unavailable = false
       @connected = false
+      @reconnectable = true
 
       @logger = logger
     end
@@ -28,7 +28,11 @@ module Boris
     end
 
     def values_at(request, limit)
-      raise ArgumentError, "invalid limit specified (#{limit})" if (!limit.nil? && limit < 1)
+      if !limit.kind_of?(Integer)
+        raise ArgumentError, "non-integer limit specified (#{limit.inspect})"
+      elsif limit < 1
+        raise ArgumentError, "specified limit must be greater than 1 (or nil for no limit) (#{limit.inspect})"
+      end unless limit.nil?
 
       amount = limit == 1 ? 'single value' : 'multiple values'
 
