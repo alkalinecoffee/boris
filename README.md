@@ -19,7 +19,8 @@ Out of the box, Boris has server support for Windows, Red Hat, and Solaris (with
 
 ## Example
 Let's pull some information from a RedHat Enterprise Linux server on our network:
-``` ruby
+
+```ruby
 require 'boris'
 
 target = Boris::Target.new('redhatserver01.mydomain.com')
@@ -28,7 +29,7 @@ target = Boris::Target.new('redhatserver01.mydomain.com')
 # kind of device this is)
 puts target.suggested_connection_method
 
-# you can also add the logic to make the decision yourself by checking if certain TCP ports are open
+# you can also add the logic to make the decision yourself by checking if certain TCP ports are responsive
 puts target.tcp_port_responding?(22)
 
 # add credentials to try against this target
@@ -85,4 +86,4 @@ Profiles contain the instructions that allow us to run commands against our targ
 * Shoulda (for tests only)
 
 ## LICENSE
-This software is provided under the MIT license.  See the LICENSE file.
+This software is provided under the MIT license.  See the LICENSE.md file.
