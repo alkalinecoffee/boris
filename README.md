@@ -74,7 +74,7 @@ Through a number of queries and algorithms, Boris effeciently polls devices on t
 Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
 
 ## Profiles
-Profiles are the basic instructions that allow us to run commands against our target and then parse and make sense of the data.  Boris comes with the capability to communicate with targets over SNMP, SSH, or WMI.  Each profile is written to use one of these methods of communication (internally called 'connectors'), which serve as a vehicle for running commands against a server.  Boris comes with a few profiles built-in for some popular platforms, but can be easily extended to include other devices.
+Profiles contain the instructions that allow us to run commands against our target and then parse and make sense of the data.  Boris comes with the capability to communicate with targets over SNMP, SSH, or WMI.  Each profile is written to use one of these methods of communication (internally called 'connectors'), which serve as a vehicle for running commands against a server.  Boris comes with a few profiles built-in for some popular platforms, but can be easily extended to include other devices.
 
 ## Requirements
 * Ruby 1.9.3 (only tested on MRI)
