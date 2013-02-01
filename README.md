@@ -19,7 +19,7 @@ Out of the box, Boris has server support for Windows, Red Hat, and Solaris (with
 
 ## Example
 Let's pull some information from a RedHat Enterprise Linux server on our network:
-
+``` ruby
     require 'boris'
 
     target = Boris::Target.new('redhatserver01.mydomain.com')
@@ -55,6 +55,7 @@ Let's pull some information from a RedHat Enterprise Linux server on our network
     end
 
     target.disconnect
+```
 
 ## Data
 Through a number of queries and algorithms, Boris effeciently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
