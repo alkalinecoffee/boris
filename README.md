@@ -20,41 +20,41 @@ Out of the box, Boris has server support for Windows, Red Hat, and Solaris (with
 ## Example
 Let's pull some information from a RedHat Enterprise Linux server on our network:
 ``` ruby
-    require 'boris'
+require 'boris'
 
-    target = Boris::Target.new('redhatserver01.mydomain.com')
+target = Boris::Target.new('redhatserver01.mydomain.com')
 
-    # let's use a helper to suggest how we should connect to it (which is useful if we're not sure what
-    # kind of device this is)
-    puts target.suggested_connection_method
+# let's use a helper to suggest how we should connect to it (which is useful if we're not sure what
+# kind of device this is)
+puts target.suggested_connection_method
 
-    # you can also add the logic to make the decision yourself by checking if certain TCP ports are open
-    puts target.tcp_port_responding?(22)
+# you can also add the logic to make the decision yourself by checking if certain TCP ports are open
+puts target.tcp_port_responding?(22)
 
-    # add credentials to try against this target
-    target.options.add_credential(:user=>'joe', :password=>'mypassword', :connection_types=>[:ssh])
+# add credentials to try against this target
+target.options.add_credential(:user=>'joe', :password=>'mypassword', :connection_types=>[:ssh])
 
-    # attempt to connect to this target using the credentials we supplied above
-    target.connect
+# attempt to connect to this target using the credentials we supplied above
+target.connect
 
-    if target.connected?
-      # detect which profile to load up (is this target running windows? solaris? or what?).  if we can't
-      # detect a suitable profile, this will throw an error
-      target.detect_profile
+if target.connected?
+  # detect which profile to load up (is this target running windows? solaris? or what?).  if we can't
+  # detect a suitable profile, this will throw an error
+  target.detect_profile
 
-      puts target.target_profile
+  puts target.target_profile
 
-      # we can call individual methods to grab specific information we may be interested in (or call
-      # #retrieve_all to grab everything we can)
-      target.get_hardware
+  # we can call individual methods to grab specific information we may be interested in (or call
+  # #retrieve_all to grab everything we can)
+  target.get_hardware
 
-      puts target.hardware.inspect
+  puts target.hardware.inspect
 
-      # finally, we can package up all of the data into json format for portability
-      puts target.to_json
-    end
+  # finally, we can package up all of the data into json format for portability
+  puts target.to_json
+end
 
-    target.disconnect
+target.disconnect
 ```
 
 ## Data
