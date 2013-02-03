@@ -38,8 +38,8 @@ module Boris; module Profiles
     def get_local_user_groups
       super
 
-      user_data = @connector.values_at('cat /etc/passwd')
-      group_data = @connector.values_at('cat /etc/group')
+      user_data = @connector.values_at('cat /etc/passwd | grep -v "^#"')
+      group_data = @connector.values_at('cat /etc/group | grep -v "^#"')
 
       users = []
       groups = []
@@ -72,7 +72,7 @@ module Boris; module Profiles
       
       if hostname =~ /\./
         hostname = hostname.split('.').shift
-        domain = hostname.join('.')
+        domain = hostname.join('.') if hostname =~ /\./
       end
 
       @network_id[:hostname] = hostname

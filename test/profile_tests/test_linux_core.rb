@@ -132,8 +132,8 @@ class LinuxCoreTest < ProfileTestSetup
         end
 
         should 'return local user groups and accounts via #get_local_user_groups if the server is not a domain controller' do
-          @connector.stubs(:values_at).with('cat /etc/passwd').returns(@user_data)
-          @connector.stubs(:values_at).with('cat /etc/group').returns(@group_data)
+          @connector.stubs(:values_at).with('cat /etc/passwd | grep -v "^#"').returns(@user_data)
+          @connector.stubs(:values_at).with('cat /etc/group | grep -v "^#"').returns(@group_data)
 
           @target.get_local_user_groups
 
