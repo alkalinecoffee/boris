@@ -140,7 +140,7 @@ module Boris
     #
     # @return [Boolean] returns true if the connection to the target is active
     def connected?
-      @connector.connected
+      (@connector && @connector.connected?) ? true : false
     end
 
     # Cycles through all of the profiles as specified in {Boris::Options} for this
@@ -189,8 +189,7 @@ module Boris
     #
     # @return [Boolean] returns true if the connection disconnected successfully
     def disconnect
-      @connector.disconnect
-      true if @connector.connected? == false
+      @connector.disconnect if @connector && @connector.connected?
     end
 
     # Allows us to force the use of a profile.  This can be used instead of #detect_profile.
