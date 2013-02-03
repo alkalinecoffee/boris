@@ -2,6 +2,7 @@
 ## A networked-device scanning solution
 
 * Code: http://github.com/alkalinecoffee/boris
+* Documentation: http://rdoc.info/github/alkalinecoffee/boris/master/frames
 * Issues: https://github.com/alkalinecoffee/boris/issues
 
 ## Introduction
