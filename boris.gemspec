@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = 'boris'
-  s.version           = '1.0.0'
+  s.version           = '1.0.0.beta'
   s.summary           = 'Boris: A networked-device scanning library.'
   s.description       = s.summary + ' Boris allows you to write programs for logging into and pulling information off of various server platforms, appliances, and other types of networked devices, producing clean and consistent data ideal for configuration managment usage.'
 
