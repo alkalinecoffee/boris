@@ -10,6 +10,12 @@ module Boris
       @reconnectable = true
     end
 
+    def disconnect
+      super
+      @transport = nil
+      debug 'connections closed'
+    end
+
     def establish_connection
       super
 

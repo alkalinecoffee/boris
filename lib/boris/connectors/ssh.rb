@@ -11,6 +11,12 @@ module Boris
 
       super(host, cred, options, logger)
     end
+
+    def disconnect
+      super
+      @transport = nil
+      debug 'connections closed'
+    end
     
     def establish_connection
       super

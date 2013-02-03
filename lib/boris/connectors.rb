@@ -23,6 +23,11 @@ module Boris
       @connected
     end
 
+    def disconnect
+      debug 'closing connection to host'
+      @connected = false
+    end
+
     def establish_connection
       debug 'attempting connection'
     end
@@ -37,11 +42,6 @@ module Boris
       amount = limit == 1 ? 'single value' : 'multiple values'
 
       debug "issuing request for #{amount} (#{request.inspect})"
-    end
-
-    def close
-      debug 'closing connection to host'
-      @connected = false
     end
   end
 end

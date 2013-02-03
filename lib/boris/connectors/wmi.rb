@@ -12,6 +12,15 @@ module Boris
       super(host, cred, options, logger)
     end
 
+    def disconnect
+      super
+      @wmi = nil
+      @registry = nil
+      @root_wmi = nil
+
+      debug 'connections closed'
+    end
+    
     def establish_connection
       super
 
@@ -54,15 +63,6 @@ module Boris
       end unless @transport
 
       return self
-    end
-
-    def close
-      super
-      @wmi = nil
-      @registry = nil
-      @root_wmi = nil
-
-      debug 'connections closed'
     end
 
     def value_at(request, conn=:wmi)
