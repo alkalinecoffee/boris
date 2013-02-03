@@ -38,8 +38,21 @@ class TargetTest < Test::Unit::TestCase
     end
 
     should 'allow its data (instance variables) to be produced as json' do
-      assert_equal('{"host":"0.0.0.0"}', @target.to_json)
+      long_json_string = %w{
+        {"file_systems":null,
+        "hardware":null,
+        "hosted_shares":null,
+        "installed_applications":null,
+        "installed_patches":null,
+        "installed_services":null,
+        "local_user_groups":null,
+        "network_id":null,
+        "network_interfaces":null,
+        "operating_system":null}}.join
+
+      assert_equal(long_json_string, @target.to_json)
     end
+
 
     should 'allow credentials to be added through #add_credential' do
       @target.options.add_credential(@cred.merge!(:connection_types=>[:wmi]))
@@ -75,6 +88,8 @@ class TargetTest < Test::Unit::TestCase
       end
 
       should 'attempt an SSH and WMI connection only once if the target does not respond to an attempt' do
+        skip("test relies on WIN32OLE") if PLATFORM != :win32
+        
         @target.options.add_credential(@cred.merge!(:connection_types=>[:snmp, :ssh, :wmi]))
         
         Net::SSH.stubs(:start).raises(Net::SSH::HostKeyMismatch)
@@ -113,8 +128,8 @@ class TargetTest < Test::Unit::TestCase
         @target.connect
       end
 
-      should 'not find a profile if none are found to be suitable' do
-        assert_nil(@target.detect_profile)
+      should 'raise an error if no profiles are found to be suitable' do
+        assert_raise(NoProfileDetected) {@target.detect_profile}
       end
 
       should 'detect the best profile for our target' do
@@ -123,7 +138,6 @@ class TargetTest < Test::Unit::TestCase
       end
 
       should 'allow us to force a profile to be used for our target even if it is not ideal' do
-        assert_nil(@target.detect_profile)
         @target.force_profile_to(Profiles::RedHat)
         assert_equal(Profiles::RedHat, @target.target_profile)
       end
