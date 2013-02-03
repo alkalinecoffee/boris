@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-PLATFORM = RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/ ? :win32 : nil
+PLATFORM = RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/ ? :win32 : RbConfig::CONFIG['host_os']
 
 require 'date'
 require 'json'
