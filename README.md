@@ -60,7 +60,9 @@ target.disconnect
 
 ## Data
 Through a number of queries and algorithms, Boris effeciently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
-#### Available methods for use on most platforms include:
+
+**Available methods for use on most platforms include:**
+
 * **file systems** - file system, mount point, capacity and utilization
 * **hardware** - make/model, cpu information, firmware/bios version, serial number
 * **hosted shares** - folders shared by the target
