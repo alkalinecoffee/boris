@@ -1,4 +1,4 @@
-require '.\setup_tests'
+require 'setup_tests'
 
 class ProfileStructure
   include Profiles::Structure
