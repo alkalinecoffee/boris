@@ -1,6 +1,11 @@
+lib = File.expand_path('../lib/', __FILE__)
+$:.unshift lib unless $:.include?(lib)
+
+require 'boris/version'
+
 Gem::Specification.new do |s|
   s.name              = 'boris'
-  s.version           = '1.0.0.beta.1'
+  s.version           = Boris::VERSION
   s.summary           = 'Boris: A networked-device scanning library.'
   s.description       = s.summary + ' Boris allows you to write programs for logging into and pulling information off of various server platforms, appliances, and other types of networked devices, producing clean and consistent data ideal for configuration managment usage.'
 
@@ -23,6 +28,6 @@ Gem::Specification.new do |s|
 
   s.require_paths     = %w[lib]
 
-  s.files             = Dir.glob("{.,bin,lib}/**/*")
+  s.files             = Dir.glob("lib/**/*") + %w(LICENSE.md Rakefile README.md)
 
 end
