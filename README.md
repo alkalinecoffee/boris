@@ -11,7 +11,7 @@ Boris is a library that facilitates the communication between you and various ne
 Out of the box, Boris has server support for Windows, Red Hat, and Solaris (with other platforms available with future plugins), with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profiles, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms.
 
 ## Features
-* Out of the box, pulls information from RedHat Linux, Solaris 10, and Windows servers
+* Out of the box, pulls information from RedHat Linux, Solaris 10, and Windows servers (future support for OS X, F5 BIG-IP, and Cisco IOS devices)
 * Utilizes SNMP, SSH, and WMI communication technologies
 * Expandable to include other networked devices, such as switches, load balancers, and other operating systems
 
