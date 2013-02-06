@@ -1,8 +1,8 @@
 # Boris
 ## Networked-device scanning library written in Ruby
 
-* Blog: http://www.sharkwavemedia.com
 * Code: http://github.com/alkalinecoffee/boris
+* Developer's blog: http://www.sharkwavemedia.com
 * Documentation: http://rdoc.info/github/alkalinecoffee/boris/master/frames
 * Issues: https://github.com/alkalinecoffee/boris/issues
 
