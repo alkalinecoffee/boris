@@ -54,9 +54,9 @@ if target.connected?
 
   # finally, we can package up all of the data into json format for portability
   puts target.to_json
-end
 
-target.disconnect
+  target.disconnect
+end
 ```
 
 ## Data
