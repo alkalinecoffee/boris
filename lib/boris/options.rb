@@ -1,5 +1,7 @@
 module Boris
   class Options
+    include Lumberjack
+
     attr_accessor :options
 
     # Creates our options hash where the user can pass in an optional hash to immediately
@@ -13,8 +15,6 @@ module Boris
     #  after running #retrieve_all?
     # @option options [Array] :credentials an array of credentials in the format of
     #  +:user+, +:password+, +:connection_types+.  Only +:user+ is mandatory.
-    # @option options [Symbol] :log_level The level of logging.  Options are:
-    #  +:debug+, +:info+, +:warn+, +:error+, +:fatal (default)+
     # @option options [Array] profiles An array of module names of the profiles we wish
     #  to have available for use on this target.  {Boris::Profiles::RedHat} and
     #  {Profiles::Solaris} are always the defaults, and Windows profiles are included
@@ -30,7 +30,6 @@ module Boris
       # set our defaults
       @options[:auto_scrub_data] ||= true
       @options[:credentials] ||= []
-      @options[:log_level] ||= :fatal
       @options[:profiles] ||= [Profiles::RedHat, Profiles::Solaris]
       @options[:profiles].concat([Profiles::Windows::Windows2003, Profiles::Windows::Windows2008, Profiles::Windows::Windows2012]) if PLATFORM == :win32
       @options[:snmp_options] ||= {}
@@ -46,7 +45,7 @@ module Boris
     end
 
     # Getter method for grabbing a value from the Options.
-    #  puts options[:log_level] #=> :debug
+    #  puts options[:profiles] #=> [Profiles::RedHat]
     #
     # @param key symbol of the key-value pair
     # @return returns the value of specified key from Options
@@ -55,9 +54,9 @@ module Boris
     end
 
     # Setter method for setting the value in the options hash
-    #  puts options[:log_level] #=> :debug
-    #  options[:log_level] = :info
-    #  puts options[:log_level] #=> :info
+    #  puts options[:profiles] #=> [Profiles::RedHat]
+    #  options[:profiles] << Profiles::Solaris
+    #  puts options[:profiles] #=> [Profiles::RedHat, Profiles::Solaris]
     # @raise ArgumentError when invalid options are provided
     def []=(key, val)
       raise ArgumentError, 'invalid option provided' if !@options.has_key?(key)
@@ -81,6 +80,17 @@ module Boris
       end
 
       @options[:credentials] << cred unless @options[:credentials].include?(cred)
+    end
+
+    def set_log_level(level)
+      @logger.level = case log_level
+      when :debug then Logger::DEBUG
+      when :info then Logger::INFO
+      when :warn then Logger::WARN
+      when :error then Logger::ERROR
+      when :fatal then Logger::FATAL
+      else raise ArgumentError, "invalid logger level specified (#{log_level.inspect})"
+      end
     end
   end
 end

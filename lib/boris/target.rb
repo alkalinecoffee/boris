@@ -48,17 +48,7 @@ module Boris
       @options = Options.new(options)
 
       @logger = BorisLogger.new(STDERR)
-
-      if @options[:log_level]
-        @logger.level = case @options[:log_level]
-        when :debug then Logger::DEBUG
-        when :info then Logger::INFO
-        when :warn then Logger::WARN
-        when :error then Logger::ERROR
-        when :fatal then Logger::FATAL
-        else raise ArgumentError, "invalid logger level specified (#{@options[:log_level].inspect})"
-        end
-      end
+      log_level = :fatal
 
       @unavailable_connection_types = []
 
@@ -268,7 +258,7 @@ module Boris
         info 'ssh does not appear to be responding'
       end
 
-      info 'failed to detect connection method'if connection_method.nil?
+      info 'failed to detect connection method' if connection_method.nil?
       connection_method
     end
 

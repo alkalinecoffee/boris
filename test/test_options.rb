@@ -9,14 +9,12 @@ class OptionsTest < Test::Unit::TestCase
     should 'be modifiable via the options hash' do
       @options[:auto_scrub_data] = false
       @options[:credentials] = [{:user=>'someuser'}]
-      @options[:log_level] = Logger::INFO
       @options[:profiles] = [:windows_core]
       @options[:snmp_options] = {:MibModules=>['IF-MIB']}
       @options[:ssh_options] = {:keys=>'~/.ssh/my_private_key', :verbose=>:debug}
 
       assert_equal(false, @options[:auto_scrub_data])
       assert_equal([{:user=>'someuser'}], @options[:credentials])
-      assert_equal(Logger::INFO, @options[:log_level])
       assert_equal([:windows_core], @options[:profiles])
       assert_equal({:MibModules=>['IF-MIB']}, @options[:snmp_options])
       assert_equal({:keys=>'~/.ssh/my_private_key', :verbose=>:debug}, @options[:ssh_options])
