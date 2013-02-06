@@ -76,7 +76,7 @@ Through a number of queries and algorithms, Boris efficiently polls devices on t
 * **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
 * **operating system** - name, version, kernel, date installed
 
-See {Profiles::Structure} for more details on the data structure.
+See {Boris::Profiles::Structure} for more details on the data structure.
 
 Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
 
