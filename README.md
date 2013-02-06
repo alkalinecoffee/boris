@@ -1,6 +1,7 @@
 # Boris
 ## Networked-device scanning library written in Ruby
 
+* Blog: http://www.sharkwavemedia.com
 * Code: http://github.com/alkalinecoffee/boris
 * Documentation: http://rdoc.info/github/alkalinecoffee/boris/master/frames
 * Issues: https://github.com/alkalinecoffee/boris/issues
@@ -11,7 +12,7 @@ Boris is a library that facilitates the communication between you and various ne
 Out of the box, Boris has server support for Windows, Red Hat, and Solaris (with other platforms available with future plugins), with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profiles, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms.
 
 ## Features
-* Out of the box, pulls information from RedHat Linux, Solaris 10, and Windows servers (future support for OS X, F5 BIG-IP, and Cisco IOS devices)
+* Currently, pulls information from RedHat Linux, Solaris 10, and Windows servers (support for OS X, F5 BIG-IP, and Cisco IOS devices in the works)
 * Utilizes SNMP, SSH, and WMI communication technologies
 * Expandable to include other networked devices, such as switches, load balancers, and other operating systems
 
@@ -60,7 +61,7 @@ end
 ```
 
 ## Data
-Through a number of queries and algorithms, Boris effeciently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
+Through a number of queries and algorithms, Boris efficiently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
 
 **Available methods for use on most platforms include:**
 
@@ -75,20 +76,12 @@ Through a number of queries and algorithms, Boris effeciently polls devices on t
 * **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
 * **operating system** - name, version, kernel, date installed
 
-See {Boris::Profiles::Structure} for more details on the data structure.
+See {Profiles::Structure} for more details on the data structure.
 
 Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
 
 ## Profiles
 Profiles contain the instructions that allow us to run commands against our target and then parse and make sense of the data.  Boris comes with the capability to communicate with targets over SNMP, SSH, or WMI.  Each profile is written to use one of these methods of communication (internally called 'connectors'), which serve as a vehicle for running commands against a server.  Boris comes with a few profiles built-in for some popular platforms, but can be easily extended to include other devices.
-
-## Requirements
-* Ruby 1.9.3 (only tested on MRI)
-* Net/SSH gem
-* NetAddr gem
-* SNMP gem
-* Mocha (for tests only)
-* Shoulda (for tests only)
 
 ## LICENSE
 This software is provided under the MIT license.  See the LICENSE.md file.

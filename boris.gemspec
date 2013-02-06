@@ -15,16 +15,12 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 1.9.3'
 
-  s.requirements      << 'netaddr'
-  s.requirements      << 'net/ssh'
-  s.requirements      << 'snmp'
+  s.add_dependency 'netaddr', '>= 1.5.0'
+  s.add_dependency 'net-ssh', '>= 2.5.2'
+  s.add_dependency 'snmp', '>= 1.1.0'
 
-  s.add_runtime_dependency 'netaddr'
-  s.add_runtime_dependency 'net-ssh'
-  s.add_runtime_dependency 'snmp'
-
-  s.add_development_dependency 'mocha'
-  s.add_development_dependency 'shoulda'
+  s.add_development_dependency 'mocha', '>= 0.12.3'
+  s.add_development_dependency 'shoulda', '>= 3.1.1'
 
   s.require_paths     = %w[lib]
 
