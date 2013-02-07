@@ -1,4 +1,4 @@
-module Boris; module Profiles
+module Boris
   module Structure
     include Lumberjack
 
@@ -164,4 +164,4 @@ module Boris; module Profiles
 
     alias get_installed_daemons get_installed_services
   end
-end; end
+end

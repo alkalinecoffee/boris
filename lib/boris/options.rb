@@ -15,9 +15,11 @@ module Boris
     #  after running #retrieve_all?
     # @option options [Array] :credentials an array of credentials in the format of
     #  +:user+, +:password+, +:connection_types+.  Only +:user+ is mandatory.
-    # @option options [Array] profiles An array of module names of the profiles we wish
-    #  to have available for use on this target.  {Boris::Profiles::RedHat} and
-    #  {Profiles::Solaris} are always the defaults, and Windows profiles are included
+    # @option options [Symbol] :log_level a symbol for setting the log level
+    #  # Options are: +:debug+, +:info+, +:warn+, +:error+, +:fatal+ (default)
+    # @option options [Array] profilers An array of module names of the profiles we wish
+    #  to have available for use on this target.  {Boris::Profilers::RedHat} and
+    #  {Profilers::Solaris} are always the defaults, and Windows profilers are included
     #  as defaults as well if {Boris} is running on a Windows host (where WMI connections
     #  are available)
     # @option options [Hash] snmp_options A hash of options supported by ruby-snmp.
@@ -30,8 +32,9 @@ module Boris
       # set our defaults
       @options[:auto_scrub_data] ||= true
       @options[:credentials] ||= []
-      @options[:profiles] ||= [Profiles::RedHat, Profiles::Solaris]
-      @options[:profiles].concat([Profiles::Windows::Windows2003, Profiles::Windows::Windows2008, Profiles::Windows::Windows2012]) if PLATFORM == :win32
+      @options[:log_level] ||= :fatal
+      @options[:profilers] ||= [Profilers::RedHat, Profilers::Solaris]
+      @options[:profilers].concat([Profilers::Windows2003, Profilers::Windows2008, Profilers::Windows2012]) if PLATFORM == :win32
       @options[:snmp_options] ||= {}
       @options[:ssh_options] ||= {}
 
@@ -45,7 +48,7 @@ module Boris
     end
 
     # Getter method for grabbing a value from the Options.
-    #  puts options[:profiles] #=> [Profiles::RedHat]
+    #  puts options[:profilers] #=> [Profilers::RedHat]
     #
     # @param key symbol of the key-value pair
     # @return returns the value of specified key from Options
@@ -54,9 +57,9 @@ module Boris
     end
 
     # Setter method for setting the value in the options hash
-    #  puts options[:profiles] #=> [Profiles::RedHat]
-    #  options[:profiles] << Profiles::Solaris
-    #  puts options[:profiles] #=> [Profiles::RedHat, Profiles::Solaris]
+    #  puts options[:profilers] #=> [Profilers::RedHat]
+    #  options[:profilers] << Profilers::Solaris
+    #  puts options[:profilers] #=> [Profilers::RedHat, Profilers::Solaris]
     # @raise ArgumentError when invalid options are provided
     def []=(key, val)
       raise ArgumentError, 'invalid option provided' if !@options.has_key?(key)

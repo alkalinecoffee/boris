@@ -1,7 +1,8 @@
+require 'boris/profilers'
 require 'boris/structure'
 
-module Boris; module Profiles
-  module UNIX
+module Boris; module Profilers
+  class UNIX < Profiler
     include Structure
 
     def self.connection_type

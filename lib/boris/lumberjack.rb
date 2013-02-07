@@ -34,19 +34,6 @@ module Boris
       logger.add(Logger::FATAL, append_target_name(msg), facility) if logger && logger.fatal?
     end
 
-    # Options are: +:debug+, +:info+, +:warn+, +:error+, +:fatal+
-    def log_level=(log_level)
-      puts 'helloooooo'
-      logger.level = case log_level
-      when :debug then Logger::DEBUG
-      when :info then Logger::INFO
-      when :warn then Logger::WARN
-      when :error then Logger::ERROR
-      when :fatal then Logger::FATAL
-      else raise ArgumentError, "invalid logger level specified (#{log_level.inspect})"
-      end
-    end
-
     private
 
     def append_target_name(msg)

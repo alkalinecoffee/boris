@@ -15,16 +15,16 @@ require 'win32ole' if PLATFORM == :win32
 
 require 'boris/lumberjack'
 
+require 'boris/helpers/array'
+require 'boris/helpers/constants'
+require 'boris/helpers/hash'
+require 'boris/helpers/net_tools'
+require 'boris/helpers/scrubber'
+require 'boris/helpers/string'
+
 require 'boris/errors'
 require 'boris/options'
 require 'boris/target'
 
-require 'boris/helpers/array'
-require 'boris/helpers/constants'
-require 'boris/helpers/hash'
-require 'boris/helpers/scrubber'
-require 'boris/helpers/string'
-
 module Boris
-
 end

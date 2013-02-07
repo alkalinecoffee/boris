@@ -4,7 +4,7 @@ class TargetTest < Test::Unit::TestCase
   context 'a Target' do
     setup do
       @target = Target.new('0.0.0.0')
-      @target.extend(Profiles::Structure)
+      @target.extend(Boris::Structure)
       @cred = {:user=>'someuser', :password=>'somepass'}
     end
 
@@ -83,8 +83,8 @@ class TargetTest < Test::Unit::TestCase
         assert_raise(InvalidOption) {@target.connect}
       end
 
-      should 'error if we try to detect the profile when there is no active connection' do
-        assert_raise(NoActiveConnection) {@target.detect_profile}
+      should 'error if we try to detect the profiler when there is no active connection' do
+        assert_raise(NoActiveConnection) {@target.detect_profilerr}
       end
 
       should 'attempt an SSH and WMI connection only once if the target does not respond to an attempt' do
@@ -121,25 +121,25 @@ class TargetTest < Test::Unit::TestCase
         @target.connector.stubs(:class).returns(Connector::SSHConnector)
         @target.stubs(:connect).returns(@target.connector)
 
-        @target.options[:profiles].each do |profile|
-          profile.stubs(:matches_target?).returns(false)
+        @target.options[:profilers].each do |profiler|
+          profiler.stubs(:matches_target?).returns(false)
         end
 
         @target.connect
       end
 
-      should 'raise an error if no profiles are found to be suitable' do
-        assert_raise(NoProfileDetected) {@target.detect_profile}
+      should 'raise an error if no profilers are found to be suitable' do
+        assert_raise(NoProfilerDetected) {@target.detect_profilerr}
       end
 
-      should 'detect the best profile for our target' do
-        Profiles::RedHat.stubs(:matches_target?).returns(true)
-        assert_equal(Profiles::RedHat, @target.detect_profile)
+      should 'detect the best profiler for our target' do
+        Profilers::RedHat.stubs(:matches_target?).returns(true)
+        assert_equal(Profilers::RedHat, @target.detect_profilerr)
       end
 
-      should 'allow us to force a profile to be used for our target even if it is not ideal' do
-        @target.force_profile_to(Profiles::RedHat)
-        assert_equal(Profiles::RedHat, @target.target_profile)
+      should 'allow us to force a profiler to be used for our target even if it is not ideal' do
+        @target.force_profile_to(Profilers::RedHat)
+        assert_equal(Profilers::RedHat, @target.target_profiler)
       end
     end
   end

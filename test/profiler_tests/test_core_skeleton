@@ -7,11 +7,11 @@ class WindowsCoreTest < Test::Unit::TestCase
       @target = Target.new(@target_name)
       @connector = @target.connector = instance_of(WMIConnector)
 
-      @target.detect_profile
+      @target.detect_profiler
     end
 
     should 'detect when a target should use the Win2008 profile' do
-      assert_equal(Profiles::Win2008, @target.target_profile)
+      assert_equal(Profilers::Win2008, @target.target_profiler)
     end
 
     context 'being scanned' do
