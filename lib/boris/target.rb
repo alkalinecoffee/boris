@@ -1,27 +1,20 @@
+require 'boris/errors'
+require 'boris/options'
 require 'boris/connectors/nil'
 require 'boris/connectors/snmp'
 require 'boris/connectors/ssh'
 require 'boris/connectors/wmi'
-
-require 'boris/profilers/linux/redhat'
-require 'boris/profilers/unix/solaris'
-
-require 'boris/profilers/windows/windows2003'
-require 'boris/profilers/windows/windows2008'
-require 'boris/profilers/windows/windows2012'
+require 'boris/helpers/network'
+require 'boris/helpers/scrubber'
 
 module Boris
-  PORT_DEFAULTS = {:ssh=>22, :wmi=>135}
-  VALID_CONNECTION_TYPES = [:snmp, :ssh, :wmi]
-
   # {Boris::Target} is the basic class from which you can control the underlying framework
   # for communicating with the device you wish to scan.  A Target will allow you to provide
   # options via {Boris::Options}, detect which profiler to use, connect to, and eventually
   # scan your target device, returning a large amount of data.
   class Target
     include Lumberjack
-    include NetTools
-
+    
     attr_reader :host
     attr_reader :unavailable_connection_types
 
@@ -83,7 +76,7 @@ module Boris
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
     def [](var)
-      eval "@data.#{var.to_s}"
+      eval "@profiler.#{var.to_s}"
     end
 
     # Connects to the target using the credentials supplied via the connection type as specified
@@ -183,7 +176,7 @@ module Boris
           debug "testing profiler: #{profiler}"
 
           if profiler.matches_target?(@connector)
-            @profiler = profile
+            @profiler = profiler
 
             debug "suitable profiler found (#{@profiler})"
 
@@ -225,7 +218,7 @@ module Boris
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
     def get(category)
-      eval "@data.get_#{category.to_s}"
+      eval "@profiler.get_#{category.to_s}"
       self[category]
     end
 
@@ -284,6 +277,8 @@ module Boris
     # @param pretty a boolean value to determine whether the data should be
     #  returned in json format with proper indentation.
     def to_json(pretty=false)
+      puts @profiler.inspect
+
       generated_json = pretty ? JSON.pretty_generate(@profiler) : JSON.generate(@profiler)
 
       debug "json generated successfully"

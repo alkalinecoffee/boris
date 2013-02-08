@@ -1,3 +1,4 @@
+require 'boris/profiler'
 require 'boris/profilers/windows_core'
 
 module Boris; module Profilers

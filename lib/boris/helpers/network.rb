@@ -1,5 +1,7 @@
+require 'boris/lumberjack'
+
 module Boris
-  module NetTools
+  module Network
     include Lumberjack
 
     # Attempts to suggest a connection method based on whether certain TCP ports
@@ -13,20 +15,23 @@ module Boris
     # @param target name we wish to test against
     # @return [Symbol] returns :wmi, :ssh, or nil
     # @see tcp_port_responding?
-    def suggested_connection_method(target)
+    def self.suggested_connection_method(target)
       connection_method = nil
       
-      debug 'detecting if wmi is available'
-      connection_method = :wmi if tcp_port_responding?(target, PORT_DEFAULTS[:wmi])
-      info 'wmi does not appear to be responding'
+      PORT_DEFAULTS.each_pair do |key, val|
+        break if connection_method
+        
+        #debug "detecting if #{key.to_s} is available"
 
-      if connection_method.nil?
-        debug 'detecting if ssh is available'
-        connection_method = :ssh if tcp_port_responding?(target, PORT_DEFAULTS[:ssh])
-        info 'ssh does not appear to be responding'
+        if tcp_port_responding?(target, val)
+          #debug "#{key.to_s} seems to be available"
+          connection_method = key
+        else
+          #info 'wmi does not appear to be responding'
+        end
       end
 
-      info 'failed to detect connection method' if connection_method.nil?
+      #info 'failed to detect connection method' if connection_method.nil?
       connection_method
     end
 
@@ -40,19 +45,19 @@ module Boris
     # @param target name we wish to test against
     # @param port the TCP port number we wish to test
     # @return [Boolean] returns true of the supplied port is responding
-    def tcp_port_responding?(target, port)
+    def self.tcp_port_responding?(target, port)
       status = false
 
-      debug "checking if port #{port} is responding"
+      #debug "checking if port #{port} is responding"
 
       begin
         conn = TCPSocket.new(target, port)
-        info "port #{port} is responding"
+        #info "port #{port} is responding"
         conn.close
-        debug "connection to port closed"
+        #debug "connection to port closed"
         status = true
       rescue
-        info "port #{port} is not responding"
+        #info "port #{port} is not responding"
         status = false
       end
 

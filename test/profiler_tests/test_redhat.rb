@@ -6,11 +6,12 @@ class RedHatCoreTest < ProfilerTestSetup
       @connector = @target.connector = instance_of(SSHConnector)
       @target.stubs(:target_profiler).returns(Profilers::RedHat)
       @target.force_profiler_to(Profilers::RedHat)
+      @profiler = @target.profiler
       @connector.stubs(:values_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).returns(['redhat'])
     end
 
     should 'detect when a target should use the RedHat profile' do
-      assert_equal(Profilers::RedHat, @target.profiler.class)
+      assert_equal(Profilers::RedHat, @profiler.class)
     end
 
     context 'being scanned' do
@@ -61,8 +62,8 @@ class RedHatCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(application_command).returns(@application_data)
 
-          @target.get(:installed_applications)
-          assert_equal(@expected_data, @target.installed_applications)
+          @profiler.get_installed_applications
+          assert_equal(@expected_data, @profiler.installed_applications)
         end
       end
 
@@ -81,8 +82,8 @@ class RedHatCoreTest < ProfilerTestSetup
         should 'return service information via #get_installed_services' do
           @connector.stubs(:values_at).with("/sbin/chkconfig --list | awk {'print $1'}").returns(@expected_data.collect{|svc| svc[:name]})
 
-          @target.get(:installed_services)
-          assert_equal(@expected_data, @target.installed_services)
+          @profiler.get_installed_services
+          assert_equal(@expected_data, @profiler.installed_services)
         end
       end
 
@@ -125,8 +126,8 @@ class RedHatCoreTest < ProfilerTestSetup
           @connector.stubs(:value_at).with('uname -r').returns(@kernel_data)
           @connector.stubs(:values_at).with('lsb_release -a | egrep -i "description|release"').returns(@os_data)
           
-          @target.get(:operating_system)
-          assert_equal(@expected_data, @target.operating_system)
+          @profiler.get_operating_system
+          assert_equal(@expected_data, @profiler.operating_system)
         end
       end
     end

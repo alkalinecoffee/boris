@@ -1,3 +1,5 @@
+require 'boris/helpers/string'
+
 module Boris; module Profiles
   module Structure
     def scrub_data!

@@ -6,6 +6,7 @@ class SolarisCoreTest < ProfilerTestSetup
       @connector = @target.connector = instance_of(SSHConnector)
       @target.stubs(:target_profiler).returns(Profilers::Solaris)
       @target.force_profiler_to(Profilers::Solaris)
+      @profiler = @target.profiler
       @connector.stubs(:value_at).with('uname').returns('SunOS')
     end
 
@@ -91,8 +92,8 @@ class SolarisCoreTest < ProfilerTestSetup
 
               @connector.stubs(:values_at).with(@zoneadm_command).returns('global')
 
-              @target.get(:hardware)
-              assert_equal(@expected_data, @target.hardware)
+              @profiler.get_hardware
+              assert_equal(@expected_data, @profiler.hardware)
             end
           end
         end
@@ -137,8 +138,8 @@ class SolarisCoreTest < ProfilerTestSetup
 
               @connector.stubs(:values_at).with(@zoneadm_command).returns('global')
 
-              @target.get(:hardware)
-              assert_equal(@expected_data, @target.hardware)
+              @profiler.get_hardware
+              assert_equal(@expected_data, @profiler.hardware)
             end
           end
 
@@ -150,8 +151,8 @@ class SolarisCoreTest < ProfilerTestSetup
               @connector.stubs(:values_at).with(@smbios_command).returns([])
               @connector.stubs(:values_at).with(@zoneadm_command).returns('somezone')
 
-              @target.get(:hardware)
-              assert_equal(@expected_data, @target.hardware)
+              @profiler.get_hardware
+              assert_equal(@expected_data, @profiler.hardware)
             end
           end
         end
@@ -175,8 +176,8 @@ class SolarisCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(share_command).returns(@share_data)
 
-          @target.get(:hosted_shares)
-          assert_equal(@expected_data, @target.hosted_shares)
+          @profiler.get_hosted_shares
+          assert_equal(@expected_data, @profiler.hosted_shares)
         end
       end
 
@@ -219,8 +220,8 @@ class SolarisCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(application_command).returns(@application_data)
 
-          @target.get(:installed_applications)
-          assert_equal(@expected_data, @target.installed_applications)
+          @profiler.get_installed_applications
+          assert_equal(@expected_data, @profiler.installed_applications)
         end
       end
 
@@ -247,8 +248,8 @@ class SolarisCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(patch_dir_command).returns([@patch_dir_data])
 
-          @target.get(:installed_patches)
-          assert_equal(@expected_data, @target.installed_patches)
+          @profiler.get_installed_patches
+          assert_equal(@expected_data, @profiler.installed_patches)
         end
       end
 
@@ -263,8 +264,8 @@ class SolarisCoreTest < ProfilerTestSetup
         should 'return service information via #get_installed_services' do
           @connector.stubs(:values_at).with("svcs -a | nawk '{print $NF}'").returns(@expected_data.collect{|svc| svc[:name]})
 
-          @target.get(:installed_services)
-          assert_equal(@expected_data, @target.installed_services)
+          @profiler.get_installed_services
+          assert_equal(@expected_data, @profiler.installed_services)
         end
       end
 
@@ -304,7 +305,7 @@ class SolarisCoreTest < ProfilerTestSetup
             @expected_ethernet_data = []
 
             # this interface is fully online... standard setup with multiple ipv4/ipv6 addresses
-            @expected_ethernet_data << @target.network_interface_template.merge({
+            @expected_ethernet_data << @profiler.network_interface_template.merge({
               :auto_negotiate=>false,
               :current_speed_mbps=>1000,
               :dns_servers=>['192.168.1.1', '192.168.1.2'],
@@ -326,7 +327,7 @@ class SolarisCoreTest < ProfilerTestSetup
 
             # this interface has no physical connection but is configured to be up with ipv4 addresses...
             # should report status as down with no ip or link data
-            @expected_ethernet_data << @target.network_interface_template.merge({
+            @expected_ethernet_data << @profiler.network_interface_template.merge({
               :dns_servers=>['192.168.1.1', '192.168.1.2'],
               :mac_address=>'01:01:01:01:01:01',
               :model=>'Unknown Ethernet Adapter',
@@ -401,8 +402,8 @@ class SolarisCoreTest < ProfilerTestSetup
             mac_mapping_data = ['e1000g0|192.168.1.5|01:01:01:01:01:01', 'ce0|192.168.1.5|01:01:01:01:01:01']
             @connector.stubs(:values_at).with(@mac_mapping_command).returns(mac_mapping_data)
 
-            @target.get(:network_interfaces)
-            assert_equal(@expected_ethernet_data, @target.network_interfaces)
+            @profiler.get_network_interfaces
+            assert_equal(@expected_ethernet_data, @profiler.network_interfaces)
           end
         end
 
@@ -410,7 +411,7 @@ class SolarisCoreTest < ProfilerTestSetup
           setup do
             @connector.stubs(:values_at).with(@zoneadm_command).returns(['childzone'])
 
-            @expected_ethernet_data = [@target.network_interface_template.merge({
+            @expected_ethernet_data = [@profiler.network_interface_template.merge({
               :current_speed_mbps=>1000,
               :dns_servers=>['192.168.1.1', '192.168.1.2'],
               :duplex=>'full',
@@ -451,14 +452,14 @@ class SolarisCoreTest < ProfilerTestSetup
             mac_mapping_data = ['ce1|192.168.1.2|01:01:01:01:01:01']
             @connector.stubs(:values_at).with(@mac_mapping_command).returns(mac_mapping_data)
 
-            @target.get(:network_interfaces)
-            assert_equal(@expected_ethernet_data, @target.network_interfaces)
+            @profiler.get_network_interfaces
+            assert_equal(@expected_ethernet_data, @profiler.network_interfaces)
           end
         end
 
         context 'in a fibre channel setup' do
           setup do
-            @expected_fibre_data = [@target.network_interface_template.merge({
+            @expected_fibre_data = [@profiler.network_interface_template.merge({
               :current_speed_mbps=>4000,
               :model=>'375-2200-xx',
               :name=>'/dev/cfg/c1',
@@ -488,8 +489,8 @@ class SolarisCoreTest < ProfilerTestSetup
             }.strip.split(/\n/)
             @connector.stubs(:values_at).with(@fcinfo_command).returns(fcinfo_data)
 
-            @target.get(:network_interfaces)
-            assert_equal(@expected_fibre_data, @target.network_interfaces)
+            @profiler.get_network_interfaces
+            assert_equal(@expected_fibre_data, @profiler.network_interfaces)
           end
         end
       end
@@ -514,8 +515,8 @@ class SolarisCoreTest < ProfilerTestSetup
           @connector.stubs(:value_at).with("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}").returns('Jan 1 2013')
           @connector.stubs(:value_at).with('uname -rv').returns(@os_data)
 
-          @target.get(:operating_system)
-          assert_equal(@expected_data, @target.operating_system)
+          @profiler.get_operating_system
+          assert_equal(@expected_data, @profiler.operating_system)
         end
       end
     end

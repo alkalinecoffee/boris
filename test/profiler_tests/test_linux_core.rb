@@ -6,6 +6,7 @@ class LinuxCoreTest < ProfilerTestSetup
       @connector = @target.connector = instance_of(SSHConnector)
       @target.stubs(:target_profiler).returns(Profilers::Linux)
       @target.force_profiler_to(Profilers::Linux)
+      @profiler = @target.profiler
       @connector.stubs(:value_at).with('uname -a').returns('GNU/Linux')
     end
 
@@ -43,9 +44,9 @@ class LinuxCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(file_system_command).returns(@file_system_data)
 
-          @target.profiler.get_file_systems
+          @profiler.get_file_systems
 
-          assert_equal(@expected_data, @target.profiler.file_systems)
+          assert_equal(@expected_data, @profiler.file_systems)
         end
       end
 
@@ -99,8 +100,8 @@ class LinuxCoreTest < ProfilerTestSetup
         end
 
         should 'return hardware information via #get_hardware' do
-          @target.profiler.get_hardware
-          assert_equal(@expected_data, @target.profiler.hardware)
+          @profiler.get_hardware
+          assert_equal(@expected_data, @profiler.hardware)
         end
       end
 
@@ -135,9 +136,9 @@ class LinuxCoreTest < ProfilerTestSetup
           @connector.stubs(:values_at).with('cat /etc/passwd | grep -v "^#"').returns(@user_data)
           @connector.stubs(:values_at).with('cat /etc/group | grep -v "^#"').returns(@group_data)
 
-          @target.profiler.get_local_user_groups
+          @profiler.get_local_user_groups
 
-          assert_equal(@expected_data, @target.profiler.local_user_groups)
+          assert_equal(@expected_data, @profiler.local_user_groups)
         end
       end
 
@@ -147,9 +148,9 @@ class LinuxCoreTest < ProfilerTestSetup
           @connector.stubs(:value_at).with('hostname').returns(expected_data[:hostname])
           @connector.stubs(:value_at).with('domainname').returns(expected_data[:domain])
 
-          @target.profiler.get_network_id
+          @profiler.get_network_id
 
-          assert_equal(expected_data, @target.profiler.network_id)
+          assert_equal(expected_data, @profiler.network_id)
         end
 
         should 'return the hostname and domain via #get_network_id when hostname and domain in a single string' do
@@ -157,9 +158,9 @@ class LinuxCoreTest < ProfilerTestSetup
           @connector.stubs(:value_at).with('hostname').returns("#{expected_data[:hostname]}.#{expected_data[:domain]}")
           @connector.stubs(:value_at).with('domainname').returns(nil)
 
-          @target.profiler.get_network_id
+          @profiler.get_network_id
           
-          assert_equal(expected_data, @target.profiler.network_id)
+          assert_equal(expected_data, @profiler.network_id)
         end
       end
 
@@ -180,7 +181,7 @@ class LinuxCoreTest < ProfilerTestSetup
 
         should 'return ethernet interface information via #get_network_interfaces' do
           @expected_data = [
-            @target.profiler.network_interface_template.merge({
+            @profiler.network_interface_template.merge({
               :current_speed_mbps=>1000,
               :dns_servers=>['192.168.1.1', '192.168.1.2'],
               :duplex=>'full',
@@ -196,7 +197,7 @@ class LinuxCoreTest < ProfilerTestSetup
               :type=>'ethernet',
               :vendor=>'VMware'
             }),
-            @target.profiler.network_interface_template.merge({
+            @profiler.network_interface_template.merge({
               :dns_servers=>['192.168.1.1', '192.168.1.2'],
               :mac_address=>'01:01:01:01:01:01',
               :model=>'VMXNET Ethernet Controller',
@@ -267,8 +268,8 @@ class LinuxCoreTest < ProfilerTestSetup
           }.strip.split(/\n/)
           @connector.stubs(:values_at).with(@ip_addr_command).returns(ip_addr_data)
 
-          @target.profiler.get_network_interfaces
-          assert_equal(@expected_data, @target.profiler.network_interfaces)
+          @profiler.get_network_interfaces
+          assert_equal(@expected_data, @profiler.network_interfaces)
         end
 
         should 'return fibre channel interface information via #get_network_interfaces' do
@@ -317,8 +318,8 @@ class LinuxCoreTest < ProfilerTestSetup
           }.strip.split(/\n/)
           @connector.stubs(:values_at).with(@fibre_config_command).returns(fibre_config_data)
 
-          @target.profiler.get_network_interfaces
-          assert_equal(@expected_data, @target.profiler.network_interfaces)
+          @profiler.get_network_interfaces
+          assert_equal(@expected_data, @profiler.network_interfaces)
         end
       end
 

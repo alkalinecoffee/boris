@@ -1,9 +1,8 @@
-require 'boris/profilers'
-require 'boris/structure'
+require 'boris/connectors/wmi'
+require 'boris/profiler'
 
 module Boris; module Profilers
   class Windows < Profiler
-    include Structure
 
     APP32_KEYPATH = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
     APP64_KEYPATH = 'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'

@@ -1,3 +1,11 @@
+require 'boris/profiler'
+
+require 'boris/profilers/linux/redhat'
+require 'boris/profilers/unix/solaris'
+require 'boris/profilers/windows/windows2003'
+require 'boris/profilers/windows/windows2008'
+require 'boris/profilers/windows/windows2012'
+
 module Boris
   class Options
     include Lumberjack

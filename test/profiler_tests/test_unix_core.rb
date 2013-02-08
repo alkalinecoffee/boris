@@ -1,4 +1,4 @@
-require '..\setup_tests'
+require 'setup_tests'
 
 class UNIXCoreTest < ProfilerTestSetup
   context 'a UNIX target' do
@@ -6,6 +6,7 @@ class UNIXCoreTest < ProfilerTestSetup
       @connector = @target.connector = instance_of(SSHConnector)
       @target.stubs(:target_profiler).returns(Profilers::UNIX)
       @target.force_profiler_to(Profilers::UNIX)
+      @profiler = @target.profiler
       @connector.stubs(:value_at).with('uname -a').returns('some_flavor_of_unix')
     end
 
@@ -43,9 +44,9 @@ class UNIXCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(file_system_command).returns(@file_system_data)
 
-          @target.profiler.get_file_systems
+          @profiler.get_file_systems
 
-          assert_equal(@expected_data, @target.profiler.file_systems)
+          assert_equal(@expected_data, @profiler.file_systems)
         end
       end
 
@@ -84,9 +85,9 @@ class UNIXCoreTest < ProfilerTestSetup
           @connector.stubs(:values_at).with('cat /etc/passwd | grep -v "^#"').returns(@user_data)
           @connector.stubs(:values_at).with('cat /etc/group | grep -v "^#"').returns(@group_data)
 
-          @target.profiler.get_local_user_groups
+          @profiler.get_local_user_groups
 
-          assert_equal(@expected_data, @target.profiler.local_user_groups)
+          assert_equal(@expected_data, @profiler.local_user_groups)
         end
       end
 
@@ -99,9 +100,9 @@ class UNIXCoreTest < ProfilerTestSetup
           @connector.stubs(:value_at).with('hostname').returns(@expected_data[:hostname])
           @connector.stubs(:value_at).with('domainname').returns(@expected_data[:domain])
 
-          @target.profiler.get_network_id
+          @profiler.get_network_id
 
-          assert_equal(@expected_data, @target.profiler.network_id)
+          assert_equal(@expected_data, @profiler.network_id)
         end
       end
 

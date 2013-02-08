@@ -1,4 +1,4 @@
-require '..\setup_tests'
+require 'setup_tests'
 
 class WindowsCoreTest < ProfilerTestSetup
   context 'a Windows target' do
@@ -6,11 +6,12 @@ class WindowsCoreTest < ProfilerTestSetup
       @connector = @target.connector = instance_of(WMIConnector)
       @target.stubs(:target_profiler).returns(Profilers::Windows)
       @target.force_profiler_to(Profilers::Windows)
+      @profiler = @target.profiler
       @connector.stubs(:value_at).with('SELECT Name FROM Win32_OperatingSystem').returns({:name=>'Windows Server 2008'})
     end
 
     should 'detect when a target should use the Windows profile' do
-      assert_equal(Profilers::Windows, @target.profiler.class)
+      assert_equal(Profilers::Windows, @profiler.class)
     end
 
     context 'being scanned' do
@@ -65,9 +66,9 @@ class WindowsCoreTest < ProfilerTestSetup
           @connector.stubs(:values_at).with(@physical_disks_qry).returns(@physical_disks_data)
           @connector.stubs(:values_at).with(@disk_partitions_qry).returns(@disk_partitions_data)
 
-          @target.profiler.get_file_systems
+          @profiler.get_file_systems
 
-          assert_equal(@expected_data, @target.profiler.file_systems)
+          assert_equal(@expected_data, @profiler.file_systems)
         end
       end
 
@@ -116,9 +117,9 @@ class WindowsCoreTest < ProfilerTestSetup
           @connector.stubs(:value_at).with(@model_qry).returns(@model_data)
           @connector.stubs(:values_at).with(@cpu_qry).returns(@cpu_data)
 
-          @target.profiler.get_hardware
+          @profiler.get_hardware
 
-          assert_equal(@expected_data, @target.profiler.hardware)
+          assert_equal(@expected_data, @profiler.hardware)
         end
       end
 
@@ -129,8 +130,8 @@ class WindowsCoreTest < ProfilerTestSetup
 
         should 'return hosted share information via #get_hosted_shares' do
           @connector.stubs(:values_at).with('SELECT Name, Path FROM Win32_Share WHERE Type = 0').returns(@expected_data)
-          @target.profiler.get_hosted_shares
-          assert_equal(@expected_data, @target.profiler.hosted_shares)
+          @profiler.get_hosted_shares
+          assert_equal(@expected_data, @profiler.hosted_shares)
         end
       end
 
@@ -161,7 +162,7 @@ class WindowsCoreTest < ProfilerTestSetup
               versions.each do |version|
                 @connector.stubs(:registry_subkeys_at).returns(["#{key_path}\\#{version[:instance]}"])
                 @connector.stubs(:registry_values_at).with("#{key_path}\\#{version[:code]}\\ProductID").returns({:digitalproductid=>@product_key_binary})
-                assert_equal(@expected_product_key, @target.profiler.get_product_key(version[:name]))
+                assert_equal(@expected_product_key, @profiler.get_product_key(version[:name]))
               end
             end
           end
@@ -172,8 +173,8 @@ class WindowsCoreTest < ProfilerTestSetup
             end
 
             should 'detect the product key for various Visual Studio editions' do
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Visual Studio 2005 Professional Edition'))
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Visual Studio 2008 Professional Edition'))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Visual Studio 2005 Professional Edition'))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Visual Studio 2008 Professional Edition'))
             end
           end
 
@@ -183,18 +184,18 @@ class WindowsCoreTest < ProfilerTestSetup
             end
 
             should 'detect the product key for various Exchange editions' do
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Exchange'))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Exchange'))
             end
 
             should 'detect the product key for various Office and Exchange editions' do
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Office Professional Edition 2003', @guid))
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Office Project Server 12', @guid))
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Office SharePoint Server 2007', @guid))
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Office XP Professional with FrontPage', @guid))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Office Professional Edition 2003', @guid))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Office Project Server 12', @guid))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Office SharePoint Server 2007', @guid))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Office XP Professional with FrontPage', @guid))
             end
 
             should 'detect the product key for various Windows editions' do
-              assert_equal(@expected_product_key, @target.profiler.get_product_key('Microsoft Windows'))
+              assert_equal(@expected_product_key, @profiler.get_product_key('Microsoft Windows'))
             end
           end
         end
@@ -230,9 +231,9 @@ class WindowsCoreTest < ProfilerTestSetup
           @connector.stubs(:registry_values_at).with("#{sql_key_path}\\Setup").returns({})
           @connector.stubs(:registry_values_at).with(key_path).returns(application_data)
 
-          @target.profiler.get_installed_applications
+          @profiler.get_installed_applications
 
-          assert_equal([expected_data], @target.profiler.installed_applications)
+          assert_equal([expected_data], @profiler.installed_applications)
         end
       end
 
@@ -265,9 +266,9 @@ class WindowsCoreTest < ProfilerTestSetup
           @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::APP64_KEYPATH).returns([])
           @connector.stubs(:registry_values_at).with(registry_patch_key_path).returns(registry_patch_data)
 
-          @target.profiler.get_installed_patches
+          @profiler.get_installed_patches
 
-          assert_equal(expected_data, @target.profiler.installed_patches)
+          assert_equal(expected_data, @profiler.installed_patches)
         end
       end
 
@@ -289,8 +290,8 @@ class WindowsCoreTest < ProfilerTestSetup
         should 'return service information via #get_installed_services' do
           @connector.stubs(:values_at).with('SELECT Name, PathName, StartMode FROM Win32_Service').returns(@service_data)
           
-          @target.profiler.get_installed_services
-          assert_equal(@expected_data, @target.profiler.installed_services)
+          @profiler.get_installed_services
+          assert_equal(@expected_data, @profiler.installed_services)
         end
       end
 
@@ -301,7 +302,7 @@ class WindowsCoreTest < ProfilerTestSetup
 
           @connector.stubs(:value_at).with("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{user_data[:sid]}'").returns(user_data)
 
-          assert_equal(user_data[:caption], @target.profiler.get_username(user_data[:sid]))
+          assert_equal(user_data[:caption], @profiler.get_username(user_data[:sid]))
         end
 
         should 'return local user groups and accounts via #get_local_user_groups if the server is not a domain controller' do
@@ -323,9 +324,9 @@ class WindowsCoreTest < ProfilerTestSetup
           @connector.stubs(:values_at).with("SELECT Name FROM Win32_Group WHERE Domain = '#{hostname}'").returns([{:name=>'Users'}])
           @connector.stubs(:values_at).with("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{hostname}',Name='#{group}'\"").returns(wmi_member_data)
 
-          @target.profiler.get_local_user_groups
+          @profiler.get_local_user_groups
 
-          assert_equal(expected_data, @target.profiler.local_user_groups)
+          assert_equal(expected_data, @profiler.local_user_groups)
         end
       end
 
@@ -336,16 +337,16 @@ class WindowsCoreTest < ProfilerTestSetup
 
         should 'return the domain and hostname via #get_network_id' do
           @connector.stubs(:value_at).with('SELECT Domain, Name FROM Win32_ComputerSystem').returns(@expected_data)
-          @target.profiler.get_network_id
+          @profiler.get_network_id
 
-          assert_equal(@target.profiler.network_id[:domain], @expected_data[:domain])
-          assert_equal(@target.profiler.network_id[:hostname], @expected_data[:name])
+          assert_equal(@profiler.network_id[:domain], @expected_data[:domain])
+          assert_equal(@profiler.network_id[:hostname], @expected_data[:name])
         end
       end
 
       context 'for network interfaces' do
         setup do
-          @expected_ethernet_data = [@target.profiler.network_interface_template.merge({
+          @expected_ethernet_data = [@profiler.network_interface_template.merge({
             :auto_negotiate=>false,
             :current_speed_mbps=>1000,
             :dns_servers=>['192.168.1.100', '192.168.1.101'],
@@ -363,7 +364,7 @@ class WindowsCoreTest < ProfilerTestSetup
             :vendor_id=>'0x1234'
           })]
 
-          @expected_fibre_data = @target.profiler.network_interface_template.merge({
+          @expected_fibre_data = @profiler.network_interface_template.merge({
             :current_speed_mbps=>4000,
             :fabric_name=>'00000000aaaaaaaa',
             :is_uplink=>false,
@@ -422,8 +423,8 @@ class WindowsCoreTest < ProfilerTestSetup
 
           @connector.stubs(:registry_values_at).with(Profilers::Windows::TCPIP_CFG_KEYPATH + "\\#{ethernet_guid}").returns({:mtu=>1400})
 
-          @target.profiler.get_network_interfaces
-          assert_equal(@expected_ethernet_data, @target.profiler.network_interfaces)
+          @profiler.get_network_interfaces
+          assert_equal(@expected_ethernet_data, @profiler.network_interfaces)
         end
 
         should 'return fibre channel interface information via #get_network_interfaces' do
@@ -448,9 +449,9 @@ class WindowsCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with("SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes", :root_wmi).returns([hba_profile])
 
-          @target.profiler.get_network_interfaces
+          @profiler.get_network_interfaces
 
-          assert_equal([@expected_fibre_data], @target.profiler.network_interfaces)
+          assert_equal([@expected_fibre_data], @profiler.network_interfaces)
         end
       end
 
@@ -489,8 +490,8 @@ class WindowsCoreTest < ProfilerTestSetup
         end
 
         should 'return operating system information via #get_operating_system' do
-          @target.profiler.get_operating_system
-          assert_equal(@expected_data, @target.profiler.operating_system)
+          @profiler.get_operating_system
+          assert_equal(@expected_data, @profiler.operating_system)
         end
       end
 

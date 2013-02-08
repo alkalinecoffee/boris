@@ -17,4 +17,7 @@ module Boris
   VENDOR_REDHAT     = 'Red Hat Inc.'
   VENDOR_SUSE       = 'SUSE Linux GmbH'
   VENDOR_VMWARE     = 'VMware, Inc.'
+
+  PORT_DEFAULTS = {:ssh=>22, :wmi=>135}
+  VALID_CONNECTION_TYPES = [:snmp, :ssh, :wmi]
 end
