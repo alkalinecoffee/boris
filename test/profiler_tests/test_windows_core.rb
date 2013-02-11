@@ -494,29 +494,6 @@ class WindowsCoreTest < ProfilerTestSetup
           assert_equal(@expected_data, @profiler.operating_system)
         end
       end
-
-      # context 'for system roles' do
-      #   should 'return a list of system roles via #get_system_roles' do
-      #     expected_data = [
-      #       'PrimaryDomainController',
-      #       'IIS7',
-      #       'OracleRDMS',
-      #       'TerminalServer',
-      #       'TerminalServicesLicenseServer'
-      #     ]
-
-      #     @connector.stubs(:value_at).with('SELECT Roles FROM Win32_ComputerSystem').returns({:roles=>['Primary_Domain_Controller']})
-      #     @connector.stubs(:registry_values_at).with(Profilers::Windows::IIS_KEYPATH).returns({:majorversion=>7})
-      #     oracle_key = "#{Profilers::Windows::ORACLE_KEYPATH}\\KEY_OracleHome11g"
-      #     @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::ORACLE_KEYPATH).returns([oracle_key])
-      #     @connector.stubs(:registry_values_at).with(oracle_key).returns({:oracle_group_name=>'Oracle - Orahome11g'})
-
-      #     @connector.stubs(:value_at).with('SELECT TerminalServerMode FROM Win32_TerminalServiceSetting').returns({:terminalservermode=>1})
-      #     @connector.stubs(:value_at).with("SELECT * FROM Win32_Service WHERE Caption = 'Terminal Server Licensing'").returns(true)
-
-      #     @target.get_system_roles
-      #   end
-      # end
     end
   end
 end

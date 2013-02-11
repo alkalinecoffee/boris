@@ -29,6 +29,3 @@ end
 # require 'boris/profilers/windows/windows2008'
 # require 'boris/profilers/windows/windows2012'
 
-
-
-

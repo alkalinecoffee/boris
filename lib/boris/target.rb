@@ -158,7 +158,7 @@ module Boris
     # determined, it is then loaded up, which provides {Boris} the instructions on
     # how to proceed.
     #
-    # @raise [InvalidOption] if no profilers are loaded prior to calling #detect_profile
+    # @raise [InvalidOption] if no profilers are loaded prior to calling #detect_profiler
     # @raise [NoActiveConnection] if no active connection is available when calling
     #  #detect_profiler
     # @raise [NoProfilerDetected] when no suitable profiler was found
@@ -244,7 +244,7 @@ module Boris
     #  target.file_systems.size #=> 2
     #  target.installed_applications.first #=> {:application_name=>'Adobe Reader'...}
     #
-    # @see Boris::Profilers::Structure Profilers::Structure: a complete list of the data scructure
+    # @see Boris::Profilers::Structure Profilers::Structure a complete list of the data scructure
     # This method will also scrub the data after retrieving all of the items.
     def retrieve_all
       raise NoActiveConnection, 'no active connection' if @connector.connected? == false
@@ -277,9 +277,26 @@ module Boris
     # @param pretty a boolean value to determine whether the data should be
     #  returned in json format with proper indentation.
     def to_json(pretty=false)
-      puts @profiler.inspect
+      json = {}
 
-      generated_json = pretty ? JSON.pretty_generate(@profiler) : JSON.generate(@profiler)
+      data_vars = %w{
+        file_systems
+        hardware
+        hosted_shares
+        installed_applications
+        installed_patches
+        installed_services
+        local_user_groups
+        network_id
+        network_interfaces
+        operating_system
+      }
+
+      data_vars.each do |var|
+          json[var.to_sym] = self.instance_variable_get("@#{var}".to_sym)
+      end
+
+      generated_json = pretty ? JSON.pretty_generate(json) : JSON.generate(json)
 
       debug "json generated successfully"
 
