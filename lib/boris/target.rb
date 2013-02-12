@@ -284,7 +284,7 @@ module Boris
       }
 
       data_vars.each do |var|
-          json[var.to_sym] = self.instance_variable_get("@#{var}".to_sym)
+          json[var.to_sym] = @profiler.instance_variable_get("@#{var}".to_sym)
       end
 
       generated_json = pretty ? JSON.pretty_generate(json) : JSON.generate(json)
