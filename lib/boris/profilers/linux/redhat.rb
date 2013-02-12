@@ -11,12 +11,7 @@ module Boris; module Profilers
 
     def get_file_systems; super; end
     def get_hardware; super; end
-
-    def get_hosted_shares
-      super
-
-      # TODO add code for gathering list of hosted shares from redhat
-    end
+    def get_hosted_shares; super; end
 
     def get_installed_applications
       super
