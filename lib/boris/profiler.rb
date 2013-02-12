@@ -6,11 +6,11 @@ require 'boris/helpers/string'
 
 module Boris; module Profilers
   class Profiler
+    include Boris::Lumberjack
     include Boris::Structure
-    
+
     def initialize(connector)
       @connector = connector
-      @logger = Boris.logger
     end
   end
 end; end
