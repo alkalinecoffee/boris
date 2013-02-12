@@ -25,33 +25,56 @@ Let's pull some information from a RedHat Enterprise Linux server on our network
 ```ruby
 require 'boris'
 
-target = Boris::Target.new('redhatserver01.mydomain.com')
+hostname = 'redhatserver01.mydomain.com'
+
+# Boris has different levels of logging.  We can optionally set our logging level, which will apply
+# to all Targets created during this session.  If not set, the log level defaults to :fatal.
+Boris.log_level = :debug
 
 # let's use a helper to suggest how we should connect to it (which is useful if we're not sure what
 # kind of device this is)
-puts target.suggested_connection_method
+puts Boris::Network.suggested_connection_method(hostname)
 
 # you can also add the logic to make the decision yourself by checking if certain TCP ports are responsive
-puts target.tcp_port_responding?(22)
+puts Boris::Network.tcp_port_responding?(hostname, 22)
+
+# create our target
+target = Boris::Target.new(hostname)
 
 # add credentials to try against this target
-target.options.add_credential(:user=>'joe', :password=>'mypassword', :connection_types=>[:ssh])
+target.options.add_credential(:user=>'myusername', :password=>'mypassword', :connection_types=>[:ssh])
 
 # attempt to connect to this target using the credentials we supplied above
 target.connect
 
 if target.connected?
-  # detect which profiler to load up (is this target running windows? solaris? or what?).  if we can't
-  # detect a suitable profiler, this will throw an error
+  # we can try to detect which profiler to load up (is this target running windows? solaris? or
+  # what?).  if we can't detect a suitable profiler, this will throw an error.
   target.detect_profiler
 
-  puts target.target_profiler
+  puts target.profiler
+
+  # if we know something about the target ahead of time, we can force Boris to use a profiler as
+  # well (for example, we used the Network#suggested_connection_method and Network.tcp_port_responding?
+  # methods earlier to help us determine that is likely some kind of *NIX host), so we don't have to
+  # bother trying to connect to it via WMI.
+  target.force_profiler_to(Boris::Profilers::RedHat)
 
   # we can call individual methods to grab specific information we may be interested in (or call
   # #retrieve_all to grab everything we can)
-  target.get_hardware
+  target.get(:hardware)
 
-  puts target.hardware.inspect
+  puts target[:hardware].inspect
+
+  # if there is more information we want to collect but is not collected by default, we can specify
+  # our own commands to run against the target via two methods: #get_values returns an Array (each
+  # line is an element of the array), or #get_value, which returns a String (the first line returned
+  # from the command)
+  puts target.connector.values_at('cat /etc/redhat-release')
+  puts target.connector.value_at('uname -a')
+  
+  # NOTE: if this were a Windows server, you would send WMI queries, ie:
+  #  target.connector.values_at('SELECT * FROM Win32_ComputerSystem')
 
   # finally, we can package up all of the data into json format for portability
   puts target.to_json
