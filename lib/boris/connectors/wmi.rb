@@ -94,7 +94,7 @@ module Boris
     # @param [Symbol] conn the channel we should use for our request
     #  Options: +:root_wmi+, +:wmi+ (default)
     # @param [Integer] limit the optional maximum number of results we wish to return
-    # @return [Array] the first row/line returned by the host
+    # @return [Array] an array of rows returned by the query
     def values_at(request, conn=:wmi, limit=nil)
       super(request, limit)
       
@@ -139,8 +139,8 @@ module Boris
     # will check for access to enumerate subkeys for each registry key it wants to
     # read, but this does cut down on the number of access errors on the host.
     #
-    #  # KEY_ENUMERATE_SUB_KEYS is a constant specified in Boris. Check Microsoft docs
-    #  # for other possible values
+    #  # KEY_ENUMERATE_SUB_KEYS and KEY_QUERY_VALUE are constants specified in Boris.
+    #  # Check Microsoft docs for other possible values.
     #  connector.has_access_for('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
     #    KEY_ENUMERATE_SUB_KEYS) #=> true
     #
@@ -212,7 +212,7 @@ module Boris
         subkey_values ||= []
 
         subkey_values.each do |value|
-          if value.any?
+          if value.length > 0
             str_params.sValueName = value
 
             begin
@@ -225,7 +225,7 @@ module Boris
 
               values[value.downcase.to_sym] = x
             rescue
-              if $!.message =~ /#{invalid method}/i
+              if $!.message =~ /invalid method/i
                 warn "unreadable registry value (#{key_path}\\#{value})"
               end
             end

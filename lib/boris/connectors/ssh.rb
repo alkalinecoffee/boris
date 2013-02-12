@@ -71,7 +71,8 @@ module Boris
     # @param [String] request the command we wish to execute over this connection
     # @param [Boolean] request_pty if true, we should request psuedo-terminal (PTY).
     #   This is necessary if we are calling a command that uses elevated privileges (sudo).
-    # @param [Integer] limit the maximum number of results we wish to return.  Optional
+    # @param [Integer] limit the optional maximum number of results we wish to return
+    # @return [Array] an array of rows returned by the command
     def values_at(request, request_pty=false, limit=nil)
       super(request, limit)
       

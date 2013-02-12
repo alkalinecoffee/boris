@@ -56,6 +56,7 @@ module Boris
     # limit if no limit parameter is specified.
     # @param [String] request the command we wish to execute over this connection
     # @param [Integer] limit the optional maximum number of results we wish to return
+    # @return [Array] an array of rows returned by the query
     def values_at(request, limit=nil)
       super(request, limit)
 
