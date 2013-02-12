@@ -1,4 +1,4 @@
-require '..\setup_tests'
+require 'setup_tests'
 
 class Windows2008Test < ProfilerTestSetup
   context 'a Windows 2008 target' do
@@ -18,19 +18,16 @@ class Windows2008Test < ProfilerTestSetup
       setup do
       end
 
-      context 'for server features' do
+      context 'for operating system features' do
         setup do
-          # overwrite super call to Windows#get_operating_system... we later
-          # repair this by re-loading the windows core
-          #Profilers::Windows.class_eval do
-          #  def get_operating_system; super; end
-          #end
-
-          Profilers::Windows.stubs(:get_operating_system).returns({})#Profilers::Profiler.get_operating_system)
-
           @features_qry = 'SELECT Name FROM Win32_ServerFeature'
           @features_data = [{:name=>'File Server'}, {:name=>'Print Server'}]
           @connector.stubs(:values_at).with(@features_qry).returns(@features_data)
+
+          # we have to bypass the call to Windows#get_operating_system, so we manually
+          # grab the core structure from Structure and call Windows2008's private
+          # method (via instance_eval below).
+          @profiler.operating_system = Class.new.extend(Structure).get_operating_system
 
           @expected_data = {:date_installed=>nil,
             :kernel=>nil,
@@ -44,7 +41,7 @@ class Windows2008Test < ProfilerTestSetup
         end
 
         should 'return the enabled OS features of the OS' do
-          @profiler.get_operating_system
+          @profiler.instance_eval {get_operating_system_features}
           assert_equal(@expected_data, @profiler.operating_system)
         end
       end
