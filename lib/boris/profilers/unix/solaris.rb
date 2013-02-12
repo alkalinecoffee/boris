@@ -52,6 +52,8 @@ module Boris; module Profilers
       else
         cpu_data.grep(/vendor_id/i)[0].after_pipe
       end
+
+      @hardware
     end
 
     def get_hosted_shares
@@ -65,6 +67,8 @@ module Boris; module Profilers
         h[:path] = share[1]
         @hosted_shares << h
       end
+
+      @hosted_shares
     end
 
     def get_installed_applications
@@ -89,6 +93,8 @@ module Boris; module Profilers
 
         @installed_applications << h
       end
+
+      @installed_applications
     end
 
     def get_installed_patches
@@ -110,6 +116,8 @@ module Boris; module Profilers
 
         @installed_patches << h
       end
+
+      @installed_patches
     end
 
     def get_installed_services
@@ -122,6 +130,8 @@ module Boris; module Profilers
 
         @installed_services << h
       end
+
+      @installed_services
     end
 
     def get_local_user_groups; super; end
@@ -275,6 +285,8 @@ module Boris; module Profilers
         
         @network_interfaces << h
       end
+
+      @network_interfaces
     end
 
     def get_operating_system
@@ -287,6 +299,8 @@ module Boris; module Profilers
       @operating_system[:kernel] = os_data[1]
       @operating_system[:name] = 'Oracle Solaris'
       @operating_system[:version] = os_data[0]
+
+      @operating_system
     end
 
     private
