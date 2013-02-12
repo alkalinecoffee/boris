@@ -99,7 +99,7 @@ Through a number of queries and algorithms, Boris efficiently polls devices on t
 * **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
 * **operating system** - name, version, kernel, date installed
 
-See {Boris::Profilers::Structure} for more details on the data structure.
+See {http://www.rubydoc.info/github/alkalinecoffee/boris/Boris/Profiles/Structure Boris::Profilers::Structure} for more details on the data structure.
 
 Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
 
@@ -111,12 +111,12 @@ While Boris does its best to gather data from devices without any special privil
 
 **Here is a list of known scan account requirements for each platform:**
 
-* Windows
+* **Windows**
   * User must be a member of local Administrator group (looking into what other groups provide required access)
-* Linux (any flavor)
-  * User must have sudo for `dmidecode`
-* Solaris
-  * User must have sudo for `fcinfo`
+* **Linux (any flavor)**
+  * User must have `sudo` for `dmidecode`
+* **Solaris**
+  * User must have `sudo` for `fcinfo`
 
 ## License
 This software is provided under the MIT license.  See the LICENSE.md file.
