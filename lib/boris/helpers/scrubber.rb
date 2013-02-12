@@ -1,6 +1,6 @@
 require 'boris/helpers/string'
 
-module Boris; module Profiles
+module Boris; module Profilers
   module Structure
     def scrub_data!
       [ @file_systems,
