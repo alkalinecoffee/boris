@@ -1,4 +1,10 @@
 module Boris
+  # The Connector class is the parent of the main Connector types that Boris
+  # utilizes (WMI, SNMP, and SSH). It's primary purpose is to create the general
+  # structure of a connector and offer some debugging messages for different
+  # actions. Typically, Connector objects would not be created by user code.
+  # Instead, your own connectors would be a subclass of Connector with calls
+  # to super as appropriate.
   class Connector
     include Lumberjack
 
@@ -17,19 +23,29 @@ module Boris
       @reconnectable = true
     end
 
+    # Convience method for retrieveing the connection status for this Connector.
+    #
+    #  connector.connected? #=> true
+    #
+    # @return [Boolean] true if connected
     def connected?
       @connected
     end
 
+    # Disconnect from the host.
     def disconnect
       info 'closing connection to host'
       @connected = false
     end
 
+    # Establish our connection.
     def establish_connection
       debug 'attempting connection'
     end
 
+    # Return the values from our request.
+    # @param [String] request the command we wish to execute over this connection
+    # @param [Integer] limit the maximum number of results we wish to return
     def values_at(request, limit)
       if !limit.kind_of?(Integer)
         raise ArgumentError, "non-integer limit specified (#{limit.inspect})"

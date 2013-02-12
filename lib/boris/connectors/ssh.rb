@@ -2,6 +2,15 @@ require 'boris/connectors'
 
 module Boris
   class SSHConnector < Connector
+
+    # Create an instance of SSHConnector by passing in a mandatory hostname or IP address,
+    #   credential to try, and optional Hash of {Boris::Options options}.  Under the hood, this
+    #   class uses the Net/SSH library.
+    #
+    # @param [String] host hostname or IP address
+    # @param [Hash] credential credential we wish to use
+    # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
+    #   possible options.  The relevant option set here would be :ssh_options.
     def initialize(host, cred, options)
       @ssh_options = options[:ssh_options]
       @ssh_options[:password] = @password if @password
@@ -12,12 +21,15 @@ module Boris
       super(host, cred, options)
     end
 
+    # Disconnect from the host.
     def disconnect
       super
       @transport = nil
       debug 'connections closed'
     end
     
+    # Establish our connection.
+    # @return [SSHConnector] instance of SSHConnector
     def establish_connection
       super
 
@@ -42,13 +54,24 @@ module Boris
         info 'connection does not seem to be available (so we will not retry)'
       end unless @transport
 
-      return self
+      self
     end
 
+    # Return a single value from our request.
+    # @param [String] request the command we wish to execute over this connection
+    # @param [Boolean] request_pty if true, we should request psuedo-terminal (PTY).
+    #   This is necessary if we are calling a command that uses elevated privileges (sudo).
+    # @return [String] the first row/line returned by the host
     def value_at(request, request_pty=false)
       values_at(request, request_pty, 1)[0]
     end
     
+    # Return multiple values from our request, up to the limit specified (or no
+    #   limit if no limit parameter is specified.
+    # @param [String] request the command we wish to execute over this connection
+    # @param [Boolean] request_pty if true, we should request psuedo-terminal (PTY).
+    #   This is necessary if we are calling a command that uses elevated privileges (sudo).
+    # @param [Integer] limit the maximum number of results we wish to return.  Optional
     def values_at(request, request_pty=false, limit=nil)
       super(request, limit)
       

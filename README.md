@@ -17,7 +17,7 @@ Out of the box, Boris has server support for Windows, Red Hat, and Solaris (with
 * Expandable to include other networked devices, such as switches, load balancers, and other operating systems
 
 ## Installation
-    gem install boris --pre
+    gem install boris
 
 ## Example
 Let's pull some information from a RedHat Enterprise Linux server on our network:
