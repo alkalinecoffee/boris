@@ -26,6 +26,8 @@ module Boris; module Profilers
 
         @file_systems << h
       end
+
+      @file_systems
     end
 
     def get_hardware
@@ -58,6 +60,8 @@ module Boris; module Profilers
       else
         info 'no hardware information available (give me sudo access for dmidecode!)'
       end
+
+      @hardware
     end
 
     def get_hosted_shares; super; end
@@ -91,6 +95,8 @@ module Boris; module Profilers
         
         @local_user_groups << h
       end
+
+      @local_user_groups
     end
 
     def get_network_id
@@ -103,6 +109,8 @@ module Boris; module Profilers
       domain = nil if domain =~ /\(none\)/i
 
       @network_id[:domain] = domain.nil? ? hostname.join('.') : domain
+
+      @network_id
     end
 
     def get_network_interfaces
@@ -208,6 +216,8 @@ module Boris; module Profilers
           @network_interfaces << h
         end
       end
+
+      @network_interfaces
     end
 
     def get_operating_system; super; end

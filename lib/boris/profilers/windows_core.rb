@@ -57,6 +57,8 @@ module Boris; module Profilers
 
         @file_systems << h unless h[:file_system].nil?
       end
+
+      @file_systems
     end
 
     def get_hardware
@@ -83,6 +85,8 @@ module Boris; module Profilers
       @hardware[:cpu_model] = cpu[:name]
       @hardware[:cpu_speed_mhz] = cpu[:maxclockspeed]
       @hardware[:cpu_vendor] = cpu[:manufacturer]
+
+      @hardware
     end
 
     def get_hosted_shares
@@ -95,6 +99,8 @@ module Boris; module Profilers
         h[:path] = share[:path]
         @hosted_shares << h
       end
+
+      @hosted_shares
     end
 
     def get_installed_applications
@@ -142,6 +148,8 @@ module Boris; module Profilers
           end
         end
       end
+
+      @installed_applications
     end
 
     def get_installed_patches
@@ -199,6 +207,8 @@ module Boris; module Profilers
 
         @installed_patches << h if @installed_patches.select{|p| p[:patch_code] == h[:patch_code]}.empty?
       end
+
+      @installed_patches
     end
 
     def get_installed_services
@@ -212,6 +222,8 @@ module Boris; module Profilers
         h[:start_mode] = service[:startmode]
         @installed_services << h
       end
+
+      @installed_services
     end
 
     def get_local_user_groups
@@ -245,6 +257,8 @@ module Boris; module Profilers
           end
         end
       end
+
+      @local_user_groups
     end
 
     def get_network_id
@@ -253,6 +267,8 @@ module Boris; module Profilers
       network_data = @connector.value_at('SELECT Domain, Name FROM Win32_ComputerSystem')
       @network_id[:domain] = network_data[:domain]
       @network_id[:hostname] = network_data[:name]
+
+      @network_id
     end
 
     def get_network_interfaces
@@ -384,6 +400,8 @@ module Boris; module Profilers
         
         @network_interfaces << h
       end
+
+      @network_interfaces
     end
 
     def get_operating_system
@@ -404,6 +422,8 @@ module Boris; module Profilers
       os_data[:caption].sub!(/20[0-9]*/) {|y| "#{y} #{edition}"} if edition
       
       @operating_system[:version] = os_data[:caption]
+
+      @operating_system
     end
     
     def get_product_key(app_name, guid=nil)

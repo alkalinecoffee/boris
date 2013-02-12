@@ -27,6 +27,8 @@ module Boris; module Profilers
 
         @file_systems << h
       end
+
+      @file_systems
     end
 
     def get_hardware; super; end
@@ -61,6 +63,8 @@ module Boris; module Profilers
         
         @local_user_groups << h
       end
+
+      @local_user_groups
     end
 
     def get_network_id
@@ -77,6 +81,8 @@ module Boris; module Profilers
 
       @network_id[:hostname] = hostname
       @network_id[:domain] = domain
+
+      @network_id
     end
 
     def get_network_interfaces; super; end
