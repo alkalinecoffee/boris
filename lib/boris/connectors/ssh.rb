@@ -2,14 +2,14 @@ require 'boris/connectors'
 
 module Boris
   class SSHConnector < Connector
-    def initialize(host, cred, options, logger=nil)
+    def initialize(host, cred, options)
       @ssh_options = options[:ssh_options]
       @ssh_options[:password] = @password if @password
 
       invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
       raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
 
-      super(host, cred, options, logger)
+      super(host, cred, options)
     end
 
     def disconnect
@@ -100,7 +100,7 @@ module Boris
 
       return_data = return_data.join.split(/\n/)
 
-      info "#{return_data.size} row(s) returned"
+      debug "#{return_data.size} row(s) returned"
 
       limit = return_data.size if limit.nil?
 

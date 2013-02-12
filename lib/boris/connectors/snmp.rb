@@ -2,8 +2,8 @@ require 'boris/connectors'
 
 module Boris
   class SNMPConnector < Connector
-    def initialize(host, cred, options, logger=nil)
-      super(host, cred, options, logger)
+    def initialize(host, cred, options)
+      super(host, cred, options)
       @snmp_options = options[:snmp_options].merge(:host=>@host, :version=>:SNMPv1, :community=>@user)
 
       #snmp connections are always reconnectable
@@ -46,7 +46,7 @@ module Boris
         row.each {|item| return_data << {:name=>item.name.to_s, :value=>item.value}}
       end
 
-      info "#{return_data.size} row(s) returned"
+      debug "#{return_data.size} row(s) returned"
 
       limit = return_data.size if limit.nil?
 

@@ -7,7 +7,7 @@ module Boris
     attr_reader :options
     attr_reader :reconnectable
 
-    def initialize(host, cred, options, logger=nil)
+    def initialize(host, cred, options)
       debug 'creating connection object'
 
       @host = host
@@ -15,8 +15,6 @@ module Boris
       @password = cred[:password]
       @connected = false
       @reconnectable = true
-
-      @logger = logger
     end
 
     def connected?
@@ -24,7 +22,7 @@ module Boris
     end
 
     def disconnect
-      debug 'closing connection to host'
+      info 'closing connection to host'
       @connected = false
     end
 

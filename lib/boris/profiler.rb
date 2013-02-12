@@ -8,9 +8,9 @@ module Boris; module Profilers
   class Profiler
     include Boris::Structure
     
-    def initialize(connector, logger=nil)
+    def initialize(connector)
       @connector = connector
-      @logger = logger
+      @logger = Boris.logger
     end
   end
 end; end

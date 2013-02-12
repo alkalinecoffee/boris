@@ -2,7 +2,7 @@ require 'boris/lumberjack'
 
 module Boris
   module Network
-    include Lumberjack
+    extend Lumberjack
 
     # Attempts to suggest a connection method based on whether certain TCP ports
     # on the target are responding (135 for WMI, 22 for SSH by default).  Can be
@@ -10,7 +10,7 @@ module Boris
     # connect to our host using different methods, or bypass certain attempts
     # entirely.
     #
-    #  Boris::NetTools.suggested_connection_method('linuxserver01') #=> :ssh
+    #  Boris::Network.suggested_connection_method('linuxserver01') #=> :ssh
     #
     # @param target name we wish to test against
     # @return [Symbol] returns :wmi, :ssh, or nil
@@ -21,17 +21,17 @@ module Boris
       PORT_DEFAULTS.each_pair do |key, val|
         break if connection_method
         
-        #debug "detecting if #{key.to_s} is available"
+        debug "detecting if #{key.to_s} is available"
 
         if tcp_port_responding?(target, val)
-          #debug "#{key.to_s} seems to be available"
+          debug "#{key.to_s} seems to be available"
           connection_method = key
         else
-          #info 'wmi does not appear to be responding'
+          info 'wmi does not appear to be responding'
         end
       end
 
-      #info 'failed to detect connection method' if connection_method.nil?
+      info 'failed to detect connection method' if connection_method.nil?
       connection_method
     end
 
@@ -40,7 +40,7 @@ module Boris
     # time connecting to the target using different methods just to check if
     # they succeed or not.
     #
-    #  Boris::NetTools.tcp_port_responding?('windowsserver01', 22)  #=> false
+    #  Boris::Network.tcp_port_responding?('windowsserver01', 22)  #=> false
     #
     # @param target name we wish to test against
     # @param port the TCP port number we wish to test
@@ -48,16 +48,16 @@ module Boris
     def self.tcp_port_responding?(target, port)
       status = false
 
-      #debug "checking if port #{port} is responding"
+      debug "checking if port #{port} is responding"
 
       begin
         conn = TCPSocket.new(target, port)
-        #info "port #{port} is responding"
+        info "port #{port} is responding"
         conn.close
-        #debug "connection to port closed"
+        debug "connection to port closed"
         status = true
       rescue
-        #info "port #{port} is not responding"
+        info "port #{port} is not responding"
         status = false
       end
 

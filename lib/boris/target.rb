@@ -21,7 +21,6 @@ module Boris
     attr_accessor :connector
     attr_accessor :profiler
     attr_accessor :options
-    attr_accessor :logger
 
     # Create the target by passing in a mandatory hostname or IP address, and optional
     # {Boris::Options options hash}.
@@ -42,17 +41,6 @@ module Boris
       options ||= {}
       @options = Options.new(options)
 
-      @logger = BorisLogger.new(STDOUT)
-
-      @logger.level = case @options[:log_level]
-      when :debug then Logger::DEBUG
-      when :info then Logger::INFO
-      when :warn then Logger::WARN
-      when :error then Logger::ERROR
-      when :fatal then Logger::FATAL
-      else raise ArgumentError, "invalid logger level specified (#{@options[:log_level].inspect})"
-      end
-
       @connector = NilConnector.new
 
       @unavailable_connection_types = []
@@ -67,6 +55,7 @@ module Boris
     # of Target).
     #
     #  target.get(:hardware)
+    #
     #  target[:hardware]      #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
     #
     #  # same thing as:
@@ -84,6 +73,7 @@ module Boris
     # is determined that the connection will likely never work (for example, if you try to
     # connect via WMI to a Linux host (which will fail), any further attempts to connect to that
     # host via WMI will be ignored).
+    #
     # @raise [ConnectionAlreadyActive] when a connection is already active
     # @raise [InvalidOption] if credentials are not specified in the target's options hash
     # @return [Boolean] returns true if the connection attempt succeeded
@@ -112,13 +102,13 @@ module Boris
 
           case conn_type
           when :snmp
-            @connector = SNMPConnector.new(@host, cred, @options, @logger)
+            @connector = SNMPConnector.new(@host, cred, @options)
             @connector.establish_connection
             # we won't add snmp to the @unavailable_connection_types array, as it
             # could respond later with another community string
           when :ssh
             if !@unavailable_connection_types.include?(:ssh)
-              @connector = SSHConnector.new(@host, cred, @options, @logger)
+              @connector = SSHConnector.new(@host, cred, @options)
               @connector.establish_connection
 
               if @connector.reconnectable == false
@@ -127,7 +117,7 @@ module Boris
             end
           when :wmi
             if !@unavailable_connection_types.include?(:wmi)
-              @connector = WMIConnector.new(@host, cred, @options, @logger)
+              @connector = WMIConnector.new(@host, cred, @options)
               @connector.establish_connection
             
               if @connector.reconnectable == false
@@ -180,7 +170,7 @@ module Boris
 
             debug "suitable profiler found (#{@profiler})"
 
-            @profiler = @profiler.new(@connector, @logger)
+            @profiler = @profiler.new(@connector)
             
             debug "profiler set to #{@profiler}"
           end
@@ -203,7 +193,7 @@ module Boris
     # @param profiler the module of the profiler we wish to set the target to use
     # @see #detect_profiler
     def force_profiler_to(profiler)
-      @profiler = profiler.new(@connector, @logger)
+      @profiler = profiler.new(@connector)
       debug "profiler successfully forced to #{profiler}"
     end
 
@@ -245,7 +235,8 @@ module Boris
     #  target.installed_applications.first #=> {:application_name=>'Adobe Reader'...}
     #
     # @see Boris::Profilers::Structure Profilers::Structure a complete list of the data scructure
-    # This method will also scrub the data after retrieving all of the items.
+    # This method will also scrub the data after retrieving all of the items (unless the
+    #   :auto_scrub option is set to false).
     def retrieve_all
       raise NoActiveConnection, 'no active connection' if @connector.connected? == false
 

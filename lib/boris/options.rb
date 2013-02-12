@@ -23,8 +23,6 @@ module Boris
     #  after running #retrieve_all?
     # @option options [Array] :credentials an array of credentials in the format of
     #  +:user+, +:password+, +:connection_types+.  Only +:user+ is mandatory.
-    # @option options [Symbol] :log_level a symbol for setting the log level
-    #  # Options are: +:debug+, +:info+, +:warn+, +:error+, +:fatal+ (default)
     # @option options [Array] profilers An array of module names of the profiles we wish
     #  to have available for use on this target.  {Boris::Profilers::RedHat} and
     #  {Profilers::Solaris} are always the defaults, and Windows profilers are included
@@ -40,7 +38,6 @@ module Boris
       # set our defaults
       @options[:auto_scrub_data] ||= true
       @options[:credentials] ||= []
-      @options[:log_level] ||= :fatal
       @options[:profilers] ||= [Profilers::RedHat, Profilers::Solaris]
       @options[:profilers].concat([Profilers::Windows2003, Profilers::Windows2008, Profilers::Windows2012]) if PLATFORM == :win32
       @options[:snmp_options] ||= {}

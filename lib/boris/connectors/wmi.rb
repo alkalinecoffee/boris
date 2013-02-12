@@ -8,8 +8,8 @@ module Boris
     KEY_QUERY_VALUE = 1
     KEY_ENUMERATE_SUB_KEYS = 8
 
-    def initialize(host, cred, options, logger=nil)
-      super(host, cred, options, logger)
+    def initialize(host, cred, options)
+      super(host, cred, options)
     end
 
     def disconnect
@@ -103,7 +103,7 @@ module Boris
         break if (limit.nil? && i == limit)
       end
 
-      info "#{return_data.size} row(s) returned"
+      debug "#{return_data.size} row(s) returned"
 
       return return_data
     end

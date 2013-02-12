@@ -1,3 +1,4 @@
+#STDOUT.sync = true
 # encoding: UTF-8
 
 PLATFORM = RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/ ? :win32 : RbConfig::CONFIG['host_os']
@@ -17,10 +18,4 @@ require 'boris/lumberjack'
 require 'boris/target'
 
 module Boris
-  @logger = BorisLogger.new(STDOUT)
-  @logger.level = Logger::FATAL
-
-  def self.logger
-    @logger
-  end
 end
