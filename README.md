@@ -66,6 +66,10 @@ if target.connected?
 
   puts target[:hardware].inspect
 
+  # we can also call #retrieve_all to grab everything we can from this target (file systems, hardware,
+  # installed applications, etc.)
+  target.retrieve_all
+
   # if there is more information we want to collect but is not collected by default, we can specify
   # our own commands to run against the target via two methods: #get_values returns an Array (each
   # line is an element of the array), or #get_value, which returns a String (the first line returned
