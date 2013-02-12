@@ -5,7 +5,6 @@ require 'boris/connectors/snmp'
 require 'boris/connectors/ssh'
 require 'boris/connectors/wmi'
 require 'boris/helpers/network'
-require 'boris/helpers/scrubber'
 
 module Boris
   # {Boris::Target} is the basic class from which you can control the underlying framework
@@ -40,6 +39,8 @@ module Boris
 
       options ||= {}
       @options = Options.new(options)
+
+      @logger = Boris.logger
 
       @connector = NilConnector.new
 
@@ -130,8 +131,6 @@ module Boris
         end
       end
 
-      @connector = nil if @connector.connected? == false
-
       return @connector ? true : false
     end
 
@@ -197,7 +196,8 @@ module Boris
       debug "profiler successfully forced to #{profiler}"
     end
 
-    # Convience method for collecting data from a Target.
+    # Convience method for collecting data from a Target, where the user can pass in a symbol
+    # for the category that should be collected.
     #
     #  target.get(:hardware)      #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
     #
@@ -242,20 +242,13 @@ module Boris
 
       debug 'retrieving all configuration items'
 
-      @profiler.get_file_systems
-      @profiler.get_hardware
-      @profiler.get_hosted_shares
-      @profiler.get_installed_applications
-      @profiler.get_local_user_groups
-      @profiler.get_installed_patches
-      @profiler.get_installed_services
-      @profiler.get_network_id
-      @profiler.get_network_interfaces
-      @profiler.get_operating_system
-
+      Structure::CATEGORIES.each do |category|
+        eval "@profiler.get_#{category.to_s}"
+      end
+      
       debug 'all items retrieved successfully'
 
-      scrub_data! if @options[:auto_scrub_data]
+      @profiler.scrub_data! if @options[:auto_scrub_data]
     end
 
     # Parses the target's scanned data into JSON format for portability.
@@ -265,29 +258,17 @@ module Boris
     #  
     #  # The JSON string can later be parsed back into an object
     #  target_object = JSON.parse(json_string, :symbolize_names=>true)
-    # @param pretty a boolean value to determine whether the data should be
+    # @param options a hash value for json output options.  Only option supported now
+    #  is :pretty_print (set to a boolean value) to determine whether the data should be
     #  returned in json format with proper indentation.
-    def to_json(pretty=false)
+    def to_json(options={:pretty_print=>false})
       json = {}
 
-      data_vars = %w{
-        file_systems
-        hardware
-        hosted_shares
-        installed_applications
-        installed_patches
-        installed_services
-        local_user_groups
-        network_id
-        network_interfaces
-        operating_system
-      }
-
-      data_vars.each do |var|
-          json[var.to_sym] = @profiler.instance_variable_get("@#{var}".to_sym)
+      Structure::CATEGORIES.each do |category|
+        json[category.to_sym] = @profiler.instance_variable_get("@#{category}".to_sym)
       end
 
-      generated_json = pretty ? JSON.pretty_generate(json) : JSON.generate(json)
+      generated_json = options[:pretty_print] ? JSON.pretty_generate(json) : JSON.generate(json)
 
       debug "json generated successfully"
 

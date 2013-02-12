@@ -40,6 +40,7 @@ module Boris
 
     # Establish our connection.
     def establish_connection
+      puts 'attempting connexion'
       debug 'attempting connection'
     end
 

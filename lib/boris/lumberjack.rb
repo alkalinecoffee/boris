@@ -37,8 +37,6 @@ module Boris
   end
 
   module Lumberjack
-    attr_accessor :logger
-
     @logger = Boris.logger
 
     def debug(msg)

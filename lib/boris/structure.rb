@@ -2,17 +2,23 @@ module Boris
   module Structure
     include Lumberjack
 
-    attr_accessor :file_systems
-    attr_accessor :hardware
-    attr_accessor :hosted_shares
-    attr_accessor :installed_applications
-    attr_accessor :installed_patches
-    attr_accessor :installed_services
-    attr_accessor :local_user_groups
-    attr_accessor :network_id
-    attr_accessor :network_interfaces
-    attr_accessor :operating_system
+    CATEGORIES = %w{
+      file_systems
+      hardware
+      hosted_shares
+      installed_applications
+      installed_patches
+      installed_services
+      local_user_groups
+      network_id
+      network_interfaces
+      operating_system
+    }
 
+    CATEGORIES.each do |category|
+      attr_accessor category.to_sym
+    end
+    
     def file_system_template
       [
         :capacity_mb,

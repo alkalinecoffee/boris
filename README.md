@@ -3,7 +3,7 @@
 
 * Code: http://github.com/alkalinecoffee/boris
 * Developer's blog: http://www.sharkwavemedia.com
-* Documentation: http://rdoc.info/github/alkalinecoffee/boris/master/frames
+* Documentation: http://rdoc.info/github/alkalinecoffee/boris/frames
 * Issues: https://github.com/alkalinecoffee/boris/issues
 
 ## Introduction
@@ -25,11 +25,11 @@ Let's pull some information from a RedHat Enterprise Linux server on our network
 ```ruby
 require 'boris'
 
-hostname = 'redhatserver01.mydomain.com'
-
 # Boris has different levels of logging.  We can optionally set our logging level, which will apply
 # to all Targets created during this session.  If not set, the log level defaults to :fatal.
 Boris.log_level = :debug
+
+hostname = 'redhatserver01.mydomain.com'
 
 # let's use a helper to suggest how we should connect to it (which is useful if we're not sure what
 # kind of device this is)
@@ -52,7 +52,7 @@ if target.connected?
   # what?).  if we can't detect a suitable profiler, this will throw an error.
   target.detect_profiler
 
-  puts target.profiler
+  puts target.profiler.class
 
   # we can call individual methods to grab specific information we may be interested in
   target.get(:hardware)
@@ -68,16 +68,17 @@ if target.connected?
 
   # if there is more information we want to collect but is not collected by default, we can specify
   # our own commands to run against the target via two methods: #get_values returns an Array (each
-  # line returned is an element of the array), or #get_value, which returns a String (just the first
-  # line returned from the command)
+  # line is an element of the array), or #get_value, which returns a String (the first line returned
+  # from the command)
   puts target.connector.values_at('cat /etc/redhat-release')
   puts target.connector.value_at('uname -a')
   
   # NOTE: if this were a Windows server, you would send WMI queries instead of shell commands, ie:
   #  target.connector.values_at('SELECT * FROM Win32_ComputerSystem')
 
-  # finally, we can package up all of the data into json format for portability
-  puts target.to_json
+  # finally, we can package up all of the data into json format for portability (the true argument
+  # tells the #to_json method to output the json with tabbed formatting)
+  puts target.to_json(:pretty_print=>true)
 
   target.disconnect
 end
