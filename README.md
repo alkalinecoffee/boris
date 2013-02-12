@@ -109,14 +109,14 @@ Profilers contain the instructions that allow us to run commands against our tar
 ## User Account Requirements
 While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab this info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
 
-** Here is a list of known scan account requirements for each platform:
+** Here is a list of known scan account requirements for each platform:**
 
 * Windows
-** User must be a member of local Administrator group (looking into what other groups provide required access)
+  * User must be a member of local Administrator group (looking into what other groups provide required access)
 * Linux (any flavor)
-** User must have sudo for `dmidecode`
+  * User must have sudo for `dmidecode`
 * Solaris
-** User must have sudo for `fcinfo`
+  * User must have sudo for `fcinfo`
 
 ## License
 This software is provided under the MIT license.  See the LICENSE.md file.
