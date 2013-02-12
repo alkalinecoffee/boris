@@ -54,12 +54,6 @@ if target.connected?
 
   puts target.profiler
 
-  # if we know something about the target ahead of time, we can force Boris to use a profiler as
-  # well (for example, we used the Network#suggested_connection_method and Network.tcp_port_responding?
-  # methods earlier to help us determine that is likely some kind of *NIX host), so we don't have to
-  # bother trying to connect to it via WMI.
-  target.force_profiler_to(Boris::Profilers::RedHat)
-
   # we can call individual methods to grab specific information we may be interested in (or call
   # #retrieve_all to grab everything we can)
   target.get(:hardware)
