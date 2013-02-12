@@ -54,11 +54,13 @@ if target.connected?
 
   puts target.profiler
 
-  # we can call individual methods to grab specific information we may be interested in (or call
-  # #retrieve_all to grab everything we can)
+  # we can call individual methods to grab specific information we may be interested in
   target.get(:hardware)
-
   puts target[:hardware].inspect
+
+  # or maybe get some network interface info
+  target.get(:network_interfaces)
+  puts target[:network_interfaces].inspect
 
   # we can also call #retrieve_all to grab everything we can from this target (file systems, hardware,
   # installed applications, etc.)
@@ -66,12 +68,12 @@ if target.connected?
 
   # if there is more information we want to collect but is not collected by default, we can specify
   # our own commands to run against the target via two methods: #get_values returns an Array (each
-  # line is an element of the array), or #get_value, which returns a String (the first line returned
-  # from the command)
+  # line returned is an element of the array), or #get_value, which returns a String (just the first
+  # line returned from the command)
   puts target.connector.values_at('cat /etc/redhat-release')
   puts target.connector.value_at('uname -a')
   
-  # NOTE: if this were a Windows server, you would send WMI queries, ie:
+  # NOTE: if this were a Windows server, you would send WMI queries instead of shell commands, ie:
   #  target.connector.values_at('SELECT * FROM Win32_ComputerSystem')
 
   # finally, we can package up all of the data into json format for portability
