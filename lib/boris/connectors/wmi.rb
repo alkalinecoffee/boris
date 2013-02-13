@@ -156,11 +156,7 @@ module Boris
       access_params.sSubKeyName = key_path
       access_params.uRequired = permission_to_check
 
-      has_access = @registry.ExecMethod_('CheckAccess', access_params).bGranted
-
-      debug "no registry read access for #{key_path}" if !has_access
-
-      has_access
+      @registry.ExecMethod_('CheckAccess', access_params).bGranted
     end
 
     # Returns an array of subkey names found at the specified key path under
