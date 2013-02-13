@@ -148,7 +148,7 @@ module Boris
     # @param [Integer] permission_to_check the access we wish to test
     # @return [Boolean] true if we have access to perform this action on specified key
     def has_access_for(key_path, permission_to_check=nil)
-      debug "checking for registry read access for #{key_path}"
+      
 
       access_params = @registry.Methods_('CheckAccess').inParameters.SpawnInstance_
 
@@ -156,7 +156,11 @@ module Boris
       access_params.sSubKeyName = key_path
       access_params.uRequired = permission_to_check
 
-      @registry.ExecMethod_('CheckAccess', access_params).bGranted
+      has_access = @registry.ExecMethod_('CheckAccess', access_params).bGranted
+
+      debug "no registry read access for #{key_path}" if !has_access
+
+      has_access
     end
 
     # Returns an array of subkey names found at the specified key path under

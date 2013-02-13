@@ -42,7 +42,7 @@ module Boris
       @hardware[:model] = @hardware[:model].format_model unless !@hardware[:model]
       @hardware[:serial].upcase! unless !@hardware[:serial]
       @hardware[:vendor] = @hardware[:vendor].string_clean.format_vendor unless !@hardware[:vendor]
-      debug 'network interface data cleaned up'
+      debug 'hardware data cleaned up'
 
       @operating_system[:license_key].upcase! unless !@operating_system[:license_key]
       debug 'operating system data cleaned up'

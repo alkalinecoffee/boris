@@ -5,7 +5,7 @@ class BorisLogger < Logger
     self.datetime_format = '%m-%d-%Y %H:%M:%S'
 
     self.formatter = proc do |severity, time, progname, msg|
-      sprintf("%-5s %-24s %-24s %-s\n", severity, time, progname, msg)
+      sprintf("%-5s %-24s %-27s %-s\n", severity, time, progname, msg)
     end
   end
 end
