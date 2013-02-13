@@ -75,17 +75,16 @@ module Boris; module Profilers
       super
 
       application_data = @connector.values_at("pkginfo -il -c application | egrep -i '^$|(name|version|basedir|vendor|instdate):'")
-      application_data.join("\n").split("\n\n").each do |application|
-
-        application = application.split("\n")
+      application_data.join("\n").split(/\n\n/).each do |application|
+        application = application.split(/\n/)
         h = installed_application_template
 
-        date_installed = application.grep(/instdate:/i)[0].split(/instdate:/i)[1].strip
-        h[:date_installed] = DateTime.strptime(date_installed, '%b %d %Y %H:%M')
         h[:name] = application.grep(/name:/i)[0].after_colon
         h[:version] = application.grep(/version:/i)[0].after_colon
 
-        # these sometimes don't show up
+        # these items sometimes don't show up
+        date_installed = application.grep(/instdate:/i)[0]
+        h[:date_installed] = DateTime.strptime(date_installed.split(/instdate:/i)[1].strip, '%b %d %Y %H:%M') if date_installed
         install_location = application.grep(/basedir:/i)[0]
         h[:install_location] = install_location.after_colon if install_location
         vendor = application.grep(/vendor:/i)[0]
