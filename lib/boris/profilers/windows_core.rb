@@ -114,7 +114,9 @@ module Boris; module Profilers
 
           app_values = @connector.registry_values_at(app_key)
 
-          h[:date_installed] = DateTime.parse(app_values[:installdate]) if app_values[:installdate].kind_of?(String)
+          if app_values[:installdate].kind_of?(String) && app_values[:installdate] !~ /0000/
+            h[:date_installed] = DateTime.parse(app_values[:installdate])
+          end
 
           if app_values.has_key?(:displayname) && !(app_values[:displayname] =~ /^kb|\(kb\d+/i)
             h[:install_location] = app_values[:installlocation] if app_values[:installlocation].nil?

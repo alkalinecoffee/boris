@@ -203,15 +203,18 @@ class WindowsCoreTest < ProfilerTestSetup
         should 'return installed applications via #get_installed_applications' do
           key_path = Profilers::Windows::APP64_KEYPATH + '\{4AB6A079-178B-4144-B21F-4D1AE71666A2}'
 
-          application_data = {
+          application_data = []
+          application_data << {
             :installdate=>'20120101',
             :installlocation=>'',
             :displayname=>'Microsoft SQL Server 2008 R2 Native Client',
             :publisher=>'Microsoft Corporation',
             :displayversion=>'10.50.1600.1'
           }
+          application_data << application_data[0].merge({:installdate=>'00000000'})
 
-          expected_data = {
+          expected_data = []
+          expected_data << {
             :date_installed=>DateTime.parse(application_data[:installdate]),
             :install_location=>nil,
             :license_key=>nil,
@@ -219,6 +222,7 @@ class WindowsCoreTest < ProfilerTestSetup
             :vendor=>application_data[:publisher],
             :version=>application_data[:displayversion]
           }
+          expected_data << expected_data[0].merge({:date_installed=>nil})
 
           @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::ORACLE_KEYPATH).returns([])
 
@@ -233,7 +237,7 @@ class WindowsCoreTest < ProfilerTestSetup
 
           @profiler.get_installed_applications
 
-          assert_equal([expected_data], @profiler.installed_applications)
+          assert_equal(expected_data, @profiler.installed_applications)
         end
       end
 
