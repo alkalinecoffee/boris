@@ -17,7 +17,7 @@ module Boris
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #  possible options.
     def initialize(host, cred, options)
-      super(host, cred, options)
+      super(host, cred)
     end
 
     # Disconnect from the host.

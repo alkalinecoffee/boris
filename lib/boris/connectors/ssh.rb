@@ -18,7 +18,7 @@ module Boris
       invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
       raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
 
-      super(host, cred, options)
+      super(host, cred)
     end
 
     # Disconnect from the host.

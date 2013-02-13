@@ -12,7 +12,7 @@ module Boris
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.  The relevant option set here would be :snmp_options.
     def initialize(host, cred, options)
-      super(host, cred, options)
+      super(host, cred)
       @snmp_options = options[:snmp_options].merge(:host=>@host, :version=>:SNMPv1, :community=>@user)
 
       #snmp connections are always reconnectable
