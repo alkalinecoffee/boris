@@ -511,12 +511,12 @@ module Boris; module Profilers
 
         if product_key
           debug 'product key retrieved'
-          return product_key
         else
           debug 'product key could not be retrieved'
         end
-
       end
+
+      product_key
     end
 
     def get_username(guid)
