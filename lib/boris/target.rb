@@ -1,6 +1,5 @@
 require 'boris/errors'
 require 'boris/options'
-require 'boris/connectors/nil'
 require 'boris/connectors/snmp'
 require 'boris/connectors/ssh'
 require 'boris/connectors/wmi'
@@ -35,15 +34,13 @@ module Boris
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.
     def initialize(host, options={})
+      @logger = Boris.logger
+
       @host = host
 
       options ||= {}
       @options = Options.new(options)
-
-      @logger = Boris.logger
-
-      @connector = NilConnector.new
-
+      @connector = Connector.new(@host)
       @unavailable_connection_types = []
 
       if block_given?
@@ -131,6 +128,8 @@ module Boris
         end
       end
 
+      info 'all connection attempts failed' if !@connector.connected?
+
       return @connector ? true : false
     end
 
@@ -167,11 +166,11 @@ module Boris
           if profiler.matches_target?(@connector)
             @profiler = profiler
 
-            debug "suitable profiler found (#{@profiler})"
+            debug "suitable profiler found (#{profiler})"
 
             @profiler = @profiler.new(@connector)
             
-            debug "profiler set to #{@profiler}"
+            debug "profiler set to #{profiler}"
           end
         end
       end
