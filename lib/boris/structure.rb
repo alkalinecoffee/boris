@@ -1,7 +1,7 @@
 module Boris
   module Structure
     include Lumberjack
-
+    
     CATEGORIES = %w{
       file_systems
       hardware

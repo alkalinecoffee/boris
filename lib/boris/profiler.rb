@@ -7,10 +7,12 @@ require 'boris/helpers/scrubber'
 
 module Boris; module Profilers
   class Profiler
-    include Boris::Lumberjack
-    include Boris::Structure
+    include Lumberjack
+    include Structure
 
     def initialize(connector)
+      @host = connector.host
+      @logger = Boris.logger
       @connector = connector
     end
   end

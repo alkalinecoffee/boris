@@ -33,6 +33,7 @@ module Boris
     #
     # @raise ArgumentError when invalid arguments are passed
     def initialize(options={})
+      @logger = Boris.logger
       @options = {}
 
       # set our defaults

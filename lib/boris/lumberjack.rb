@@ -5,20 +5,22 @@ class BorisLogger < Logger
     self.datetime_format = '%m-%d-%Y %H:%M:%S'
 
     self.formatter = proc do |severity, time, progname, msg|
-      sprintf("%-5s %-24s %-20s %-s\n", severity, time, progname, msg)
+      sprintf("%-5s %-24s %-24s %-s\n", severity, time, progname, msg)
     end
   end
 end
 
 module Boris
-  @logger = BorisLogger.new(STDOUT)
-  @logger.level = Logger::FATAL
+  @@logger = BorisLogger.new(STDOUT)
+  @@logger.level = Logger::FATAL
 
+  # Allow all objects in Boris to have access to the logging mechanism. Any classes simply
+  # need to include Lumberjack to have the ability to use the logger.
   def self.logger
-    @logger
+    @@logger
   end
 
-  # Sets the logging level for Boris. The setting here will carry down to all targets created
+  # Sets the logging level for Boris. The setting here will carry down to all objects created
   # during this session.
   #
   #  Boris.log_level = :debug
@@ -26,7 +28,7 @@ module Boris
   # @param [Symbol] level a symbol for setting the log level
   #  # Options are: +:debug+, +:info+, +:warn+, +:error+, +:fatal+ (default)
   def self.log_level=(level)
-    @logger.level = case level
+    @@logger.level = case level
     when :debug then Logger::DEBUG
     when :info then Logger::INFO
     when :warn then Logger::WARN
@@ -37,8 +39,8 @@ module Boris
   end
 
   module Lumberjack
-    @logger = Boris.logger
-
+    attr_accessor :logger
+    
     def debug(msg)
       logger.add(Logger::DEBUG, append_target_name(msg), facility) if logger && logger.debug?
     end
@@ -62,7 +64,8 @@ module Boris
     private
 
     def append_target_name(msg)
-      @host ? "#{@host}: #{msg}" : msg
+      "#{@host}: #{msg}"
+      #@host ? "#{@host}: #{msg}" : msg
     end
 
     def facility

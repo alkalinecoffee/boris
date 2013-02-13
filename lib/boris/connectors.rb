@@ -13,14 +13,15 @@ module Boris
     attr_reader :options
     attr_reader :reconnectable
 
-    def initialize(host, cred, options)
-      debug 'creating connection object'
-
+    def initialize(host, cred={})
+      @logger = Boris.logger
+      
       @host = host
       @user = cred[:user]
       @password = cred[:password]
       @connected = false
       @reconnectable = true
+      debug 'creating connection object'
     end
 
     # Convience method for retrieveing the connection status for this Connector.
@@ -40,7 +41,6 @@ module Boris
 
     # Establish our connection.
     def establish_connection
-      puts 'attempting connexion'
       debug 'attempting connection'
     end
 
