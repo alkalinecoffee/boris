@@ -86,7 +86,7 @@ class String
   # @return [Nil, String] string if value found, else returns nil
   def between_parenthesis
     x = self.scan(/\((.*)\)/)
-    return x.empty? ? nil : x.join
+    x.empty? ? nil : x.join
   end
 
   # Returns the string value found between a pair of quotes (single or double)
@@ -97,7 +97,7 @@ class String
   # @return [Nil, String] string if value found, else returns nil
   def between_quotes
     x = self.scan(/["|'](.*?)["|']/).flatten
-    return x.empty? ? nil : x
+    x.empty? ? nil : x
   end
 
   # Attempts to grab the hardware model from self and formats it for
@@ -157,7 +157,7 @@ class String
   # outputting it to the user.  Returns self if the provided vendor name did
   # not match any of the known vendor formats used within this method.
   #
-  #  'hewlett packard'.format_vendor  #=> "Hewlett Packard Corp."
+  #  'hewlett packard'.format_vendor  #=> "Hewlett Packard Inc."
   #  'sun microsystems'.format_vendor  #=> "Oracle Corp."
   #
   # @return [String] the formatted vendor
@@ -195,7 +195,7 @@ class String
   # @return [Nil, String] returns the found value, else returns nil
   def value_after_character(delimiter)
     x = self.scan(/^.*[#{delimiter}](.*)$/)
-    return x.empty? ? nil : x.join.strip
+    x.empty? ? nil : x.join.strip
   end
 
   # Allows you to specify your own delimiter to grab the string value found
@@ -207,7 +207,7 @@ class String
   # @return [Nil, String] returns the found value, else returns nil
   def value_before_character(delimiter)
     x = self.scan(/^(.*?)[#{delimiter}]/)
-    return x.empty? ? nil : x.join.strip
+    x.empty? ? nil : x.join.strip
   end
 
   # Returns the IP address value derived from self in hex format.

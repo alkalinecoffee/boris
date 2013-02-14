@@ -25,8 +25,8 @@ module Boris
   #
   #  Boris.log_level = :debug
   #
-  # @param [Symbol] level a symbol for setting the log level
-  #  # Options are: +:debug+, +:info+, +:warn+, +:error+, +:fatal+ (default)
+  # @param [Symbol] level a symbol for setting the log level. Options are: +:debug+,
+  #  +:info+, +:warn+, +:error+, +:fatal+ (default)
   def self.log_level=(level)
     @@logger.level = case level
     when :debug then Logger::DEBUG
