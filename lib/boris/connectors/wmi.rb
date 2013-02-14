@@ -16,7 +16,7 @@ module Boris
     # @param [Hash] credential credential we wish to use
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #  possible options.
-    def initialize(host, cred, options)
+    def initialize(host, cred)
       super(host, cred)
     end
 

@@ -11,12 +11,14 @@ module Boris
     # @param [Hash] credential credential we wish to use
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.  The relevant option set here would be :ssh_options.
-    def initialize(host, cred, options)
+    def initialize(host, cred, options={})
       @ssh_options = options[:ssh_options]
       @ssh_options[:password] = @password if @password
 
-      invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
-      raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
+      if @ssh_options
+        invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
+        raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
+      end
 
       super(host, cred)
     end
