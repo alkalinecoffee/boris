@@ -40,7 +40,7 @@ module Boris
 
       @hardware[:cpu_vendor] = @hardware[:cpu_vendor].string_clean.format_vendor unless !@hardware[:cpu_vendor]
       @hardware[:model] = @hardware[:model].format_model unless !@hardware[:model]
-      @hardware[:serial].upcase! unless !@hardware[:serial]
+      @hardware[:serial] = @hardware[:serial].format_serial unless !@hardware[:serial]
       @hardware[:vendor] = @hardware[:vendor].string_clean.format_vendor unless !@hardware[:vendor]
       debug 'hardware data cleaned up'
 
