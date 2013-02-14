@@ -49,8 +49,8 @@ module Boris
       end
     end
 
-    # Convience method for returning data already collected (internally looks at the @data hash
-    # of Target).
+    # Convience method for returning data already collected (internally looks at the Profiler
+    # object of Target).
     #
     #  target.get(:hardware)
     #
@@ -58,7 +58,7 @@ module Boris
     #
     #  # same thing as:
     #
-    #  target.data.hardware   #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
+    #  target.profiler.hardware   #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
     #
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
@@ -202,7 +202,7 @@ module Boris
     #
     #  # same thing as:
     #
-    #  target.data.get_hardware   #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
+    #  target.profiler.get_hardware   #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
     #
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
@@ -253,22 +253,26 @@ module Boris
 
     # Parses the target's scanned data into JSON format for portability.
     #
-    #  target.get_network_id
-    #  json_string = target.to_json #=> "{\"domain\":\"mydomain.com\",\"hostname\":\"SERVER01\"}"...
+    #  target.get(:network_id)
+    #  json_string = target.to_json #=> "{...\"domain\":\"mydomain.com\",\"hostname\":\"SERVER01\"}"...
     #  
     #  # The JSON string can later be parsed back into an object
     #  target_object = JSON.parse(json_string, :symbolize_names=>true)
-    # @param options a hash value for json output options.  Only option supported now
-    #  is :pretty_print (set to a boolean value) to determine whether the data should be
-    #  returned in json format with proper indentation.
-    def to_json(options={:pretty_print=>false})
+    #  # and easily accessed...
+    #  target_object[:network_id] #=> {:domain=>"mydomain.com", :hostname=>"SERVER01"}
+    #
+    # @param [Hash] print_type a symbol value for json output options.  Only option supported now
+    #   is :pretty_print to determine whether the data should be returned in json format with
+    #   proper indentation.
+    # @return [JSON] a JSON object containing retrieved data from the target
+    def to_json(print_type=:standard)
       json = {}
 
       Structure::CATEGORIES.each do |category|
         json[category.to_sym] = @profiler.instance_variable_get("@#{category}".to_sym)
       end
 
-      generated_json = options[:pretty_print] ? JSON.pretty_generate(json) : JSON.generate(json)
+      generated_json = print_type == :pretty_print ? JSON.pretty_generate(json) : JSON.generate(json)
 
       debug "json generated successfully"
 
