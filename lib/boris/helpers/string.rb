@@ -1,6 +1,8 @@
 require 'boris/helpers/constants'
 
 class String
+  include Boris
+
   # Returns the string value found after the last colon symbol from self.
   #
   #  'A:B:C'.after_colon  #=> "C"
