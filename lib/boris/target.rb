@@ -115,7 +115,7 @@ module Boris
             end
           when :wmi
             if !@unavailable_connection_types.include?(:wmi)
-              @connector = WMIConnector.new(@host, cred, @options)
+              @connector = WMIConnector.new(@host, cred)
               @connector.establish_connection
             
               if @connector.reconnectable == false
@@ -230,8 +230,8 @@ module Boris
     # * get_operating_system (Hash)
     #
     #  target.retrieve_all
-    #  target.file_systems.size #=> 2
-    #  target.installed_applications.first #=> {:application_name=>'Adobe Reader'...}
+    #  target[:file_systems].size #=> 2
+    #  target[:installed_applications].first #=> {:application_name=>'Adobe Reader'...}
     #
     # @see Boris::Profilers::Structure Profilers::Structure a complete list of the data scructure
     # This method will also scrub the data after retrieving all of the items (unless the
@@ -242,6 +242,7 @@ module Boris
       debug 'retrieving all configuration items'
 
       Structure::CATEGORIES.each do |category|
+        debug "calling #get_#{category.to_s}"
         eval "@profiler.get_#{category.to_s}"
       end
       

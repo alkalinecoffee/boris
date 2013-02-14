@@ -158,8 +158,7 @@ module Boris; module Profilers
       super
 
       # get patches via wmi
-      patch_data = @connector.values_at('SELECT Description, HotFixID, InstalledBy, InstalledOn, ServicePackInEffect
-        FROM Win32_QuickFixEngineering')
+      patch_data = @connector.values_at('SELECT Description, HotFixID, InstalledBy, InstalledOn, ServicePackInEffect FROM Win32_QuickFixEngineering')
 
       patch_data.each do |patch|
         if !(patch[:hotfixid] =~ /\{/)
@@ -297,13 +296,15 @@ module Boris; module Profilers
 
         # retrieve config for this interface
         interface_config = @connector.value_at("SELECT DNSServerSearchOrder, IPAddress, IPSubnet, SettingID FROM Win32_NetworkAdapterConfiguration WHERE Index = #{index}")
+
         guid = interface_config[:settingid]
         h[:dns_servers] = interface_config[:dnsserversearchorder]
 
         subnet = interface_config[:ipsubnet]
+
         interface_config[:ipaddress].each do |ip_address|
           h[:ip_addresses] << {:ip_address=>ip_address, :subnet=>subnet}
-        end
+        end unless interface_config[:ipaddress].nil?
 
         cfg_keypath = NIC_CFG_KEYPATH + "\\#{padded_index}"
         
@@ -389,8 +390,8 @@ module Boris; module Profilers
 
         hardware_ids = fibre_interface[:instancename].scan(/[ven|dev]_(\d{4})/i)
 
-        h[:vendor_id] = '0x' + hardware_ids[0].join
-        h[:model_id] = '0x' + hardware_ids[1].join
+        h[:vendor_id] = '0x' + hardware_ids[0].join if hardware_ids[0]
+        h[:model_id] = '0x' + hardware_ids[1].join if hardware_ids[1]
 
         h[:is_uplink] = false
         h[:model] = fibre_interface[:modeldescription]

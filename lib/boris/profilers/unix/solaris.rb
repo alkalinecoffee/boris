@@ -192,7 +192,7 @@ module Boris; module Profilers
             interface_line = ifconfig_data[0].split
             inet_line = ifconfig_data[1].split
 
-            subnet = inet_line[3] ? inet_line[3].hex_to_address : nil
+            subnet = inet_line[3] ? inet_line[3].hex_to_ip_address : nil
 
             h[:status] = 'up' if interface_line[1] =~ /<up/i
 
