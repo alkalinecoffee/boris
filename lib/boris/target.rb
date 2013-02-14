@@ -54,7 +54,7 @@ module Boris
     #
     #  target.get(:hardware)
     #
-    #  target[:hardware]      #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
+    #  target[:hardware]          #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
     #
     #  # same thing as:
     #
@@ -198,7 +198,7 @@ module Boris
     # Convience method for collecting data from a Target, where the user can pass in a symbol
     # for the category that should be collected.
     #
-    #  target.get(:hardware)      #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
+    #  target.get(:hardware)          #=> {:cpu_architecture=>64, :cpu_core_count=>2...}
     #
     #  # same thing as:
     #
@@ -215,8 +215,8 @@ module Boris
     # connection has been established to the host.
     # @note Running the full gamut of data collection methods may take some time, and
     #  connections over WMI usually take longer than their SSH counterparts.  Typically,
-    #  a Linux server scan can be completed in juts a minute or two, whereas a Windows
-    #  host will be completed in 2-3 minutes (in a perfect world, of course).
+    #  a Linux server scan can be completed in just a minute or two, whereas a Windows
+    #  host will be completed in 2-3 minutes (there are many other factors, of course).
     # Methods that will be called include:
     # * get_file_systems (Array)
     # * get_hardware (Hash)

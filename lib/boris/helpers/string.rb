@@ -239,7 +239,7 @@ class String
   # characters that are sometimes reported by devices.  Also removes registered
   # (R) characters.
   #
-  #  'Microsoft(R) Windows(R)'.string_clean  #=> "Microsoft Windows"
+  #  'Microsoft(R) Windows(R)'.string_clean             #=> "Microsoft Windows"
   #  "string with\u00A0 weird characters".string_clean  #=> "string with weird characters"
   #
   # @return [String] the cleaned up string
