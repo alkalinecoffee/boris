@@ -4,11 +4,11 @@ module Boris
   class SSHConnector < Connector
 
     # Create an instance of SSHConnector by passing in a mandatory hostname or IP address,
-    #   credential to try, and optional Hash of {Boris::Options options}.  Under the hood, this
-    #   class uses the Net/SSH library.
+    # credential to try, and optional Hash of {Boris::Options options}.  Under the hood, this
+    # class uses the Net/SSH library.
     #
     # @param [String] host hostname or IP address
-    # @param [Hash] credential credential we wish to use
+    # @param [Hash] cred credential we wish to use
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.  The relevant option set here would be :ssh_options.
     def initialize(host, cred, options={})
@@ -69,7 +69,7 @@ module Boris
     end
     
     # Return multiple values from our request, up to the limit specified (or no
-    #   limit if no limit parameter is specified.
+    # limit if no limit parameter is specified.
     # @param [String] request the command we wish to execute over this connection
     # @param [Boolean] request_pty if true, we should request psuedo-terminal (PTY).
     #   This is necessary if we are calling a command that uses elevated privileges (sudo).

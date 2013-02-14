@@ -15,15 +15,15 @@ module Boris
     # Creates our options hash where the user can pass in an optional hash to immediately
     # override the default values.
     #
-    #  credentials = [{:user=>'joe', :password=>'mypassword', :connection_types=>[:ssh, :wmi]}]
+    #  credentials = [{:user=>'myuser', :password=>'mypassword', :connection_types=>[:ssh, :wmi]}]
     #  ssh_keys = ['/home/joe/private_key']
-    #  options = Boris::Options.new(:log_level=>:debug, :ssh_options=>{:keys=>ssh_keys}, :credentials=>credentials)
+    #  options = Boris::Options.new(:log_level=>:debug, :credentials=>credentials, :ssh_options=>{:keys=>ssh_keys})
     #
     # @option options [Boolean] :auto_scrub_data should the target's data be scrubbed
     #  after running #retrieve_all?
     # @option options [Array] :credentials an array of credentials in the format of
     #  +:user+, +:password+, +:connection_types+.  Only +:user+ is mandatory.
-    # @option options [Array] profilers An array of module names of the profiles we wish
+    # @option options [Array] profilers An array of module names of the profilers we wish
     #  to have available for use on this target.  {Boris::Profilers::RedHat} and
     #  {Profilers::Solaris} are always the defaults, and Windows profilers are included
     #  as defaults as well if {Boris} is running on a Windows host (where WMI connections
@@ -72,10 +72,14 @@ module Boris
       @options[key] = val
     end
 
-    # Provides a simple mechanism for adding credentials to the credentials array of Options.
+    # Provides a simple mechanism for adding credentials to the credentials array of Options. The connection types
+    # provided here tell Boris which connection methods this credential should be used for.  If no connection types
+    # are provided, Boris will try to connect using all available connection types with this credential.
+    #
+    #  @target.options.add_credential({:user=>'myuser', :password=>'mypassword', :connection_types=>[:ssh, :wmi]})
     #
     # @param cred [Hash] a credential hash. Values include +:user+, +:password+, and
-    #  +:connection_types+. +:user+ is mandatory, and +:connection_types+ should be an Array.
+    #   +:connection_types+. +:user+ is mandatory, and +:connection_types+ should be an Array.
     # @raise ArgumentError when invalid credentials or connection_types are supplied
     def add_credential(cred)
       raise ArgumentError, 'invalid credential supplied (must be Hash)' if !cred.kind_of?(Hash)
@@ -89,17 +93,6 @@ module Boris
       end
 
       @options[:credentials] << cred unless @options[:credentials].include?(cred)
-    end
-
-    def set_log_level(level)
-      @logger.level = case log_level
-      when :debug then Logger::DEBUG
-      when :info then Logger::INFO
-      when :warn then Logger::WARN
-      when :error then Logger::ERROR
-      when :fatal then Logger::FATAL
-      else raise ArgumentError, "invalid logger level specified (#{log_level.inspect})"
-      end
     end
   end
 end

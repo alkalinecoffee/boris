@@ -44,7 +44,10 @@ module Boris
       debug 'attempting connection'
     end
 
-    # Return the values from our request.
+    # Only to be called from a child class, as this method only performs some simple
+    # checks for errors and provides debugging messages.  Not intended to be directly
+    # called from user code.
+    #
     # @param [String] request the command we wish to execute over this connection
     # @param [Integer] limit the maximum number of results we wish to return
     def values_at(request, limit)

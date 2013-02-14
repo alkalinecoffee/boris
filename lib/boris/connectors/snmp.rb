@@ -8,7 +8,7 @@ module Boris
     # class uses the SNMP library.
     #
     # @param [String] host hostname or IP address
-    # @param [Hash] credential credential we wish to use
+    # @param [Hash] cred credential we wish to use
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.  The relevant option set here would be :snmp_options.
     def initialize(host, cred, options={})

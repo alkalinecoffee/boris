@@ -5,7 +5,7 @@ module Boris
     extend Lumberjack
 
     # Attempts to suggest a connection method based on whether certain TCP ports
-    # on the target are responding (135 for WMI, 22 for SSH by default).  Can be
+    # on the target are responding (22 for SSH, 135 for WMI by default).  Can be
     # used to speed up the process of determining whether we should try to
     # connect to our host using different methods, or bypass certain attempts
     # entirely.
@@ -40,7 +40,8 @@ module Boris
     # time connecting to the target using different methods just to check if
     # they succeed or not.
     #
-    #  Boris::Network.tcp_port_responding?('windowsserver01', 22)  #=> false
+    #  Boris::Network.tcp_port_responding?('windowsserver01', 22)   #=> false
+    #  Boris::Network.tcp_port_responding?('windowsserver01', 135)  #=> true
     #
     # @param target name we wish to test against
     # @param port the TCP port number we wish to test

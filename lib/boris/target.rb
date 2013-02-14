@@ -62,8 +62,8 @@ module Boris
     #
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
-    def [](var)
-      eval "@profiler.#{var.to_s}"
+    def [](category)
+      eval "@profiler.#{category.to_s}"
     end
 
     # Connects to the target using the credentials supplied via the connection type as specified
