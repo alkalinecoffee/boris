@@ -1,8 +1,7 @@
-require 'boris/structure'
+require 'boris/profiler'
 
-module Boris; module Profiles
-  module UNIX
-    include Structure
+module Boris; module Profilers
+  class UNIX < Profiler
 
     def self.connection_type
       Boris::SSHConnector
@@ -27,6 +26,8 @@ module Boris; module Profiles
 
         @file_systems << h
       end
+
+      @file_systems
     end
 
     def get_hardware; super; end
@@ -61,6 +62,8 @@ module Boris; module Profiles
         
         @local_user_groups << h
       end
+
+      @local_user_groups
     end
 
     def get_network_id
@@ -77,6 +80,8 @@ module Boris; module Profiles
 
       @network_id[:hostname] = hostname
       @network_id[:domain] = domain
+
+      @network_id
     end
 
     def get_network_interfaces; super; end

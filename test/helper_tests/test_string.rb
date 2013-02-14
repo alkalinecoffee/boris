@@ -103,8 +103,8 @@ class StringTest < Test::Unit::TestCase
       assert_equal(nil, ''.format_vendor)
     end
 
-    should 'return the ip-formatted value from a string of hex values via #hex_to_address' do
-      assert_equal('255.255.255.0', 'ffffff00'.hex_to_address)
+    should 'return the ip-formatted value from a string of hex values via #hex_to_ip_address' do
+      assert_equal('255.255.255.0', 'ffffff00'.hex_to_ip_address)
     end
 
     should 'remove the architecture from a string via #remove_arch' do
@@ -126,11 +126,11 @@ class StringTest < Test::Unit::TestCase
       assert_equal('registered', 'registered(r)'.string_clean)
     end
 
-    should 'return the value(s) found between at least one pair of single or double quotes via #within_quotes' do
-      assert_equal(['C'], 'AB"C"'.within_quotes)
-      assert_equal(['A', 'C'], '"A" B "C"'.within_quotes)
-      assert_equal(['A', 'C'], "'A' B 'C'".within_quotes)
-      assert_equal(nil, 'ABC'.within_quotes)
+    should 'return the value(s) found between at least one pair of single or double quotes via #between_quotes' do
+      assert_equal(['C'], 'AB"C"'.between_quotes)
+      assert_equal(['A', 'C'], '"A" B "C"'.between_quotes)
+      assert_equal(['A', 'C'], "'A' B 'C'".between_quotes)
+      assert_equal(nil, 'ABC'.between_quotes)
     end
   end
 end

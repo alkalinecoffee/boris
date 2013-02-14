@@ -1,3 +1,11 @@
+require 'boris/profiler'
+
+require 'boris/profilers/linux/redhat'
+require 'boris/profilers/unix/solaris'
+require 'boris/profilers/windows/windows2003'
+require 'boris/profilers/windows/windows2008'
+require 'boris/profilers/windows/windows2012'
+
 module Boris
   class Options
     include Lumberjack
@@ -7,17 +15,17 @@ module Boris
     # Creates our options hash where the user can pass in an optional hash to immediately
     # override the default values.
     #
-    #  credentials = [{:user=>'joe', :password=>'mypassword', :connection_types=>[:ssh, :wmi]}]
+    #  credentials = [{:user=>'myuser', :password=>'mypassword', :connection_types=>[:ssh, :wmi]}]
     #  ssh_keys = ['/home/joe/private_key']
-    #  options = Boris::Options.new(:log_level=>:debug, :ssh_options=>{:keys=>ssh_keys}, :credentials=>credentials)
+    #  options = Boris::Options.new(:log_level=>:debug, :credentials=>credentials, :ssh_options=>{:keys=>ssh_keys})
     #
     # @option options [Boolean] :auto_scrub_data should the target's data be scrubbed
     #  after running #retrieve_all?
     # @option options [Array] :credentials an array of credentials in the format of
     #  +:user+, +:password+, +:connection_types+.  Only +:user+ is mandatory.
-    # @option options [Array] profiles An array of module names of the profiles we wish
-    #  to have available for use on this target.  {Boris::Profiles::RedHat} and
-    #  {Profiles::Solaris} are always the defaults, and Windows profiles are included
+    # @option options [Array] profilers An array of module names of the profilers we wish
+    #  to have available for use on this target.  {Boris::Profilers::RedHat} and
+    #  {Profilers::Solaris} are always the defaults, and Windows profilers are included
     #  as defaults as well if {Boris} is running on a Windows host (where WMI connections
     #  are available)
     # @option options [Hash] snmp_options A hash of options supported by ruby-snmp.
@@ -25,13 +33,14 @@ module Boris
     #
     # @raise ArgumentError when invalid arguments are passed
     def initialize(options={})
+      @logger = Boris.logger
       @options = {}
 
       # set our defaults
       @options[:auto_scrub_data] ||= true
       @options[:credentials] ||= []
-      @options[:profiles] ||= [Profiles::RedHat, Profiles::Solaris]
-      @options[:profiles].concat([Profiles::Windows::Windows2003, Profiles::Windows::Windows2008, Profiles::Windows::Windows2012]) if PLATFORM == :win32
+      @options[:profilers] ||= [Profilers::RedHat, Profilers::Solaris]
+      @options[:profilers].concat([Profilers::Windows2003, Profilers::Windows2008, Profilers::Windows2012]) if PLATFORM == :win32
       @options[:snmp_options] ||= {}
       @options[:ssh_options] ||= {}
 
@@ -45,7 +54,7 @@ module Boris
     end
 
     # Getter method for grabbing a value from the Options.
-    #  puts options[:profiles] #=> [Profiles::RedHat]
+    #  puts options[:profilers] #=> [Profilers::RedHat]
     #
     # @param key symbol of the key-value pair
     # @return returns the value of specified key from Options
@@ -54,19 +63,23 @@ module Boris
     end
 
     # Setter method for setting the value in the options hash
-    #  puts options[:profiles] #=> [Profiles::RedHat]
-    #  options[:profiles] << Profiles::Solaris
-    #  puts options[:profiles] #=> [Profiles::RedHat, Profiles::Solaris]
+    #  puts options[:profilers] #=> [Profilers::RedHat]
+    #  options[:profilers] << Profilers::Solaris
+    #  puts options[:profilers] #=> [Profilers::RedHat, Profilers::Solaris]
     # @raise ArgumentError when invalid options are provided
     def []=(key, val)
       raise ArgumentError, 'invalid option provided' if !@options.has_key?(key)
       @options[key] = val
     end
 
-    # Provides a simple mechanism for adding credentials to the credentials array of Options.
+    # Provides a simple mechanism for adding credentials to the credentials array of Options. The connection types
+    # provided here tell Boris which connection methods this credential should be used for.  If no connection types
+    # are provided, Boris will try to connect using all available connection types with this credential.
+    #
+    #  @target.options.add_credential({:user=>'myuser', :password=>'mypassword', :connection_types=>[:ssh, :wmi]})
     #
     # @param cred [Hash] a credential hash. Values include +:user+, +:password+, and
-    #  +:connection_types+. +:user+ is mandatory, and +:connection_types+ should be an Array.
+    #   +:connection_types+. +:user+ is mandatory, and +:connection_types+ should be an Array.
     # @raise ArgumentError when invalid credentials or connection_types are supplied
     def add_credential(cred)
       raise ArgumentError, 'invalid credential supplied (must be Hash)' if !cred.kind_of?(Hash)
@@ -80,17 +93,6 @@ module Boris
       end
 
       @options[:credentials] << cred unless @options[:credentials].include?(cred)
-    end
-
-    def set_log_level(level)
-      @logger.level = case log_level
-      when :debug then Logger::DEBUG
-      when :info then Logger::INFO
-      when :warn then Logger::WARN
-      when :error then Logger::ERROR
-      when :fatal then Logger::FATAL
-      else raise ArgumentError, "invalid logger level specified (#{log_level.inspect})"
-      end
     end
   end
 end

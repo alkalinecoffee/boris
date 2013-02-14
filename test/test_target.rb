@@ -3,9 +3,10 @@ require 'setup_tests'
 class TargetTest < Test::Unit::TestCase
   context 'a Target' do
     setup do
-      @target = Target.new('0.0.0.0')
-      @target.extend(Profiles::Structure)
+      @host = '0.0.0.0'
+      @target = Target.new(@host)
       @cred = {:user=>'someuser', :password=>'somepass'}
+      @connector = @target.connector = SSHConnector.new(@host, @cred)      
     end
 
     should 'return host info after calling #load_host_info' do
@@ -14,7 +15,7 @@ class TargetTest < Test::Unit::TestCase
     end
 
     should 'allow its target name to be readable' do
-      assert_equal('0.0.0.0', @target.host)
+      assert_equal(@host, @target.host)
     end
 
     should 'allow its options to be modifiable by passing a block to Target#new' do
@@ -25,19 +26,8 @@ class TargetTest < Test::Unit::TestCase
       end
     end
 
-    should 'allow us to call methods for retrieving all standard configuration items via #retrieve_all' do
-      @target.options[:auto_scrub_data] = false
-      @target.retrieve_all
-
-      assert_equal([], @target.file_systems)
-      assert_equal([], @target.installed_applications)
-      assert_equal([], @target.local_user_groups)
-      assert_equal([], @target.network_interfaces)
-      assert_equal([], @target.installed_patches)
-      assert_equal([], @target.hosted_shares)
-    end
-
     should 'allow its data (instance variables) to be produced as json' do
+      @target.profiler = Profilers::Profiler.new(Connector.new(@host))
       long_json_string = %w{
         {"file_systems":null,
         "hardware":null,
@@ -53,42 +43,40 @@ class TargetTest < Test::Unit::TestCase
       assert_equal(long_json_string, @target.to_json)
     end
 
-
-    should 'allow credentials to be added through #add_credential' do
-      @target.options.add_credential(@cred.merge!(:connection_types=>[:wmi]))
-      assert_equal([@cred], @target.options[:credentials])
-    end
-
     context 'listening on certain ports' do
-      should "allow us to detect a possible SSH connection if it is listening on port #{Boris::PORT_DEFAULTS[:ssh]}" do
-        @target.expects(:tcp_port_responding?).with(22).returns(true)
-        @target.expects(:tcp_port_responding?).with(135).returns(false)
-        assert_equal(:ssh, @target.suggested_connection_method)
+      should "allow us to detect a possible SSH connection if it is listening on port #{PORT_DEFAULTS[:ssh]}" do
+        Network.stubs(:tcp_port_responding?).with(@target.host, 22).returns(true)
+        assert_equal(:ssh, Network.suggested_connection_method(@target.host))
       end
 
-      should "allow us to detect a possible WMI connection if if it is listening on port #{Boris::PORT_DEFAULTS[:wmi]}" do
-        @target.expects(:tcp_port_responding?).with(135).returns(true)
-        assert_equal(:wmi, @target.suggested_connection_method)
+      should "allow us to detect a possible WMI connection if if it is listening on port #{PORT_DEFAULTS[:wmi]}" do
+        Network.stubs(:tcp_port_responding?).with(@target.host, 22).returns(false)
+        Network.stubs(:tcp_port_responding?).with(@target.host, 135).returns(true)
+        assert_equal(:wmi, Network.suggested_connection_method(@target.host))
       end
 
       should 'return with no detected connection method if all attempts fail' do
-        @target.expects(:tcp_port_responding?).with(22).returns(false)
-        @target.expects(:tcp_port_responding?).with(135).returns(false)
-        assert_nil(nil, @target.suggested_connection_method)
+        Network.stubs(:tcp_port_responding?).with(@target.host, 22).returns(false)
+        Network.stubs(:tcp_port_responding?).with(@target.host, 135).returns(false)
+        assert_nil(nil, Network.suggested_connection_method(@target.host))
       end
     end
 
     context 'that we will try to connect to' do
+      setup do
+        @connector.stubs(:connected?).returns(false)
+      end
+
       should 'error if no credentials are specified' do
         assert_raise(InvalidOption) {@target.connect}
       end
 
-      should 'error if we try to detect the profile when there is no active connection' do
-        assert_raise(NoActiveConnection) {@target.detect_profile}
+      should 'error if we try to detect the profiler when there is no active connection' do
+        assert_raise(NoActiveConnection) {@target.detect_profiler}
       end
 
       should 'attempt an SSH and WMI connection only once if the target does not respond to an attempt' do
-        skip("test relies on WIN32OLE") if PLATFORM != :win32
+        skip('test relies on WIN32OLE') if PLATFORM != :win32
         
         @target.options.add_credential(@cred.merge!(:connection_types=>[:snmp, :ssh, :wmi]))
         
@@ -114,32 +102,42 @@ class TargetTest < Test::Unit::TestCase
 
     context 'that we have successfully connected to' do
       setup do
-        ssh_connection = mock('SSHConnector')
-        @target.connector = ssh_connection
+        @target.stubs(:connect).returns(@connector)
+        @connector.stubs(:connected?).returns(true)
 
-        @target.connector.stubs(:connected?).returns(true)
-        @target.connector.stubs(:class).returns(Connector::SSHConnector)
-        @target.stubs(:connect).returns(@target.connector)
-
-        @target.options[:profiles].each do |profile|
-          profile.stubs(:matches_target?).returns(false)
+        @target.options[:profilers].each do |profiler|
+          profiler.stubs(:matches_target?).returns(false)
         end
 
         @target.connect
       end
 
-      should 'raise an error if no profiles are found to be suitable' do
-        assert_raise(NoProfileDetected) {@target.detect_profile}
+      should 'allow us to call methods for retrieving all standard configuration items via #retrieve_all' do
+        @target.profiler = Profilers::Profiler.new(@connector)
+        @target.options[:auto_scrub_data] = false
+        @target.retrieve_all
+
+        assert_equal([], @target.profiler.file_systems)
+        assert_equal([], @target.profiler.installed_applications)
+        assert_equal([], @target.profiler.local_user_groups)
+        assert_equal([], @target.profiler.network_interfaces)
+        assert_equal([], @target.profiler.installed_patches)
+        assert_equal([], @target.profiler.hosted_shares)
       end
 
-      should 'detect the best profile for our target' do
-        Profiles::RedHat.stubs(:matches_target?).returns(true)
-        assert_equal(Profiles::RedHat, @target.detect_profile)
+      should 'raise an error if no profilers are found to be suitable' do
+        assert_raise(NoProfilerDetected) {@target.detect_profiler}
       end
 
-      should 'allow us to force a profile to be used for our target even if it is not ideal' do
-        @target.force_profile_to(Profiles::RedHat)
-        assert_equal(Profiles::RedHat, @target.target_profile)
+      should 'detect the best profiler for our target' do
+        Profilers::RedHat.stubs(:matches_target?).returns(true)
+        @connector.stubs(:class).returns(Boris::SSHConnector)
+        assert_equal(Profilers::RedHat, @target.detect_profiler.class)
+      end
+
+      should 'allow us to force a profiler to be used for our target even if it is not ideal' do
+        @target.force_profiler_to(Profilers::RedHat)
+        assert_equal(Profilers::RedHat, @target.profiler.class)
       end
     end
   end
