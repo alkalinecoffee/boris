@@ -3,7 +3,7 @@ require 'setup_tests'
 class SolarisCoreTest < ProfilerTestSetup
   context 'a Solaris target' do
     setup do
-      @connector = @target.connector = instance_of(SSHConnector)
+      @connector = @target.connector = SSHConnector.new(@host, {})
       @target.stubs(:target_profiler).returns(Profilers::Solaris)
       @target.force_profiler_to(Profilers::Solaris)
       @profiler = @target.profiler

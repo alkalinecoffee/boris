@@ -3,7 +3,7 @@ require 'setup_tests'
 class UNIXCoreTest < ProfilerTestSetup
   context 'a UNIX target' do
     setup do
-      @connector = @target.connector = instance_of(SSHConnector)
+      @connector = @target.connector = SSHConnector.new(@host, {})
       @target.stubs(:target_profiler).returns(Profilers::UNIX)
       @target.force_profiler_to(Profilers::UNIX)
       @profiler = @target.profiler

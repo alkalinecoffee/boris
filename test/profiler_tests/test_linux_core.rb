@@ -3,7 +3,7 @@ require 'setup_tests'
 class LinuxCoreTest < ProfilerTestSetup
   context 'a Linux target' do
     setup do
-      @connector = @target.connector = instance_of(SSHConnector)
+      @connector = @target.connector = SSHConnector.new(@host, {})
       @target.stubs(:target_profiler).returns(Profilers::Linux)
       @target.force_profiler_to(Profilers::Linux)
       @profiler = @target.profiler

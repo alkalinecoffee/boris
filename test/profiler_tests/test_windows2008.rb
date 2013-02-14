@@ -3,7 +3,7 @@ require 'setup_tests'
 class Windows2008Test < ProfilerTestSetup
   context 'a Windows 2008 target' do
     setup do
-      @connector = @target.connector = instance_of(WMIConnector)
+      @connector = @target.connector = WMIConnector.new(@host, {})
       @target.stubs(:target_profiler).returns(Profilers::Windows2008)
       @target.force_profiler_to(Profilers::Windows2008)
       @profiler = @target.profiler

@@ -10,6 +10,7 @@ include Boris
 class ProfilerTestSetup < Test::Unit::TestCase
   def initialize(test)
     super(test)
-    @target = Target.new('0.0.0.0')
+    @host = '0.0.0.0'
+    @target = Target.new(@host)
   end
 end

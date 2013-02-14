@@ -3,9 +3,10 @@ require 'setup_tests'
 class TargetTest < Test::Unit::TestCase
   context 'a Target' do
     setup do
-      @target = Target.new('0.0.0.0')
-      @connector = @target.connector = instance_of(SSHConnector)
+      @host = '0.0.0.0'
+      @target = Target.new(@host)
       @cred = {:user=>'someuser', :password=>'somepass'}
+      @connector = @target.connector = SSHConnector.new(@host, @cred)      
     end
 
     should 'return host info after calling #load_host_info' do
@@ -14,7 +15,7 @@ class TargetTest < Test::Unit::TestCase
     end
 
     should 'allow its target name to be readable' do
-      assert_equal('0.0.0.0', @target.host)
+      assert_equal(@host, @target.host)
     end
 
     should 'allow its options to be modifiable by passing a block to Target#new' do
@@ -26,7 +27,7 @@ class TargetTest < Test::Unit::TestCase
     end
 
     should 'allow its data (instance variables) to be produced as json' do
-      @target.profiler = Profilers::Profiler.new(NilConnector.new)
+      @target.profiler = Profilers::Profiler.new(Connector.new(@host))
       long_json_string = %w{
         {"file_systems":null,
         "hardware":null,
@@ -75,7 +76,7 @@ class TargetTest < Test::Unit::TestCase
       end
 
       should 'attempt an SSH and WMI connection only once if the target does not respond to an attempt' do
-        skip("test relies on WIN32OLE") if PLATFORM != :win32
+        skip('test relies on WIN32OLE') if PLATFORM != :win32
         
         @target.options.add_credential(@cred.merge!(:connection_types=>[:snmp, :ssh, :wmi]))
         
