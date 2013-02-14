@@ -1,4 +1,3 @@
-require 'boris/connectors/wmi'
 require 'boris/profiler'
 
 module Boris; module Profilers

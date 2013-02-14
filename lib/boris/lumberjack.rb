@@ -64,8 +64,7 @@ module Boris
     private
 
     def append_target_name(msg)
-      "#{@host}: #{msg}"
-      #@host ? "#{@host}: #{msg}" : msg
+      @host ? "#{@host}: #{msg}" : msg
     end
 
     def facility
