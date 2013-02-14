@@ -1,43 +1,115 @@
+require 'boris/helpers/constants'
+
 class String
-  include Boris
-
+  # Returns the string value found after the last colon symbol from self.
+  #
+  #  'A:B:C'.after_colon  #=> "C"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def after_colon
-    generic_after(':')
+    value_after_character(':')
   end
 
+  # Returns the string value found after the last period symbol from self.
+  #
+  #  'A.B.C'.after_period  #=> "C"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def after_period
-    generic_after('\.')
+    value_after_character('\.')
   end
 
+  # Returns the string value found after the last pipe symbol from self.
+  #
+  #  'A|B|C'.after_pipe  #=> "C"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def after_pipe
-    generic_after('|')
+    value_after_character('|')
   end
 
+  # Returns the string value found after the last slash (both forwards
+  # and backwards) symbol from self.
+  #
+  #  'A/B/C'.after_slash  #=> "C"
+  #  'A\B\C'.after_slash  #=> "C"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def after_slash
-    generic_after('\\\\|\/')
+    value_after_character('\\\\|\/')
   end
 
+  # Returns the string value found before the first colon symbol from self.
+  #
+  #  'A:B:C'.before_colon  #=> "A"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def before_colon
-    generic_before(':')
+    value_before_character(':')
   end
 
+  # Returns the string value found before the first period symbol from self.
+  #
+  #  'A.B.C'.before_period  #=> "A"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def before_period
-    generic_before('\.')
+    value_before_character('\.')
   end
 
+  # Returns the string value found before the first pipe symbol from self.
+  #
+  #  'A.B.C'.before_period  #=> "A"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def before_pipe
-    generic_before('|')
+    value_before_character('|')
   end
 
+  # Returns the string value found before the first slash (both forwards
+  # and backwards) symbol from self.
+  #
+  #  'A/B/C'.before_slash  #=> "A"
+  #  'A\B\C'.before_slash  #=> "A"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def before_slash
-    generic_before('\\\\|\/')
-  end  
+    value_before_character('\\\\|\/')
+  end
 
+  # Returns the string value found between a pair of parenthesis from self.
+  #
+  #  'A(B)C'.between_parenthesis  #=> "B"
+  #
+  # @return [Nil, String] string if value found, else returns nil
   def between_parenthesis
     x = self.scan(/\((.*)\)/)
     return x.empty? ? nil : x.join
   end
 
+  # Returns the string value found between a pair of quotes (single or double)
+  # from self.
+  #
+  #  'A"B"C'.between_quotes  #=> "B"
+  #
+  # @return [Nil, String] string if value found, else returns nil
+  def between_quotes
+    x = self.scan(/["|'](.*?)["|']/).flatten
+    return x.empty? ? nil : x
+  end
+
+  # Attempts to grab the hardware model from self and formats it for
+  # consistency to match the marketing model name as specified from the vendor.
+  # Particularly on UNIX systems, the hardware model is not reported in a
+  # consistent manner across all systems (even those from the same vendor).
+  # This method is used when scrubbing a Target's retrieved data before
+  # outputting it to the user.  Returns self if the provided model did not match
+  # any of the known model formats used within this method.
+  #
+  #  'sun fire 400'.format_model  #=> "SunFire 400"
+  #  't1000'.format_model  #=> "SPARC Enterprise T1000"
+  #
+  # @return [Nil, String] the formatted model, else returns self
   def format_model
     return nil if self == ''
 
@@ -63,19 +135,30 @@ class String
     model.strip
   end
 
+  # Formats self to fit a consistent serial number format (no special characters,
+  # uppercased).
+  #
+  #  'abcd1234 '.format_serial  #=> "ABCD1234"
+  #  '(none)'.format_serial  #=> nil
+  #
+  # @return [Nil, String] the formatted serial, else returns nil if the serial
+  #   does not seem legit
   def format_serial
     return nil if self =~ /(^$|\(*none\)*)/i
 
-    self.upcase
+    self.string_clean.upcase
   end
 
-  def string_clean
-    # remove registered "(R)" mark
-    string = self.gsub(/\(r\)/i, '')
-
-    string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
-  end
-
+  # Attempts to grab the hardware vendor name from self and formats it for
+  # consistency to match the vendor's corproate name as specified from the
+  # vendor. This method is used when scrubbing a Target's retrieved data before
+  # outputting it to the user.  Returns self if the provided vendor name did
+  # not match any of the known vendor formats used within this method.
+  #
+  #  'hewlett packard'.format_vendor  #=> "Hewlett Packard Corp."
+  #  'sun microsystems'.format_vendor  #=> "Oracle Corp."
+  #
+  # @return [String] the formatted vendor
   def format_vendor
     return nil if self == ''
     
@@ -101,30 +184,67 @@ class String
     vendor.strip
   end
 
-  def generic_after(delimiter)
+  # Allows you to specify your own delimiter to grab the string value found
+  # after the last delimiter.  It's mainly used internally with the
+  # #after_ helper methods.
+  #
+  #   'A&B&C'.value_after_character('&')  #=> "C"
+  #
+  # @return [Nil, String] returns the found value, else returns nil
+  def value_after_character(delimiter)
     x = self.scan(/^.*[#{delimiter}](.*)$/)
     return x.empty? ? nil : x.join.strip
   end
 
-  def generic_before(delimiter)
+  # Allows you to specify your own delimiter to grab the string value found
+  # before the first delimiter.  It's mainly used internally with the
+  # #after_ helper methods.
+  #
+  #   'A&B&C'.value_before_character('&')  #=> "A"
+  #
+  # @return [Nil, String] returns the found value, else returns nil
+  def value_before_character(delimiter)
     x = self.scan(/^(.*?)[#{delimiter}]/)
     return x.empty? ? nil : x.join.strip
   end
 
-  def hex_to_address
+  # Returns the IP address value derived from self in hex format.
+  #
+  #  'ffffff00'.hex_to_ip_address  #=> "255.255.255.0"
+  #
+  # @return [Nil, String] returns the IP address
+  def hex_to_ip_address
     self.scan(/../).map {|octet| octet.hex}.join('.')
   end
   
+  # Returns a new string with the architecture removed. See {String#remove_arch!}.
+  #
+  #  "Windows Server 2003 (64-bit)".remove_arch #=> "Windows Server 2003"
+  #
+  # @return [String] returns a new string with architecture rmeoved
   def remove_arch
     String.new(self).remove_arch!
   end
 
+  # Removes the architecture in place. See {String#remove_arch}.
+  #
+  # @return [String] returns self with architecture rmeoved
   def remove_arch!
     self.replace(self.gsub(/\s+\(*(32|64)(-|\s)*bit\)*/, ''))
   end
 
-  def within_quotes
-    x = self.scan(/["|'](.*?)["|']/).flatten
-    return x.empty? ? nil : x
+  # Cleans self by stripping leading/trailing spaces, and removing any ASCII
+  # characters that are sometimes reported by devices.  Also removes registered
+  # (R) characters.
+  #
+  #  'Microsoft(R) Windows(R)'.string_clean  #=> "Microsoft Windows"
+  #  "string with\u00A0 weird characters".string_clean  #=> "string with weird characters"
+  #
+  # @return [String] the cleaned up string
+  def string_clean
+    # remove registered "(R)" mark
+    string = self.gsub(/\(r\)/i, '')
+
+    string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
   end
 end
