@@ -3,11 +3,11 @@ require 'setup_tests'
 class WMITest < Test::Unit::TestCase
   context 'a target listening for WMI connections' do
     setup do
-      skip("test relies on WIN32OLE")
+      skip('test relies on WIN32OLE') if PLATFORM != :win32
       
       @target_name = '0.0.0.0'
       @cred = {:user=>'someuser', :password=>'somepass'}
-      @connector = WMIConnector.new(@target_name, @cred, Options.new)
+      @connector = WMIConnector.new(@target_name, @cred)
 
       @win32ole = mock('WIN32OLE')
 

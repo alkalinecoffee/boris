@@ -1,14 +1,14 @@
 require 'setup_tests'
 
-class ProfileStructure
-  include Profiles::Structure
+class ProfilerStructure
+  include Boris::Structure
   attr_accessor :logger, :options
 end
 
 class StructureTest < Test::Unit::TestCase
   context 'a data structure' do
     setup do
-      @structure = ProfileStructure.new
+      @structure = ProfilerStructure.new
       @structure.options = Options.new
     end
 

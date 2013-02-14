@@ -1,4 +1,6 @@
-module Boris; module Profiles
+require 'boris/helpers/string'
+
+module Boris
   module Structure
     def scrub_data!
       [ @file_systems,
@@ -38,9 +40,9 @@ module Boris; module Profiles
 
       @hardware[:cpu_vendor] = @hardware[:cpu_vendor].string_clean.format_vendor unless !@hardware[:cpu_vendor]
       @hardware[:model] = @hardware[:model].format_model unless !@hardware[:model]
-      @hardware[:serial].upcase! unless !@hardware[:serial]
+      @hardware[:serial] = @hardware[:serial].format_serial unless !@hardware[:serial]
       @hardware[:vendor] = @hardware[:vendor].string_clean.format_vendor unless !@hardware[:vendor]
-      debug 'network interface data cleaned up'
+      debug 'hardware data cleaned up'
 
       @operating_system[:license_key].upcase! unless !@operating_system[:license_key]
       debug 'operating system data cleaned up'
@@ -48,4 +50,4 @@ module Boris; module Profiles
       debug 'data scrubbing complete'
     end
   end
-end; end
+end

@@ -7,7 +7,7 @@ module Boris
 
   class NoActiveConnection < StandardError; end
 
-  class NoProfileDetected < StandardError; end
+  class NoProfilerDetected < StandardError; end
 
   class InvalidOption < StandardError; end
 

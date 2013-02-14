@@ -24,6 +24,6 @@ Gem::Specification.new do |s|
 
   s.require_paths     = %w[lib]
 
-  s.files             = Dir.glob("lib/**/*") + %w(LICENSE.md Rakefile README.md)
+  s.files             = Dir.glob("lib/**/*") + %w(CHANGELOG.md LICENSE.md Rakefile README.md)
 
 end
