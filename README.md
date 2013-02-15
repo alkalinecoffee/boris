@@ -155,14 +155,14 @@ Profilers contain the instructions that allow us to run commands against our tar
 
 **Available profilers:**
 
-* **[http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux](Linux Core)**
-  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat](Red Hat Linux)
-* **[http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX](UNIX Core)**
-  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris](Oracle Solaris)
-* **[http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows](Windows Core)**
-  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2003](Windows 2003 Server)
-  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008](Windows 2008 Server)
-  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012](Windows 2012 Server)
+* **[Linux Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux)**
+  * [Red Hat Linux](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat)
+* **[UNIX Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX)**
+  * [Oracle Solaris](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris)
+* **[Windows Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows)**
+  * [Windows 2003 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2003)
+  * [Windows 2008 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008)
+  * [Windows 2012 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012)
 
 ## User Account Requirements
 While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab this info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
