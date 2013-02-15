@@ -44,8 +44,9 @@ target = Boris::Target.new(hostname)
 # add credentials to try against this target
 target.options.add_credential(:user=>'myusername', :password=>'mypassword', :connection_types=>[:ssh])
 
-# if this is a host using SSH, we can also pass in Net::SSH options (such as a private key for authentication).
-# SSH options passed to Boris will automatically be pushed to Net:SSH.
+# if this is a host using SSH, we can also pass in Net::SSH options (such as a private key for
+# authentication). SSH options passed to Boris will automatically be passed to Net:SSH. Likewise for
+# Net::SNMP--options passed to :snmp_options will be passed to the Net::SNMP library.
 target.options[:ssh_options] = {:keys=>['/path/to/my/private/key']}
 
 # attempt to connect to this target using the credentials we supplied above
@@ -84,7 +85,7 @@ if target.connected?
   # target.connector.values_at('SELECT * FROM Win32_ComputerSystem')
   #
 
-  # finally, we can package up all of the data into json format for portability (the true argument
+  # finally, we can package up all of the data into json format for portability (the :pretty_print argument
   # tells the #to_json method to output the json with tabbed formatting)
   puts target.to_json(:pretty_print)
 
@@ -112,19 +113,22 @@ For a Windows host, which uses WMI vice SSH, you can send WMI queries or registr
 # this will pull rows from a class in the standard root\CIMV2 namespace, returning an array of hashes
 multiple_rows_of_data = target.connector.values_at('SELECT * FROM Win32_NetworkAdapter')
 
-# this will pull rows from a class in the lower-level root\WMI namespace (note the second argument we're passing to #values_at):
+# this will pull rows from a class in the lower-level root\WMI namespace (note the second argument we're
+# passing to #values_at):
 multiple_rows_of_data = target.connector.values_at('SELECT * FROM MSNdis_EnumerateAdapter', :root_wmi)
 
-# you can also poll for registry keys under HKEY_LOCAL_MACHINE by providing a base key path, which returns an array of keys:
+# you can also poll for registry keys under HKEY_LOCAL_MACHINE by providing a base key path, which returns
+# an array of keys:
 registry_keys = target.connector.registry_subkeys_at('SOFTWARE\Microsoft\Windows')
 
-# and then grab values found at some key via #registry_values_at, which returns value/data elements in a Hash:
+# and then grab values found at some key via #registry_values_at, which returns value/data elements in a
+# Hash:
 registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Windows\CurrentVersion')
 ```
 
 **Coming soon--a write-up for SNMP devices**
 
-Boris also comes with the ability to add your own complete modules for using the framework by writing your own data collection algorithms.  This will also be written up in the near future.
+Boris also comes with the ability to add your own complete modules for using the framework by writing your own data collection algorithms.  I will also write-up a howto in the near future.
 
 ## Data
 Through a number of queries and algorithms, Boris efficiently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
@@ -142,7 +146,7 @@ Through a number of queries and algorithms, Boris efficiently polls devices on t
 * **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
 * **operating system** - name, version, kernel, date installed
 
-See {http://www.rubydoc.info/github/alkalinecoffee/boris/Boris/Profilers/Structure Boris::Profilers::Structure} for more details on the data structure.
+See [Boris::Profilers::Structure](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris/Profilers/Structure) for more details on the data structure.
 
 Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
 
@@ -151,14 +155,14 @@ Profilers contain the instructions that allow us to run commands against our tar
 
 **Available profilers:**
 
-* **Linux Core**
-  * Red Hat Linux
-* **UNIX Core**
-  * Oracle Solaris
-* **Windows Core**
-  * Windows 2003 Server
-  * Windows 2008 Server
-  * Windows 2012 Server
+* **[http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux](Linux Core)**
+  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat](Red Hat Linux)
+* **[http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX](UNIX Core)**
+  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris](Oracle Solaris)
+* **[http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows](Windows Core)**
+  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2003](Windows 2003 Server)
+  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008](Windows 2008 Server)
+  * [http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012](Windows 2012 Server)
 
 ## User Account Requirements
 While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab this info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
