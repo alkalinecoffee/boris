@@ -15,6 +15,11 @@ module Boris
       @ssh_options = options[:ssh_options]
       @ssh_options[:password] = @password if @password
 
+      @ssh_options[:auth_methods] = ['publickey']
+      if @password
+        @ssh_options[:auth_methods].concat(['keyboard-interactive', 'password'])
+      end
+
       if @ssh_options
         invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
         raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
