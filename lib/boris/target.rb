@@ -130,7 +130,7 @@ module Boris
 
       info 'all connection attempts failed' if !@connector.connected?
 
-      return @connector ? true : false
+      return @connector.connected? ? true : false
     end
 
     # Checks on the status of the connection.
