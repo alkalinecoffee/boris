@@ -105,7 +105,7 @@ multiple_lines_of_data = target.connector.values_at('/path/to/some/script')
 single_line_of_data = target.connector.value_at('/path/to/some/script')
 ```
 
-Running commands in this fashion utilizes the #exec function from Net::SSH.
+Running commands in this fashion utilizes the #exec method from the Net::SSH library.
 
 For a Windows host, which uses WMI vice SSH, you can send WMI queries or registry keys to the connector to get information:
 
