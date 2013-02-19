@@ -83,7 +83,7 @@ module Boris
     # @raise ArgumentError when invalid credentials or connection_types are supplied
     def add_credential(cred)
       raise ArgumentError, 'invalid credential supplied (must be Hash)' if !cred.kind_of?(Hash)
-      raise ArgumentError, 'username required' if !cred[:user]
+      raise ArgumentError, 'user required' if !cred[:user]
 
       cred[:connection_types] ||= VALID_CONNECTION_TYPES
 
