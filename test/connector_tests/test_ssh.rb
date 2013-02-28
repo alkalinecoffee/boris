@@ -18,6 +18,22 @@ class SSHTest < Test::Unit::TestCase
       assert_kind_of(SSHConnector, @connector.establish_connection)
     end
 
+    context 'to which we cannot connect to' do
+      should 'allow us to view the reason for failure' do
+        Net::SSH.stubs(:start).raises(Net::SSH::AuthenticationFailed)
+        @connector.establish_connection
+        assert_equal(@connector.failure_message, 'authentication failed')
+
+        Net::SSH.stubs(:start).raises(Net::SSH::HostKeyMismatch)
+        @connector.establish_connection
+        assert_equal(@connector.failure_message, 'connection failed (host key mismatch)')
+
+        Net::SSH.stubs(:start).raises(Net::SSH::Exception)
+        @connector.establish_connection
+        assert(@connector.failure_message =~ /^connection failed/)
+      end
+    end
+
     context 'to which we have already connected' do
       setup do
         @connector.establish_connection

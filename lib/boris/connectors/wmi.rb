@@ -56,12 +56,21 @@ module Boris
         @connected = false
         if error.message =~ /access is denied/i
           warn "connection failed (connection made but credentials not accepted with user #{@user})"
+          @failure_message = 'authentication failed'
           @reconnectable = true
+        elsif error.message =~ /call was canceled by the message filter/i
+          message = 'connection failed (rpc calls canceled by remote message filter)'
+          warn message
+          @failure_message = message
+          @reconnectable = false
         elsif error.message =~ /rpc server is unavailable/i
+          @failure_message = 'connection failed'
           warn 'connection failed (rpc server not available)'
           @reconnectable = false
         else
-          warn "connection failed (#{error.message.gsub(/\n\s*/, '. ')})"
+          message = "connection failed (#{error.message.gsub(/\n\s*/, '. ')})"
+          warn message
+          @failure_message = message
           @reconnectable = true
         end
       end

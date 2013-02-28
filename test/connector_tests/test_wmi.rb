@@ -21,6 +21,26 @@ class WMITest < Test::Unit::TestCase
       @connector.establish_connection
     end
 
+    context 'to which we cannot connect to' do
+      should 'allow us to view the reason for failure' do
+        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'access is denied')
+        @connector.establish_connection
+        assert_equal(@connector.failure_message, 'authentication failed')
+
+        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'call was canceled by the message filter')
+        @connector.establish_connection
+        assert_equal(@connector.failure_message, 'connection failed (rpc calls canceled by remote message filter)')
+
+        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'rpc server is unavailable')
+        @connector.establish_connection
+        assert_equal(@connector.failure_message, 'connection failed')
+
+        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'some other error')
+        @connector.establish_connection
+        assert(@connector.failure_message =~ /^connection failed/)
+      end
+    end
+
     context 'to which we have already connected' do
       setup do
         @row = mock('row')

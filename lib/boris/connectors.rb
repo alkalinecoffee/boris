@@ -12,6 +12,8 @@ module Boris
     attr_reader :host
     attr_reader :options
     attr_reader :reconnectable
+    attr_reader :failure_message
+    attr_reader :user
 
     def initialize(host, cred={})
       @logger = Boris.logger
