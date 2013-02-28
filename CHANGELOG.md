@@ -1,3 +1,6 @@
+# 1.0.3
+* Added #failure_message to connectors
+
 # 1.0.2
 * Fix for devices asking for password when connecting via SSH
 * Fixed return value for Target#connect
