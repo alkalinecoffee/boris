@@ -11,7 +11,7 @@ module Boris
     # @param [Hash] cred credential we wish to use
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.  The relevant option set here would be :ssh_options.
-    def initialize(host, cred, options={})
+    def initialize(host, cred, options=Options.new)
       @ssh_options = options[:ssh_options]
       
       @ssh_options[:auth_methods] = ['publickey']
