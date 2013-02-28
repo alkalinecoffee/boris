@@ -291,7 +291,8 @@ module Boris; module Profilers
     def get_operating_system
       super
 
-      install_log_date = @connector.value_at("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}")
+      install_log_date = @connector.value_at(%q{ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}})
+      
       @operating_system[:date_installed] = DateTime.parse(install_log_date)
 
       os_data = @connector.value_at('uname -rv').split

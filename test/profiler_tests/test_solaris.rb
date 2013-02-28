@@ -512,7 +512,7 @@ class SolarisCoreTest < ProfilerTestSetup
         end
 
         should 'return operating system information via #get_operating_system' do
-          @connector.stubs(:value_at).with("ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}").returns('Jan 1 2013')
+          @connector.stubs(:value_at).with(%q{ls -l /var/sadm/system/logs/install_log | nawk '{print $6" "$7" "$8'}}).returns('Jan 1 2013')
           @connector.stubs(:value_at).with('uname -rv').returns(@os_data)
 
           @profiler.get_operating_system
