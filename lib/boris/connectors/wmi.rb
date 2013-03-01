@@ -3,6 +3,7 @@ require 'boris/connectors'
 module Boris
   class WMIConnector < Connector
     attr_accessor :wmi, :root_wmi, :registry
+    attr_reader :registry_cache
 
     HKEY_LOCAL_MACHINE = 0x80000002
     KEY_QUERY_VALUE = 1
@@ -16,6 +17,8 @@ module Boris
     # @param [Hash] cred credential we wish to use
     def initialize(host, cred)
       super(host, cred)
+
+      @registry_cache = []
     end
 
     # Disconnect from the host.
@@ -121,7 +124,12 @@ module Boris
 
       debug "reading registry subkeys at path #{key_path}"
 
-      if has_access_for(key_path, KEY_ENUMERATE_SUB_KEYS)
+      found_key = @registry_cache.select{|item| item[:key_path] == key_path}.first
+
+      if found_key && found_key[:subkeys]
+        debug "subkeys found in cache (#{key_path})"
+        subkeys = found_key[:subkeys]
+      elsif has_access_for(key_path, KEY_ENUMERATE_SUB_KEYS)
         in_params = @registry.Methods_('EnumKey').inParameters.SpawnInstance_
         in_params.hDefKey = HKEY_LOCAL_MACHINE
         in_params.sSubKeyName = key_path
@@ -129,8 +137,12 @@ module Boris
         @registry.ExecMethod_('EnumKey', in_params).sNames.each do |key|
           subkeys << key_path + '\\' + key
         end
+
+        @registry_cache << {:key_path=>key_path, :subkeys=>subkeys}
       else
         info "no access for enumerating keys at (#{key_path})"
+
+        @registry_cache << {:key_path=>key_path, :subkeys=>subkeys}
       end
 
       subkeys
@@ -149,7 +161,12 @@ module Boris
 
       debug "reading registry values at path #{key_path}"
 
-      if has_access_for(key_path, KEY_QUERY_VALUE)
+      found_key = @registry_cache.select{|item| item[:key_path] == key_path}.first
+
+      if found_key && found_key[:values]
+        debug "values found in cache (#{key_path})"
+        values = found_key[:values]
+      elsif has_access_for(key_path, KEY_QUERY_VALUE)
         in_params = @registry.Methods_('EnumValues').inParameters.SpawnInstance_
         in_params.hDefKey = HKEY_LOCAL_MACHINE
         in_params.sSubKeyName = key_path
@@ -161,27 +178,31 @@ module Boris
         subkey_values ||= []
 
         subkey_values.each do |value|
-          if value.length > 0
-            str_params.sValueName = value
+          break if value.length == 0
 
-            begin
-              x = @registry.ExecMethod_('GetStringValue', str_params).sValue
-              x = @registry.ExecMethod_('GetBinaryValue', str_params).uValue unless x
-              x = @registry.ExecMethod_('GetDWORDValue', str_params).uValue unless x
-              x = @registry.ExecMethod_('GetExpandedStringValue', str_params).sValue unless x
-              x = @registry.ExecMethod_('GetMultiStringValue', str_params).sValue unless x
-              x = @registry.ExecMethod_('GetQWORDValue', str_params).uValue unless x
+          str_params.sValueName = value
 
-              values[value.downcase.to_sym] = x
-            rescue
-              if $!.message =~ /invalid method/i
-                warn "unreadable registry value (#{key_path}\\#{value})"
-              end
+          begin
+            x = @registry.ExecMethod_('GetStringValue', str_params).sValue
+            x = @registry.ExecMethod_('GetBinaryValue', str_params).uValue unless x
+            x = @registry.ExecMethod_('GetDWORDValue', str_params).uValue unless x
+            x = @registry.ExecMethod_('GetExpandedStringValue', str_params).sValue unless x
+            x = @registry.ExecMethod_('GetMultiStringValue', str_params).sValue unless x
+            x = @registry.ExecMethod_('GetQWORDValue', str_params).uValue unless x
+
+            values[value.downcase.to_sym] = x
+          rescue
+            if $!.message =~ /invalid method/i
+              warn "unreadable registry value (#{key_path}\\#{value})"
             end
           end
         end
+
+        @registry_cache << {:key_path=>key_path, :values=>values}
       else
         info "no access for enumerating values at (#{key_path})"
+
+        @registry_cache << {:key_path=>key_path, :values=>values}
       end
 
       values

@@ -92,23 +92,35 @@ class WMITest < Test::Unit::TestCase
         @registry.stubs(:ExecMethod_).returns(win32ole)
         @registry.stubs(:hDefKey=)
         @registry.stubs(:sSubKeyName=)
+
+        @key_path = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'
       end
 
       should 'allow us to see if we have permissions to read certain registry keys via #has_access_for' do
         @registry.stubs(:uRequired=)
         @registry.stubs(:bGranted).returns(true)
 
-        assert(@connector.has_access_for('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'))
+        assert(@connector.has_access_for(@key_path))
       end
 
-      should 'allow us to access registry keys via #subkeys_at' do
-        @connector.stubs(:has_access_for).returns(true)
-        
-        @registry.stubs(:sNames).returns(['CurrentVersion'])
+      context 'and read subkeys' do
+        setup do
+          @connector.stubs(:has_access_for).returns(true)
+          @registry.stubs(:sNames).returns(['CurrentVersion'])
+          @expected_data = ["#{@key_path}\\CurrentVersion"]
+        end
 
-        expected_data = ['HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion']
+        should 'allow us to access registry keys via #subkeys_at' do
+          assert_equal(@expected_data, @connector.registry_subkeys_at(@key_path))
+        end
 
-        assert_equal(expected_data, @connector.registry_subkeys_at('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT'))
+        should 'cache already read registry subkeys' do
+          @connector.stubs(:has_access_for).once.returns(true)
+
+          assert_equal(@expected_data, @connector.registry_subkeys_at(@key_path))
+          assert_equal([{:key_path=>@key_path, :subkeys=>@expected_data}], @connector.registry_cache)
+          assert_equal(@expected_data, @connector.registry_subkeys_at(@key_path))
+        end
       end
 
       context 'and read values' do
@@ -119,14 +131,14 @@ class WMITest < Test::Unit::TestCase
           @expected_data = {}
         end
 
-        should 'return an empty hash from #values_at when the path does not exist' do
+        should 'return an empty hash from #registry_values_at when the path does not exist' do
           @registry.stubs(:sNames).returns([])
 
           @expected_data[:key_path] = 'HKEY_LOCAL_MACHINE\i\dont\exist'
           assert_equal({}, @connector.registry_values_at(@expected_data[:key_path]))
         end
 
-        should 'allow us to access string values from the registry via #values_at' do
+        should 'allow us to access string values from the registry via #registry_values_at' do
           @registry.stubs(:sNames).returns(['ProductName'])
           @registry.stubs(:sValue).returns('Microsoft Windows Server 2008 R2')
           @registry.stubs(:uValue).returns(nil)
@@ -135,13 +147,26 @@ class WMITest < Test::Unit::TestCase
           assert_equal(@expected_data, @connector.registry_values_at(@key_path))
         end
 
-        should 'allow us to access other values from the registry via #values_at' do
+        should 'allow us to access other values from the registry via #registry_values_at' do
           @registry.stubs(:sNames).returns(['InstallDate'])
           @registry.stubs(:sValue).returns(nil)
           @registry.stubs(:uValue).returns(123456)
 
           @expected_data = {:installdate=>123456}
           assert_equal(@expected_data, @connector.registry_values_at(@key_path))
+        end
+
+        should 'cache already read registry values' do
+          @connector.stubs(:has_access_for).once.returns(true)
+
+          @registry.stubs(:sNames).returns(['ProductName'])
+          @registry.stubs(:sValue).returns('Microsoft Windows Server 2008 R2')
+
+          expected_data = {:productname=>'Microsoft Windows Server 2008 R2'}
+
+          assert_equal(expected_data, @connector.registry_values_at(@key_path))
+          assert_equal([{:key_path=>@key_path, :values=>expected_data}], @connector.registry_cache)
+          assert_equal(expected_data, @connector.registry_values_at(@key_path))
         end
       end
     end
