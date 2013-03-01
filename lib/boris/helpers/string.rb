@@ -244,8 +244,8 @@ class String
   #
   # @return [String] the cleaned up string
   def string_clean
-    # remove registered "(R)" mark
-    string = self.gsub(/\(r\)/i, '')
+    # remove registered "(R)" and trademark "(tm)" marks
+    string = self.gsub(/\(r\)|\(tm\)/i, '')
 
     string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
   end
