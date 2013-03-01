@@ -1,9 +1,9 @@
-# 1.0.3
-* Added #failure_message to connectors
-
 # 1.0.2
 * Fix for devices asking for password when connecting via SSH
 * Fixed return value for Target#connect
+* Added #failure_message to connectors
+* Added registry subkey and value caching for WMI connections
+* Various bug fixes
 
 # 1.0.1
 * Renamed Profiles to Profilers
