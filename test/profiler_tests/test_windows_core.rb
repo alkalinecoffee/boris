@@ -481,7 +481,7 @@ class WindowsCoreTest < ProfilerTestSetup
             :date_installed=>DateTime.parse(@os_data[:installdate]),
             :features=>[],
             :kernel=>@os_data[:version],
-            :license_key=>'BBBBB-BBBBB-BBBBB-BBBBB-BBBBB',
+            :license_key=>nil,
             :name=>'Microsoft Windows',
             :roles=>@os_data[:roles],
             :service_pack=>@os_data[:csdversion],

@@ -413,6 +413,7 @@ module Boris; module Profilers
       @operating_system[:date_installed] = DateTime.parse(os_data[:installdate])
       @operating_system[:kernel] = os_data[:version]
       @operating_system[:license_key] = get_product_key('microsoft windows')
+      @operating_system[:license_key] = nil if @operating_system[:license_key] =~ /bbbbb/i
       @operating_system[:name] = 'Microsoft Windows'
       @operating_system[:service_pack] = os_data[:csdversion]
 
@@ -517,7 +518,7 @@ module Boris; module Profilers
           debug 'product key could not be retrieved'
         end
       end
-
+      
       product_key
     end
 
