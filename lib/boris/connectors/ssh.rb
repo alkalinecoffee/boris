@@ -56,7 +56,7 @@ module Boris
         warn CONN_FAILURE_NO_HOST
         @failure_message = CONN_FAILURE_NO_HOST
         @reconnectable = false
-      rescue error
+      rescue => error
         message = "connection failed (#{error.message})"
         warn message
         @failure_message = message
