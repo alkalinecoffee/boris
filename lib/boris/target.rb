@@ -254,12 +254,7 @@ module Boris
     # Parses the target's scanned data into JSON format for portability.
     #
     #  target.get(:network_id)
-    #  json_string = target.to_json #=> "{...\"domain\":\"mydomain.com\",\"hostname\":\"SERVER01\"}"...
-    #  
-    #  # The JSON string can later be parsed back into an object
-    #  target_object = JSON.parse(json_string, :symbolize_names=>true)
-    #  # and easily accessed...
-    #  target_object[:network_id] #=> {:domain=>"mydomain.com", :hostname=>"SERVER01"}
+    #  json_string = target.to_json #=> "...{\"domain\":\"mydomain.com\",\"hostname\":\"SERVER01\"}"...
     #
     # @param [Hash] print_type a symbol value for json output options.  Only option supported now
     #   is :pretty_print to determine whether the data should be returned in json format with

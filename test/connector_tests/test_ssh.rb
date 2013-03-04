@@ -22,15 +22,19 @@ class SSHTest < Test::Unit::TestCase
       should 'allow us to view the reason for failure' do
         Net::SSH.stubs(:start).raises(Net::SSH::AuthenticationFailed)
         @connector.establish_connection
-        assert_equal(@connector.failure_message, 'authentication failed')
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_AUTH_FAILED)
 
         Net::SSH.stubs(:start).raises(Net::SSH::HostKeyMismatch)
         @connector.establish_connection
-        assert_equal(@connector.failure_message, 'connection failed (host key mismatch)')
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_HOST_KEY_MISMATCH)
 
-        Net::SSH.stubs(:start).raises(Net::SSH::Exception)
+        Net::SSH.stubs(:start).raises(SocketError)
         @connector.establish_connection
-        assert(@connector.failure_message =~ /^connection failed/)
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_NO_HOST)
+
+        Net::SSH.stubs(:start).raises(SocketError, 'some other error')
+        @connector.establish_connection
+        assert(@connector.failure_message =~ /connection failed/i)
       end
     end
 

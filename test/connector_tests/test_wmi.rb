@@ -25,15 +25,15 @@ class WMITest < Test::Unit::TestCase
       should 'allow us to view the reason for failure' do
         WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'access is denied')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, 'authentication failed')
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_AUTH_FAILED)
 
         WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'call was canceled by the message filter')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, 'connection failed (rpc calls canceled by remote message filter)')
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_RPC_FILTERED)
 
         WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'rpc server is unavailable')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, 'connection failed')
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_RPC_UNAVAILABLE)
 
         WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'some other error')
         @connector.establish_connection
