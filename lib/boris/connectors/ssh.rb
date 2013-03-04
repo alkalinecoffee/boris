@@ -46,14 +46,17 @@ module Boris
         @connected = @reconnectable = true
       rescue Net::SSH::AuthenticationFailed
         warn "connection failed (connection made but credentials not accepted with user #{@user})"
-        @failure_message = 'authentication failed'
+        @failure_message = CONN_FAILURE_AUTH_FAILED
         @reconnectable = true
       rescue Net::SSH::HostKeyMismatch
-        message = 'connection failed (host key mismatch)'
-        warn message
-        @failure_message = message
+        warn CONN_FAILURE_HOST_KEY_MISMATCH
+        @failure_message = CONN_FAILURE_HOST_KEY_MISMATCH
         @reconnectable = false
-      rescue => error
+      rescue SocketError
+        warn CONN_FAILURE_NO_HOST
+        @failure_message = CONN_FAILURE_NO_HOST
+        @reconnectable = false
+      rescue error
         message = "connection failed (#{error.message})"
         warn message
         @failure_message = message

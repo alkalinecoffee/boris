@@ -18,6 +18,13 @@ module Boris
   VENDOR_SUSE       = 'SUSE Linux GmbH'
   VENDOR_VMWARE     = 'VMware, Inc.'
 
-  PORT_DEFAULTS = {:ssh=>22, :wmi=>135}
-  VALID_CONNECTION_TYPES = [:snmp, :ssh, :wmi]
+  PORT_DEFAULTS           = {:ssh=>22, :wmi=>135}
+  VALID_CONNECTION_TYPES  = [:snmp, :ssh, :wmi]
+
+  CONN_FAILURE_AUTH_FAILED        = 'authentication failed'
+  CONN_FAILURE_HOST_KEY_MISMATCH  = 'connection failed (ssh: host key mismatch)'
+  CONN_FAILURE_NO_HOST            = 'connection failed (no such host)'
+  CONN_FAILURE_RPC_FILTERED       = 'connection failed (wmi: rpc calls canceled by remote message filter)'
+  CONN_FAILURE_RPC_UNAVAILABLE    = 'connection failed (wmi: rpc server unavailable)'
+
 end
