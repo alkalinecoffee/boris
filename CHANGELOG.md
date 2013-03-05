@@ -4,6 +4,7 @@
 * Added #failure_message to connectors
 * Added registry subkey and value caching for WMI connections
 * Added constants for connection failures, changed logging messages for connectors
+* Changed all eval calls to Object.send
 * Various bug fixes
 
 # 1.0.1
