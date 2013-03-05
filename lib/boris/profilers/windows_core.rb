@@ -290,7 +290,7 @@ module Boris; module Profilers
         when 1, 2; 'up'
         else; 'down'
         end
-        h[:type] = 'ethernet'
+        h[:type] = h[:model] =~ /converged/i ? 'converged' : 'ethernet'
         h[:vendor] = interface_profile[:manufacturer]
 
         # retrieve config for this interface
@@ -347,11 +347,14 @@ module Boris; module Profilers
         device_guid = @connector.registry_values_at(cfg_keypath + '\\Linkage')[:export][0].gsub(/\\/, '\\\\\\')
 
         adapter_name_data = @connector.value_at("SELECT InstanceName FROM MSNdis_EnumerateAdapter WHERE DeviceName = '#{device_guid}'", :root_wmi)
-        internal_adapter_name = adapter_name_data[:instancename]
 
-        # now with the internal adapter name, we can grab the connection speed.
-        speed_data = @connector.value_at("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{internal_adapter_name}'", :root_wmi)
-        h[:current_speed_mbps] = speed_data[:ndislinkspeed] / 10000
+        if adapter_name_data
+          internal_adapter_name = adapter_name_data[:instancename]
+
+          # now with the internal adapter name, we can grab the connection speed.
+          speed_data = @connector.value_at("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{internal_adapter_name}'", :root_wmi)
+          h[:current_speed_mbps] = speed_data[:ndislinkspeed] / 10000
+        end
 
         @network_interfaces << h
       end
