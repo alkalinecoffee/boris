@@ -52,7 +52,7 @@ module Boris
         warn CONN_FAILURE_HOST_KEY_MISMATCH
         @failure_message = CONN_FAILURE_HOST_KEY_MISMATCH
         @reconnectable = false
-      rescue SocketError
+      rescue SocketError, Errno::ETIMEDOUT
         warn CONN_FAILURE_NO_HOST
         @failure_message = CONN_FAILURE_NO_HOST
         @reconnectable = false

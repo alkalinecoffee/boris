@@ -105,7 +105,9 @@ module Boris
             # we won't add snmp to the @unavailable_connection_types array, as it
             # could respond later with another community string
           when :ssh
-            if !@unavailable_connection_types.include?(:ssh)
+            if @unavailable_connection_types.include?(:ssh)
+              debug 'connection attempt bypassed (ssh connection unavailable)'
+            else
               @connector = SSHConnector.new(@host, cred, @options)
               @connector.establish_connection
 
@@ -114,7 +116,9 @@ module Boris
               end
             end
           when :wmi
-            if !@unavailable_connection_types.include?(:wmi)
+            if @unavailable_connection_types.include?(:wmi)
+              debug 'connection attempt bypassed (wmi connection unavailable)'
+            else
               @connector = WMIConnector.new(@host, cred)
               @connector.establish_connection
             

@@ -141,7 +141,7 @@ Through a number of queries and algorithms, Boris efficiently polls devices on t
 * **installed applications** - installed applications and the dates of their installation
 * **installed patches** - installed patches/hotfixes and the dates of their installation
 * **installed services/daemons** - background services and their startup modes
-* **local users and groups** - local groups and the member users within each
+* **local users and groups** - local groups and the users within each
 * **network ID** - hostname and domain
 * **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
 * **operating system** - name, version, kernel, date installed
