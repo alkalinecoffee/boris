@@ -121,12 +121,12 @@ module Boris
     def registry_subkeys_at(key_path)
       subkeys = []
 
-      debug "reading registry subkeys at path #{key_path}"
+      debug "reading registry subkeys at #{key_path}"
 
       found_key = @registry_cache.select{|item| item[:key_path] == key_path}.first
 
       if found_key && found_key[:subkeys]
-        debug "subkeys found in cache (#{key_path})"
+        debug "subkeys found in cache at #{key_path}"
         subkeys = found_key[:subkeys]
       elsif has_access_for(key_path, KEY_ENUMERATE_SUB_KEYS)
         in_params = @registry.Methods_('EnumKey').inParameters.SpawnInstance_
@@ -139,7 +139,7 @@ module Boris
 
         @registry_cache << {:key_path=>key_path, :subkeys=>subkeys}
       else
-        info "no access for enumerating keys at (#{key_path})"
+        info "no access for enumerating keys at #{key_path}"
 
         @registry_cache << {:key_path=>key_path, :subkeys=>subkeys}
       end
