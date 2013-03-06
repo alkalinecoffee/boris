@@ -77,7 +77,7 @@ module Boris
         end
       end
 
-      if @reconnectable == true
+      if @connected == false && @reconnectable == true
         info 'connection available for retry'
       elsif @reconnectable == false
         info 'connection does not seem to be available (so we will not retry)'

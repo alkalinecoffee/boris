@@ -301,7 +301,7 @@ module Boris; module Profilers
         guid = interface_config[:settingid]
         h[:dns_servers] = interface_config[:dnsserversearchorder]
 
-        subnet = interface_config[:ipsubnet][0] if interface_config[:ipsubnet]
+        subnet = interface_config[:ipsubnet].is_a?(Array) ? interface_config[:ipsubnet][0] : interface_config[:ipsubnet]
 
         interface_config[:ipaddress].each do |ip_address|
           h[:ip_addresses] << {:ip_address=>ip_address, :subnet=>subnet}
