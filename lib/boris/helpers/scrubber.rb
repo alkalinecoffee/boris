@@ -10,15 +10,15 @@ module Boris
         @installed_services,
         @local_user_groups,
         @network_interfaces
-      ].each {|arr| arr.strip_string_values_in_array if arr}
+      ].collect {|arr| arr.clean_string_values_in_array if arr}
       debug 'string values from within data arrays cleaned up'
 
-      [@hardware, @network_id, @operating_system].each {|h| h.strip_string_values_in_hash if h}
+      [@hardware, @network_id, @operating_system].collect {|h| h.clean_string_values_in_hash if h}
       debug 'string values from within data hashes cleaned up'
 
-      @installed_applications.each do |app|
+      @installed_applications.collect do |app|
         app[:license_key].upcase! unless !app[:license_key]
-        app[:name].string_clean
+        app[:name].clean_string
         app[:vendor].format_vendor unless !app[:vendor]
       end if @installed_applications
       debug 'installed application data cleaned up'
@@ -29,7 +29,7 @@ module Boris
       end
       debug 'network id data cleaned up'
 
-      @network_interfaces.each do |interface|
+      @network_interfaces.collect do |interface|
         interface[:fabric_name].downcase! unless !interface[:fabric_name]
         interface[:mac_address].upcase! unless !interface[:mac_address]
         interface[:model] = interface[:model].format_model unless !interface[:model]
@@ -41,11 +41,11 @@ module Boris
       debug 'network interface data cleaned up'
 
       if @hardware
-        @hardware[:cpu_model] = @hardware[:cpu_model].string_clean unless !@hardware[:cpu_model]
-        @hardware[:cpu_vendor] = @hardware[:cpu_vendor].string_clean.format_vendor unless !@hardware[:cpu_vendor]
+        @hardware[:cpu_model] = @hardware[:cpu_model].clean_string unless !@hardware[:cpu_model]
+        @hardware[:cpu_vendor] = @hardware[:cpu_vendor].clean_string.format_vendor unless !@hardware[:cpu_vendor]
         @hardware[:model] = @hardware[:model].format_model unless !@hardware[:model]
         @hardware[:serial] = @hardware[:serial].format_serial unless !@hardware[:serial]
-        @hardware[:vendor] = @hardware[:vendor].string_clean.format_vendor unless !@hardware[:vendor]
+        @hardware[:vendor] = @hardware[:vendor].clean_string.format_vendor unless !@hardware[:vendor]
       end
       debug 'hardware data cleaned up'
 

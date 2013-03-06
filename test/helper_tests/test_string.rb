@@ -119,11 +119,11 @@ class StringTest < Test::Unit::TestCase
       assert_equal('Microsoft SQL Server 2008', test_string)
     end
 
-    should 'remove unnecessary characters from a string via #string_clean' do
-      assert_equal('this has an invalid character', "this has an invalid\u00A0 character".string_clean)
-      assert_equal('this should be stripped', ' this should be stripped '.string_clean)
-      assert_equal('this should be stripped', ' this should be stripped '.string_clean)
-      assert_equal('registered', 'registered(r)'.string_clean)
+    should 'remove unnecessary characters from a string via #clean_string' do
+      assert_equal('this has an invalid character', "this has an invalid\u00A0 character".clean_string)
+      assert_equal('this should be stripped', ' this should be stripped '.clean_string)
+      assert_equal('this should be stripped', ' this should be stripped '.clean_string)
+      assert_equal('registered', 'registered(r)'.clean_string)
     end
 
     should 'return the value(s) found between at least one pair of single or double quotes via #between_quotes' do

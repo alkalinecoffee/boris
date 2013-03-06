@@ -18,8 +18,8 @@ class ArrayTest < Test::Unit::TestCase
       assert_equal('00000000aaaaaaaa', [0, 0, 0, 0, 170, 170, 170, 170].to_wwn)
     end
 
-    should 'recursively strip the string values within an array via #strip_string_values_in_array' do
-      assert_equal([1, 'a', 'c', ['x', 'y']], [1, 'a ', ' c ', [' x ', ' y ']].strip_string_values_in_array)
+    should 'recursively strip the string values within an array via #clean_string_values_in_array' do
+      assert_equal([1, 'a', 'c', ['x', 'y']], [1, 'a ', ' c ', [' x ', ' y ']].clean_string_values_in_array)
     end
   end
 end

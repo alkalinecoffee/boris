@@ -1,9 +1,9 @@
 class Array
-  def strip_string_values_in_array
+  def clean_string_values_in_array
     self.map! do |val|
-      val.strip_string_values_in_array if val.is_a?(Array)
-      val.strip_string_values_in_hash if val.is_a?(Hash)
-      val.is_a?(String) ? val.strip : val
+      val.clean_string_values_in_array if val.is_a?(Array)
+      val.clean_string_values_in_hash if val.is_a?(Hash)
+      val.is_a?(String) ? val.strip.clean_string : val
     end
   end
   

@@ -148,7 +148,7 @@ class String
   def format_serial
     return nil if self =~ /(^$|\(*none\)*)/i
 
-    self.string_clean.upcase
+    self.clean_string.upcase
   end
 
   # Attempts to grab the hardware vendor name from self and formats it for
@@ -186,30 +186,6 @@ class String
     vendor.strip
   end
 
-  # Allows you to specify your own delimiter to grab the string value found
-  # after the last delimiter.  It's mainly used internally with the
-  # #after_ helper methods.
-  #
-  #   'A&B&C'.value_after_character('&')  #=> "C"
-  #
-  # @return [Nil, String] returns the found value, else returns nil
-  def value_after_character(delimiter)
-    x = self.scan(/^.*[#{delimiter}](.*)$/)
-    x.empty? ? nil : x.join.strip
-  end
-
-  # Allows you to specify your own delimiter to grab the string value found
-  # before the first delimiter.  It's mainly used internally with the
-  # #after_ helper methods.
-  #
-  #   'A&B&C'.value_before_character('&')  #=> "A"
-  #
-  # @return [Nil, String] returns the found value, else returns nil
-  def value_before_character(delimiter)
-    x = self.scan(/^(.*?)[#{delimiter}]/)
-    x.empty? ? nil : x.join.strip
-  end
-
   # Returns the IP address value derived from self in hex format.
   #
   #  'ffffff00'.hex_to_ip_address  #=> "255.255.255.0"
@@ -239,14 +215,39 @@ class String
   # characters that are sometimes reported by devices.  Also removes registered
   # (R) characters.
   #
-  #  'Microsoft(R) Windows(R)'.string_clean             #=> "Microsoft Windows"
-  #  "string with\u00A0 weird characters".string_clean  #=> "string with weird characters"
+  #  'Microsoft(R) Windows(R)'.clean_string             #=> "Microsoft Windows"
+  #  "string with\u00A0 weird characters".clean_string  #=> "string with weird characters"
   #
   # @return [String] the cleaned up string
-  def string_clean
+  def clean_string
     # remove registered "(R)" and trademark "(tm)" marks
     string = self.gsub(/\(r\)|\(tm\)/i, '')
+    string.gsub!(/\s+/, ' ')
 
     string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
+  end
+
+  # Allows you to specify your own delimiter to grab the string value found
+  # after the last delimiter.  It's mainly used internally with the
+  # #after_ helper methods.
+  #
+  #   'A&B&C'.value_after_character('&')  #=> "C"
+  #
+  # @return [Nil, String] returns the found value, else returns nil
+  def value_after_character(delimiter)
+    x = self.scan(/^.*[#{delimiter}](.*)$/)
+    x.empty? ? nil : x.join.strip
+  end
+
+  # Allows you to specify your own delimiter to grab the string value found
+  # before the first delimiter.  It's mainly used internally with the
+  # #after_ helper methods.
+  #
+  #   'A&B&C'.value_before_character('&')  #=> "A"
+  #
+  # @return [Nil, String] returns the found value, else returns nil
+  def value_before_character(delimiter)
+    x = self.scan(/^(.*?)[#{delimiter}]/)
+    x.empty? ? nil : x.join.strip
   end
 end
