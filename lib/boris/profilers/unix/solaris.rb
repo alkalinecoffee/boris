@@ -167,8 +167,14 @@ module Boris; module Profilers
 
         # if this host is in a child zone, drop any interfaces that are not found in the ifconfig
         # command output (since these would likely be picked up when scanning the zone host)
+        hardware_details = nil
+
         if @zone == :child
           found_ethernet_interfaces.delete_if{|fi| interface_configs.select{|config| config =~ /^#{fi[:driver]}#{fi[:instance]}/}.count == 0}
+        else
+          prtpicl_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {first=$1; $1=""; print first "|" $0}}'}
+          prtpicl_command.gsub!(/network/, 'obp-device') if @platform == :x86
+          hardware_details = @connector.values_at(prtpicl_command).join("\n").split(/\n\n/)
         end
 
         # now loop through each unique ethernet interface found on this host
@@ -208,12 +214,6 @@ module Boris; module Profilers
             h[:model] = 'Virtual Ethernet Adapter'
             h[:vendor] = VENDOR_ORACLE
           else
-            prtpicl_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {first=$1; $1=""; print first "|" $0}}'}
-
-            prtpicl_command.gsub!(/network/, 'obp-device') if @platform == :x86
-
-            hardware_details = @connector.values_at(prtpicl_command).join("\n").split(/\n\n/)
-
             hardware = hardware_details.grep(/driver-name\|.*#{fi[:driver]}/).grep(/instance\|.*#{fi[:instance]}/)[0].split(/\n/)
 
             h[:vendor_id] = hardware.grep(/vendor-id\|/)[0].after_pipe unless hardware.grep(/vendor-id\|/).empty?

@@ -63,7 +63,7 @@ module Boris
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
     def [](category)
-      @profiler.send("@profiler.#{category.to_s}")
+      @profiler.send("get_#{category.to_s}")
     end
 
     # Connects to the target using the credentials supplied via the connection type as specified
@@ -207,7 +207,7 @@ module Boris
     # @param [Hash] category name
     # @return [Array, Hash] scanned data elements for provided category
     def get(category)
-      @profiler.send("@profiler.get_#{category.to_s}")
+      @profiler.send("get_#{category.to_s}")
       self[category]
     end
 

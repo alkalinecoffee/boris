@@ -65,6 +65,8 @@ module Boris; module Profilers
 
       serial_data = @connector.value_at('SELECT SerialNumber, SMBIOSBIOSVersion FROM Win32_BIOS')
       @hardware[:serial] = serial_data[:serialnumber]
+      @hardware[:serial] = nil if @hardware[:serial] !~ /^\w*$/
+
       @hardware[:firmware_version] = serial_data[:smbiosbiosversion]
 
       system_data = @connector.value_at('SELECT Manufacturer, Model, TotalPhysicalMemory FROM Win32_ComputerSystem')
@@ -299,7 +301,7 @@ module Boris; module Profilers
         guid = interface_config[:settingid]
         h[:dns_servers] = interface_config[:dnsserversearchorder]
 
-        subnet = interface_config[:ipsubnet]
+        subnet = interface_config[:ipsubnet][0] if interface_config[:ipsubnet]
 
         interface_config[:ipaddress].each do |ip_address|
           h[:ip_addresses] << {:ip_address=>ip_address, :subnet=>subnet}
