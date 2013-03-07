@@ -246,7 +246,7 @@ module Boris; module Profilers
         system_roles = @operating_system[:roles]
       end
 
-      if system_roles.select{|role| role =~ /domaincontroller/i}.empty?
+      if system_roles.select{|role| role =~ /domain_controller/i}.empty?
         # not a domain controller, so move on with retrieving users
         groups = []
 
