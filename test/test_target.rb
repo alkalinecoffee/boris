@@ -43,25 +43,6 @@ class TargetTest < Test::Unit::TestCase
       assert_equal(long_json_string, @target.to_json)
     end
 
-    context 'listening on certain ports' do
-      should "allow us to detect a possible SSH connection if it is listening on port #{PORT_DEFAULTS[:ssh]}" do
-        Network.stubs(:tcp_port_responding?).with(@target.host, 22).returns(true)
-        assert_equal(:ssh, Network.suggested_connection_method(@target.host))
-      end
-
-      should "allow us to detect a possible WMI connection if if it is listening on port #{PORT_DEFAULTS[:wmi]}" do
-        Network.stubs(:tcp_port_responding?).with(@target.host, 22).returns(false)
-        Network.stubs(:tcp_port_responding?).with(@target.host, 135).returns(true)
-        assert_equal(:wmi, Network.suggested_connection_method(@target.host))
-      end
-
-      should 'return with no detected connection method if all attempts fail' do
-        Network.stubs(:tcp_port_responding?).with(@target.host, 22).returns(false)
-        Network.stubs(:tcp_port_responding?).with(@target.host, 135).returns(false)
-        assert_nil(nil, Network.suggested_connection_method(@target.host))
-      end
-    end
-
     context 'that we will try to connect to' do
       setup do
         @connector.stubs(:connected?).returns(false)

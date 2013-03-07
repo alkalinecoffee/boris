@@ -537,6 +537,7 @@ module Boris; module Profilers
       username = guid
 
       if found_user
+        debug "guid found in cache (#{guid})"
         username = found_user[:username]
       else
         user = @connector.value_at("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'")
