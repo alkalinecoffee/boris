@@ -1,0 +1,7 @@
+require 'boris/helpers/array'
+require 'boris/helpers/constants'
+require 'boris/helpers/hash'
+require 'boris/helpers/network'
+require 'boris/helpers/scrubber'
+require 'boris/helpers/string'
+require 'boris/helpers/time'

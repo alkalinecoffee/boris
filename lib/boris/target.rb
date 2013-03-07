@@ -3,7 +3,6 @@ require 'boris/options'
 require 'boris/connectors/snmp'
 require 'boris/connectors/ssh'
 require 'boris/connectors/wmi'
-require 'boris/helpers/network'
 
 module Boris
   # {Boris::Target} is the basic class from which you can control the underlying framework

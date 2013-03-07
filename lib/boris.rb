@@ -13,5 +13,6 @@ require 'socket'
 require 'thread'
 require 'win32ole' if PLATFORM == :win32
 
+require 'boris/helpers'
 require 'boris/lumberjack'
 require 'boris/target'

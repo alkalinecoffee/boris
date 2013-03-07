@@ -1,9 +1,5 @@
 require 'boris/structure'
-
-require 'boris/helpers/array'
-require 'boris/helpers/hash'
-require 'boris/helpers/string'
-require 'boris/helpers/scrubber'
+require 'boris/helpers'
 
 module Boris; module Profilers
   class Profiler
