@@ -328,6 +328,17 @@ class WindowsCoreTest < ProfilerTestSetup
 
           assert_equal(expected_data, @profiler.local_user_groups)
         end
+
+        should 'cache already retrieved user information #get_username' do
+          guid = 'S-1-5-18'
+          expected_data = {:caption=>'someuser', :sid=>guid}
+          cache_data = {:guid=>guid, :username=>expected_data[:caption]}
+          @connector.stubs(:value_at).with("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'").once.returns(expected_data)
+
+          assert_equal(expected_data[:caption], @profiler.get_username(guid))
+          assert_equal([cache_data], @profiler.cache[:users])
+          assert_equal(expected_data[:caption], @profiler.get_username(guid))
+        end
       end
 
       context 'for network identification' do

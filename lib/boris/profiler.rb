@@ -6,10 +6,13 @@ module Boris; module Profilers
     include Lumberjack
     include Structure
 
+    attr_reader :cache
+
     def initialize(connector)
       @host = connector.host
       @logger = Boris.logger
       @connector = connector
+      @cache = {:users=>[]}
     end
   end
 end; end

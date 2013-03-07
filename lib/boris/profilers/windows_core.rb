@@ -532,12 +532,19 @@ module Boris; module Profilers
     end
 
     def get_username(guid)
-      username = guid
-      
-      user = @connector.value_at("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'")
-      username = user ? user[:caption] : guid
+      found_user = @cache[:users].select{|user| user[:guid] == guid}.first
 
-      return username
+      username = guid
+
+      if found_user
+        username = found_user[:username]
+      else
+        user = @connector.value_at("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'")
+        username = user[:caption] if user
+        @cache[:users] << {:guid=>guid, :username=>username}
+      end
+      
+      username
     end
 
     private
