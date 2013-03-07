@@ -171,7 +171,11 @@ module Boris; module Profilers
           h[:installed_by] = patch[:installedby] unless patch[:installedby].empty?
           h[:installed_by] = get_username(patch[:installedby]) if patch[:installedby][0, 4] == 'S-1-'
 
-          h[:date_installed] = DateTime.strptime(patch[:installedon], '%m/%d/%Y') unless patch[:installedon].empty?
+          h[:date_installed] = if patch[:installedon].length == 16
+            Time.filetime_to_time(patch[:installedon].hex)
+          else
+            DateTime.strptime(patch[:installedon], '%m/%d/%Y') unless patch[:installedon].empty?
+          end
 
           @installed_patches << h
         end
@@ -531,7 +535,7 @@ module Boris; module Profilers
       username = guid
       
       user = @connector.value_at("SELECT Caption, SID FROM Win32_UserAccount WHERE SID = '#{guid}'")
-      username = user[:caption] if user[:sid] == guid
+      username = user ? user[:caption] : guid
 
       return username
     end
