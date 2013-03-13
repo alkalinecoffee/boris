@@ -27,5 +27,6 @@ module Boris
   CONN_FAILURE_RPC_FILTERED       = 'connection failed (wmi: rpc calls canceled by remote message filter)'
   CONN_FAILURE_RPC_UNAVAILABLE    = 'connection failed (wmi: rpc server unavailable)'
   CONN_FAILURE_LOCAL_CREDENTIALS  = 'connection failed (wmi: credentials used locally, will try again)'
+  CONN_FAILURE_PASSWORD_EXPIRED   = 'connection failed (password expired, requires changing)'
 
 end

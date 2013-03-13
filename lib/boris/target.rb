@@ -161,7 +161,7 @@ module Boris
       raise NoActiveConnection, 'no active connection' if @connector.connected? == false
 
       @options[:profilers].each do |profiler|
-        break if @profiler
+        break if @profiler || @connector.failure_message
 
         if profiler.connection_type == @connector.class
           debug "testing profiler: #{profiler}"
@@ -177,6 +177,8 @@ module Boris
           end
         end
       end
+
+      raise PasswordExpired,  @connector.failure_message if @connector.failure_message
 
       raise NoProfilerDetected, 'no suitable profiler found' if !@profiler
 

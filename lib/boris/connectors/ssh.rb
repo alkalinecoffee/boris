@@ -115,7 +115,7 @@ module Boris
           elsif data =~ /sorry, try again/i
             ch.close
             return_data = []
-            info "channel closed (we have a password to supply but system its not accepted)"
+            info 'channel closed (we have a password to supply but it is not accepted)'
           elsif data =~ /permission denied/i
             warn "permission denied for this request (#{data.gsub(/\n|\s+/, ', ')})"
           else
@@ -125,6 +125,11 @@ module Boris
         
         # called when something is written to stderr
         chan.on_extended_data do |ch, type, data|
+          if data =~ /password has expired/i
+            @failure_message = CONN_FAILURE_PASSWORD_EXPIRED
+            ch.close
+            disconnect
+          end
           error_messages.concat(data.split(/\n/))
         end
 
