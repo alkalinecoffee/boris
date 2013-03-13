@@ -17,7 +17,7 @@ module Boris; module Profilers
       file_system_command = %q{df -P -T | grep "^/" | awk '{print $1 "|" $3 / 1024 "|" $5 / 1024 "|" $7}'}
       @connector.values_at(file_system_command).each do |file_system|
         h = file_system_template
-        file_system = file_system.split("|")
+        file_system = file_system.split('|')
 
         h[:capacity_mb] = file_system[1].to_i
         h[:file_system] = file_system[0]
@@ -80,7 +80,7 @@ module Boris; module Profilers
 
       user_data.each do |x|
         h = {}
-        x = x.split(":")
+        x = x.split(':')
         h[:status] = nil
         h[:primary_group_id] = x[3]
         h[:username] = x[0]
@@ -88,7 +88,7 @@ module Boris; module Profilers
       end
 
       group_data.each do |group|
-        group = group.split(":")
+        group = group.split(':')
         h = {:members=>[], :name=>group[0]}
 
         h[:members] = users.select{|user| (user[:primary_group_id] == group[2])}.collect{|user| user[:username]}
