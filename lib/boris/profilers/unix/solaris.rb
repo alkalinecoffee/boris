@@ -298,7 +298,7 @@ module Boris; module Profilers
       os_data = @connector.value_at('uname -rv').split
       @operating_system[:kernel] = os_data[1]
       @operating_system[:name] = 'Oracle Solaris'
-      @operating_system[:version] = os_data[0]
+      @operating_system[:version] = os_data[0].after_period
 
       @operating_system
     end

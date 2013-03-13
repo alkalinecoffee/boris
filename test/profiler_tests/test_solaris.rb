@@ -507,7 +507,7 @@ class SolarisCoreTest < ProfilerTestSetup
             :name=>'Oracle Solaris',
             :roles=>[],
             :service_pack=>nil,
-            :version=>@os_data.split[0]
+            :version=>@os_data.split[0].after_period
           }
         end
 
