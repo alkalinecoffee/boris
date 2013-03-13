@@ -69,6 +69,12 @@ module Boris
           warn CONN_FAILURE_RPC_UNAVAILABLE
           @failure_message = CONN_FAILURE_RPC_UNAVAILABLE
           @reconnectable = false
+        elsif error.message =~ /user credentials cannot be used for local connections/i
+          # clear the credentials then try to connect again
+          warn CONN_FAILURE_LOCAL_CREDENTIALS
+          @user = nil
+          @password = nil
+          establish_connection
         else
           message = "connection failed (#{error.message.gsub(/\n\s*/, '. ')})"
           warn message

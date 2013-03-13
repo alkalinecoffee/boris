@@ -23,21 +23,32 @@ class WMITest < Test::Unit::TestCase
 
     context 'to which we cannot connect to' do
       should 'allow us to view the reason for failure' do
-        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'access is denied')
+        @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'access is denied')
         @connector.establish_connection
         assert_equal(@connector.failure_message, Boris::CONN_FAILURE_AUTH_FAILED)
 
-        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'call was canceled by the message filter')
+        @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'call was canceled by the message filter')
         @connector.establish_connection
         assert_equal(@connector.failure_message, Boris::CONN_FAILURE_RPC_FILTERED)
 
-        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'rpc server is unavailable')
+        @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'rpc server is unavailable')
         @connector.establish_connection
         assert_equal(@connector.failure_message, Boris::CONN_FAILURE_RPC_UNAVAILABLE)
 
-        WIN32OLE.stubs(:new).with('WbemScripting.SWbemLocator').raises(WIN32OLERuntimeError, 'some other error')
+        @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'some other error')
         @connector.establish_connection
         assert(@connector.failure_message =~ /^connection failed/)
+      end
+    end
+
+    context 'which also happens to be the scanning server' do
+      should 'use an empty credential for logging in locally' do
+        #@connector.expects(:establish_connection).twice
+
+        @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'user credentials cannot be used for local connections').then.returns(@win32ole)
+
+        @connector.establish_connection
+        assert(@connector.connected)
       end
     end
 
