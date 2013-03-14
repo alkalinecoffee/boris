@@ -19,29 +19,28 @@ Out of the box, Boris has server support for Red Hat, Solaris,and Windows (with 
 ## Installation
     gem install boris
 
+Or if using Bundler, add to your Gemfile
+
+    gem 'boris'
+
 ## Example
 Let's pull some information from a RedHat Enterprise Linux server on our network:
 
 ```ruby
 require 'boris'
 
-# Boris has different levels of logging.  We can optionally set our logging level, which will apply
-# to all Targets created during this session.  If not set, the log level defaults to :fatal.
 Boris.log_level = :debug
 
 hostname = 'redhatserver01.mydomain.com'
 
-# let's use a helper to suggest how we should connect to it (which is useful if we're not sure what
-# kind of device this is)
+# let's use a helper to suggest how we should connect to it (if we're not sure what kind of device this is)
 puts Boris::Network.suggested_connection_method(hostname)
 
-# you can also add the logic to make the decision yourself by checking if certain TCP ports are responsive
+# you can also add the logic to make the decision yourself
 puts Boris::Network.tcp_port_responding?(hostname, 22)
 
-# create our target
 target = Boris::Target.new(hostname)
 
-# add credentials to try against this target
 target.options.add_credential(:user=>'myusername', :password=>'mypassword', :connection_types=>[:ssh])
 
 # if this is a host using SSH, we can also pass in Net::SSH options (such as a private key for
@@ -49,7 +48,6 @@ target.options.add_credential(:user=>'myusername', :password=>'mypassword', :con
 # Net::SNMP--options passed to :snmp_options will be passed to the Net::SNMP library.
 target.options[:ssh_options] = {:keys=>['/path/to/my/private/key']}
 
-# attempt to connect to this target using the credentials we supplied above
 target.connect
 
 if target.connected?
@@ -61,9 +59,7 @@ if target.connected?
 
   # we can call individual methods to grab specific information we may be interested in
   target.get(:hardware)
-
-  # or maybe get some network interface info
-  puts target.get(:network_interfaces)
+  target.get(:network_interfaces)
 
   # retrieved items can be referenced two ways:
   puts target[:network_interfaces].inspect
@@ -74,10 +70,12 @@ if target.connected?
   target.retrieve_all
 
   # if there is more information we want to collect but is not collected by default, we can specify
-  # our own commands to run against the target via two methods: #get_values returns an Array (each
-  # line is an element of the array), or #get_value, which returns a String (the first line returned
-  # from the command)
+  # our own commands to run against the target via two methods:
+  
+  # #get_values returns an Array (each line is an element of the array)
   puts target.connector.values_at('cat /etc/redhat-release')
+
+  # #get_value, which returns a String (the first line returned from the command)
   puts target.connector.value_at('uname -a')
   
   # NOTE: if this were a Windows server, you would send WMI queries instead of shell commands, ie:
@@ -85,13 +83,80 @@ if target.connected?
   # target.connector.values_at('SELECT * FROM Win32_ComputerSystem')
   #
 
-  # finally, we can package up all of the data into json format for portability (the :pretty_print argument
-  # tells the #to_json method to output the json with tabbed formatting)
   puts target.to_json(:pretty_print)
 
   target.disconnect
 end
 ```
+
+## Sample Output
+```ruby
+target.get(:hardware)
+target.get(:operating_system)
+
+target.scrub_data!
+
+puts target[:hardware]
+  #=>{
+  #    :cpu_architecture=>64,
+  #    :cpu_core_count=>2,
+  #    :cpu_model=>'AMD Opteron Processor 6174',
+  #    :cpu_physical_count=>1,
+  #    :cpu_speed_mhz=>2200,
+  #    :cpu_vendor=>'AMD, Inc.',
+  #    :firmware_version=>'6.0',
+  #    :model=>'VMware Virtual Platform',
+  #    :memory_installed_mb=>1024,
+  #    :serial=>'VMware-1234',
+  #    :vendor=>'VMware, Inc.'
+  #  }
+
+puts target[:operating_system]
+  #=>{
+  #    :date_installed=>#<DateTime: 2013-02-04T19:08:49-05:00 ((2456329j,529s,891979000n),-18000s,2299161j)>,
+  #    :features=>[],
+  #    :kernel=>'5.2.3790',
+  #    :license_key=>'BBBBB-BBBBB-BBBBB-BBBBB-BBBBB',
+  #    :name=>'Microsoft Windows',
+  #    :roles=>['TerminalServer', 'TimeServer'],
+  #    :service_pack=>'Service Pack 2',
+  #    :version=>'Server 2003 R2 Standard'
+  #  }
+```
+
+## Data
+Through a number of queries and algorithms, Boris efficiently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
+
+**Available methods for use on most platforms include:**
+
+* **file systems** - file system, mount point, capacity and utilization
+* **hardware** - make/model, cpu information, firmware/bios version, serial number
+* **hosted shares** - folders shared by the target
+* **installed applications** - installed applications and the dates of their installation
+* **installed patches** - installed patches/hotfixes and the dates of their installation
+* **installed services/daemons** - background services and their startup modes
+* **local users and groups** - local groups and the users within each
+* **network ID** - hostname and domain
+* **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
+* **operating system** - name, version, kernel, date installed
+
+See [Boris::Profilers::Structure](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris/Profilers/Structure) for more details on the data structure.
+
+Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
+
+## Profilers
+Profilers contain the instructions that allow us to run commands against our target and then parse and make sense of the data.  Boris comes with the capability to communicate with targets over SNMP, SSH, or WMI.  Each profiler is written to use one of these methods of communication (internally called 'connectors'), which serve as a vehicle for running commands against a server.  Boris comes with a few profilers built-in for some popular platforms, but can be easily extended to include other devices.
+
+**Available profilers:**
+
+* **[Linux Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux)**
+  * [Red Hat Linux](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat)
+* **[UNIX Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX)**
+  * [Oracle Solaris](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris)
+* **[Windows Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows)**
+  * [Windows 2003 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2003)
+  * [Windows 2008 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008)
+  * [Windows 2012 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012)
 
 ## Extending Boris
 You can also run your own commands to grab information off of systems.  For example, on a Linux device, to run your own script that is already on the target and retrieve its output:
@@ -129,40 +194,6 @@ registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Window
 **Coming soon--a write-up for SNMP devices**
 
 Boris also comes with the ability to add your own complete modules for using the framework by writing your own data collection algorithms.  I will also write-up a howto in the near future.
-
-## Data
-Through a number of queries and algorithms, Boris efficiently polls devices on the network for information including, but not limited to, network configuration, hardware capabilities, installed software and services, applied hotfixes/patches, and more.
-
-**Available methods for use on most platforms include:**
-
-* **file systems** - file system, mount point, capacity and utilization
-* **hardware** - make/model, cpu information, firmware/bios version, serial number
-* **hosted shares** - folders shared by the target
-* **installed applications** - installed applications and the dates of their installation
-* **installed patches** - installed patches/hotfixes and the dates of their installation
-* **installed services/daemons** - background services and their startup modes
-* **local users and groups** - local groups and the users within each
-* **network ID** - hostname and domain
-* **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
-* **operating system** - name, version, kernel, date installed
-
-See [Boris::Profilers::Structure](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris/Profilers/Structure) for more details on the data structure.
-
-Because the commands that might work correctly on one type of platform most likely won't work on another, Boris handles this by the use of...
-
-## Profilers
-Profilers contain the instructions that allow us to run commands against our target and then parse and make sense of the data.  Boris comes with the capability to communicate with targets over SNMP, SSH, or WMI.  Each profiler is written to use one of these methods of communication (internally called 'connectors'), which serve as a vehicle for running commands against a server.  Boris comes with a few profilers built-in for some popular platforms, but can be easily extended to include other devices.
-
-**Available profilers:**
-
-* **[Linux Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux)**
-  * [Red Hat Linux](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat)
-* **[UNIX Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX)**
-  * [Oracle Solaris](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris)
-* **[Windows Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows)**
-  * [Windows 2003 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2003)
-  * [Windows 2008 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008)
-  * [Windows 2012 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012)
 
 ## User Account Requirements
 While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab this info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
