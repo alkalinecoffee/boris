@@ -115,7 +115,7 @@ module Boris; module Profilers
 
           app_values = @connector.registry_values_at(app_key)
 
-          if app_values[:installdate].kind_of?(String) && app_values[:installdate] !~ /0000/
+          if app_values[:installdate].kind_of?(String) && app_values[:installdate] !~ /0000/ && app_values[:installdate].length == 8
             h[:date_installed] = DateTime.parse(app_values[:installdate])
           end
 
@@ -377,6 +377,9 @@ module Boris; module Profilers
         h = network_interface_template
 
         index = fibre_interface_profiles.index{|profile| profile[:instancename] == fibre_interface[:instancename]}
+
+        next if index.nil?
+
         profile = fibre_interface_profiles[index]
 
         h[:fabric_name] = profile[:fabricname].to_wwn

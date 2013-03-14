@@ -139,9 +139,8 @@ module Boris
         in_params.hDefKey = HKEY_LOCAL_MACHINE
         in_params.sSubKeyName = key_path
 
-        @registry.ExecMethod_('EnumKey', in_params).sNames.each do |key|
-          subkeys << key_path + '\\' + key
-        end
+        keys_names = @registry.ExecMethod_('EnumKey', in_params).sNames
+        keys_names ? keys_names.each {|key| subkeys << key_path + '\\' + key} : subkeys = []
 
         @registry_cache << {:key_path=>key_path, :subkeys=>subkeys}
       else
