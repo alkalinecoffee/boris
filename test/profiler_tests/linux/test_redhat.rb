@@ -1,7 +1,7 @@
 require 'setup_tests'
 
 class RedHatCoreTest < ProfilerTestSetup
-  context 'a RedHat target' do
+  context 'a Red Hat target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
       @target.stubs(:target_profiler).returns(Profilers::RedHat)
