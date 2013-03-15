@@ -11,6 +11,8 @@ module Boris; module Profilers
       return true if connector.value_at('uname') =~ /sunos/i
     end
 
+    def get_file_systems; super; end
+
     def get_hardware
       super
 
@@ -134,6 +136,7 @@ module Boris; module Profilers
     end
 
     def get_local_user_groups; super; end
+    def get_network_id; super; end
 
     def get_network_interfaces
       super
