@@ -112,7 +112,20 @@ module Boris
       access_params.sSubKeyName = key_path
       access_params.uRequired = permission_to_check
 
-      @registry.ExecMethod_('CheckAccess', access_params).bGranted
+      has_access = false
+
+      begin
+        @registry.ExecMethod_('CheckAccess', access_params).bGranted
+        has_access = true
+      rescue => error
+        if error.message =~ /access is denied/i
+          info "access denied on checking access on #{key_path}"
+        else
+          info "error while checking access on #{key_path}"
+        end
+      end
+
+      has_access
     end
 
 
