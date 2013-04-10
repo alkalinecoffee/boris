@@ -192,7 +192,6 @@ module Boris; module Profilers
           h[:model] = 'Unknown Ethernet Adapter'
           h[:status] = 'down'
           h[:type] = 'ethernet'
-          h[:vendor] = 'Unknown'
 
           # grab the ifconfig output matching this interface
           matched_ifconfig_data = interface_configs.grep(/#{h[:name]}:/)
