@@ -1,6 +1,6 @@
 class BorisLogger < Logger
-  def initialize(output)
-    super(output)
+  def initialize(log_device)
+    super(log_device)
 
     self.datetime_format = '%m-%d-%Y %H:%M:%S'
 

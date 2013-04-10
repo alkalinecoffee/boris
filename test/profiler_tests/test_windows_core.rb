@@ -22,7 +22,7 @@ class WindowsCoreTest < ProfilerTestSetup
         setup do
           @logical_disks_qry = 'SELECT FreeSpace, Name, Size FROM Win32_LogicalDisk WHERE DriveType=3'
           @logical_disks_data = [
-            {:freespace=>1024, :name=>'C:', :size=>2048}
+            {:freespace=>1073741824, :name=>'C:', :size=>2147483648}
           ]
 
           @physical_disks_qry = 'SELECT DeviceID, Model FROM Win32_DiskDrive'
@@ -51,11 +51,11 @@ class WindowsCoreTest < ProfilerTestSetup
 
           @expected_data = [
             {
-              :capacity_mb=>2,
+              :capacity_mb=>2048,
               :file_system=>'Disk #0, Partition #0',
               :mount_point=>'C:',
               :san_storage=>nil,
-              :used_space_mb=>1
+              :used_space_mb=>1024
             }
           ]
         end
@@ -343,15 +343,14 @@ class WindowsCoreTest < ProfilerTestSetup
 
       context 'for network identification' do
         setup do
-          @expected_data = {:domain=>'mydomain.com', :name=>'SERVER01'}
+          @expected_data = {:domain=>'mydomain.com', :hostname=>'SERVER01'}
         end
 
         should 'return the domain and hostname via #get_network_id' do
-          @connector.stubs(:value_at).with('SELECT Domain, Name FROM Win32_ComputerSystem').returns(@expected_data)
+          @connector.stubs(:value_at).with('SELECT Domain, Name FROM Win32_ComputerSystem').returns({:domain=>@expected_data[:domain], :name=>@expected_data[:hostname]})
           @profiler.get_network_id
 
-          assert_equal(@profiler.network_id[:domain], @expected_data[:domain])
-          assert_equal(@profiler.network_id[:hostname], @expected_data[:name])
+          assert_equal(@expected_data, @profiler.network_id)
         end
       end
 

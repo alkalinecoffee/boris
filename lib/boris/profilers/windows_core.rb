@@ -42,8 +42,8 @@ module Boris; module Profilers
       disk_space.each do |ds|
         h = file_system_template
         h[:mount_point] = ds[:name]
-        h[:capacity_mb] = ds[:size].to_i / 1024
-        h[:used_space_mb] = h[:capacity_mb] - (ds[:freespace].to_i / 1024)
+        h[:capacity_mb] = (ds[:size].to_i / 1024) / 1024
+        h[:used_space_mb] = h[:capacity_mb] - ((ds[:freespace].to_i / 1024) / 1024)
 
         ld = logical_disks.select{|ld| ld[:dependent].include?(h[:mount_point])}[0]
         h[:file_system] = ld[:antecedent].split(/\"/)[1]
@@ -175,9 +175,11 @@ module Boris; module Profilers
 
           h[:date_installed] = if patch[:installedon].length == 16
             Time.filetime_to_time(patch[:installedon].hex)
-          else
-            DateTime.strptime(patch[:installedon], '%m/%d/%Y') unless patch[:installedon].empty?
-          end
+          elsif patch[:installedon] =~ /\d+\/\d+\/\d{4}/
+            DateTime.strptime(patch[:installedon], '%m/%d/%Y')
+          elsif patch[:installedon] =~ /\d{4}\/\d+\/\d+/
+            DateTime.strptime(patch[:installedon], '%Y/%m/%d')
+          end unless patch[:installedon].empty?
 
           @installed_patches << h
         end

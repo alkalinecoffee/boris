@@ -321,7 +321,6 @@ class SolarisCoreTest < ProfilerTestSetup
               :name=>'e1000g0',
               :status=>'up',
               :type=>'ethernet',
-              :vendor=>'Unknown',
               :vendor_id=>'0x1234'
             })
 
@@ -335,7 +334,6 @@ class SolarisCoreTest < ProfilerTestSetup
               :name=>'nxge0',
               :status=>'down',
               :type=>'ethernet',
-              :vendor=>'Unknown',
               :vendor_id=>'0x1234'
             })
 
