@@ -6,10 +6,6 @@ module Boris; module Profilers
   class Solaris < UNIX
     
     SOLARIS_ZONE_MODEL = 'Oracle Virtual Platform'
-    
-    def self.matches_target?(connector)
-      return true if connector.value_at('uname') =~ /sunos/i
-    end
 
     def get_file_systems; super; end
 
@@ -146,7 +142,7 @@ module Boris; module Profilers
 
       ## ETHERNET
       # first, grab the link properties for all connections via the kstat command
-      link_properties = @connector.values_at(%q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}'})
+      link_properties = @connector.values_at(%q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}' | egrep -v "aggr|lo|dman|sppp"})
 
       # now create a definitive list of interfaces found on this host.  to do this, we pull
       # the interfaces from the link_properties (kstat cmd) output.
@@ -162,7 +158,7 @@ module Boris; module Profilers
         dns_servers = @connector.values_at("cat /etc/resolv.conf | grep ^nameserver | awk '{print $2}'")
 
         # then get ethernet interface config from ifconfig
-        interface_configs = @connector.values_at(%q{/sbin/ifconfig -a | egrep 'flags|inet|zone' | nawk '{if($2~/^flags/ && $1!~/^(lo|dman|sppp)/) {current_line=$0; getline; {if($1!~/^zone/) {$1=$1; print current_line "\n" $0 "\n"}}}}'}).join("\n").strip.split(/\n\n/)
+        interface_configs = @connector.values_at(%q{/sbin/ifconfig -a | egrep 'flags|inet|zone' | nawk '{if($2~/^flags/ && $1!~/^(aggr|lo|dman|sppp)/) {current_line=$0; getline; {if($1!~/^zone/) {$1=$1; print current_line "\n" $0 "\n"}}}}'}).join("\n").strip.split(/\n\n/)
 
         # now get the macs of active ethernet connections (for backup in cases where we
         # can't get macs from prtpicl)
@@ -216,7 +212,13 @@ module Boris; module Profilers
             h[:model] = 'Virtual Ethernet Adapter'
             h[:vendor] = VENDOR_ORACLE
           else
-            hardware = hardware_details.grep(/driver-name\|.*#{fi[:driver]}/).grep(/instance\|.*#{fi[:instance]}/)[0].split(/\n/)
+
+            hardware = hardware_details.grep(/driver-name\|.*#{fi[:driver]}/).grep(/instance\|.*#{fi[:instance]}/)[0]
+            
+            # if this interface doesn't have any hardware associated with it, we're not interested
+            next if hardware.nil?
+
+            hardware = hardware.split(/\n/)
 
             h[:vendor_id] = hardware.grep(/vendor-id\|/)[0].after_pipe unless hardware.grep(/vendor-id\|/).empty?
             h[:model_id] = hardware.grep(/device-id\|/)[0].after_pipe unless hardware.grep(/device-id\|/).empty?
@@ -256,7 +258,7 @@ module Boris; module Profilers
             end unless duplex_setting.empty?
 
           end
-          
+
           @network_interfaces << h
         end
       end

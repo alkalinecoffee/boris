@@ -3,11 +3,6 @@ require 'boris/profilers/linux_core'
 
 module Boris; module Profilers
   class RedHat < Linux
-    
-    def self.matches_target?(connector)
-      release_data = connector.values_at(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).join(' ')
-      return true if release_data =~ /redhat/i
-    end
 
     def get_file_systems; super; end
     def get_hardware; super; end

@@ -7,10 +7,6 @@ module Boris; module Profilers
       Boris::SSHConnector
     end
 
-    def self.matches_target?(connector)
-      return true if connector.value_at('uname -a') !~ /linux/i
-    end
-
     def get_file_systems
       super
 

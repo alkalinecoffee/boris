@@ -1,8 +1,11 @@
 require 'boris/profiler'
 
+require 'boris/profilers/big_ip/big_ip10'
 require 'boris/profilers/big_ip/big_ip11'
-require 'boris/profilers/linux/redhat'
-require 'boris/profilers/unix/solaris'
+require 'boris/profilers/linux/redhat/rhel5'
+require 'boris/profilers/linux/redhat/rhel6'
+require 'boris/profilers/unix/solaris/solaris10'
+require 'boris/profilers/unix/solaris/solaris11'
 require 'boris/profilers/windows/windows2003'
 require 'boris/profilers/windows/windows2008'
 require 'boris/profilers/windows/windows2012'
@@ -40,8 +43,14 @@ module Boris
       # set our defaults
       @options[:auto_scrub_data] ||= true
       @options[:credentials] ||= []
-      @options[:profilers] ||= [Profilers::BigIP, Profilers::RedHat, Profilers::Solaris]
-      @options[:profilers].concat([Profilers::Windows2003, Profilers::Windows2008, Profilers::Windows2012]) if PLATFORM == :win32
+      if !@options[:profilers]
+        @options[:profilers] = [Profilers::BigIP10, Profilers::BigIP11]
+        @options[:profilers].concat([Profilers::RHEL5, Profilers::RHEL6])
+        @options[:profilers].concat([Profilers::Solaris10, Profilers::Solaris11])
+        if PLATFORM == :win32
+          @options[:profilers].concat([Profilers::Windows2003, Profilers::Windows2008, Profilers::Windows2012])
+        end
+      end
       @options[:snmp_options] ||= {}
       @options[:ssh_options] ||= {}
 

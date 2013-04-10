@@ -6,10 +6,6 @@ module Boris; module Profilers
       Boris::SSHConnector
     end
 
-    def self.matches_target?(connector)
-      return true if connector.values_at('show sys version').join =~ /sys\:\:version/i
-    end
-
     def get_file_systems; super; end
 
     def get_hardware

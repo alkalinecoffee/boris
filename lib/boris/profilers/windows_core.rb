@@ -27,10 +27,6 @@ module Boris; module Profilers
       Boris::WMIConnector
     end
 
-    def self.matches_target?(connector)
-      return true if connector.value_at('SELECT Name FROM Win32_OperatingSystem')[:name] =~ /windows/i
-    end
-
     def get_file_systems
       super
 
