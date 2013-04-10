@@ -1,3 +1,11 @@
+# 1.0.3
+* Added support for F5 Big-IP traffic manager appliances
+* Added more error support for SSH connections
+* Added new helper methods: String#between_curlies and String#pad_mac_address
+* Added subclasses for each operating system type
+* Solaris: Fixed bug where interfaces without hardware were causing error
+* Windows: Fixed filesystem utilization numbers
+
 # 1.0.2
 * Fix for devices asking for password when connecting via SSH
 * Fixed return value for Target#connect

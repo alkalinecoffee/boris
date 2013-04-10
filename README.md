@@ -9,12 +9,13 @@
 ## Introduction
 Boris is a library that facilitates the communication between you and various networked devices over SNMP, SSH and WMI, pulling a large amount of configuration items including installed software, network settings, serial numbers, user accounts, disk utilization, and more.
 
-Out of the box, Boris has server support for Red Hat, Solaris, and Windows (with other platforms available with future plugins), with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profilers, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms.
+Out of the box, Boris has server support for Red Hat, Solaris, and Windows, as well as support for Big-IP traffic managers (and with other platforms available with future plugins), with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profilers, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms connected to their network..
 
 ## Features
-* Currently, pulls information from Red Hat Linux, Solaris, and Windows servers (support for OS X, F5 BIG-IP, and Cisco IOS devices in the works)
+* Server support: Red Hat Linux, Solaris, and Windows (support for OS X in the works)
+* Appliance support:  F5 BIG-IP (support for Cisco IOS devices in the works)
 * Utilizes SNMP, SSH, and WMI communication technologies
-* Expandable to include other networked devices, such as switches, load balancers, and other operating systems
+* Expandable to include other networked devices, such as switches, load balancers, and other appliances and operating systems
 
 ## Installation
     gem install boris
@@ -149,6 +150,9 @@ Profilers contain the instructions that allow us to run commands against our tar
 
 **Available profilers:**
 
+* **[Big-IP Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP)**
+  * [Big-IP v10](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP/BigIP10)**
+  * [Big-IP v11](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP/BigIP11)**
 * **[Linux Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux)**
   * [Red Hat Linux](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat)
 * **[UNIX Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX)**
@@ -195,8 +199,8 @@ registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Window
 
 Boris also comes with the ability to add your own complete modules for using the framework by writing your own data collection algorithms.  I will also write-up a howto in the near future.
 
-## User Account Requirements
-While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab this info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
+## System Requirements
+While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab hardware info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
 
 **Here is a list of known scan account requirements for each platform:**
 
