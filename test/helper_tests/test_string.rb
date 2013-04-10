@@ -50,10 +50,22 @@ class StringTest < Test::Unit::TestCase
       assert_equal(nil, 'ABCD'.before_slash)
     end
 
+    should 'return the value between a pair of curly brackets via #between_curlies' do
+      assert_equal('a test string', 'this is {a test string}'.between_curlies)
+      assert_equal('', 'this is a test {} string'.between_curlies)
+      assert_equal(nil, 'this is a test'.between_curlies)
+    end
+
     should 'return the value between a pair of parenthesis via #between_parenthesis' do
       assert_equal('a test string', 'this is (a test string)'.between_parenthesis)
       assert_equal('', 'this is a test () string'.between_parenthesis)
       assert_equal(nil, 'this is a test'.between_parenthesis)
+    end
+
+    should 'return the padded mac address via #pad_mac_address' do
+      assert_equal('00:00:00:00:00:00', '0:0:0:0:0:0'.pad_mac_address)
+      assert_equal('00:00:00:00:00:00', '00:00:00:00:00:00'.pad_mac_address)
+      assert_equal('00-00-00-00-00-AA', '0-0-0-0-0-AA'.pad_mac_address('-'))
     end
 
     should 'return the proper name of a model via #format_model' do

@@ -79,6 +79,16 @@ class String
     value_before_character('\\\\|\/')
   end
 
+  # Returns the string value found between a pair of curly brackets from self.
+  #
+  #  'A{B}C'.between_curlies  #=> "B"
+  #
+  # @return [Nil, String] string if value found, else returns nil
+  def between_curlies
+    x = self.scan(/\{(.*)\}/)
+    x.empty? ? nil : x.join
+  end
+
   # Returns the string value found between a pair of parenthesis from self.
   #
   #  'A(B)C'.between_parenthesis  #=> "B"
@@ -98,6 +108,22 @@ class String
   def between_quotes
     x = self.scan(/["|'](.*?)["|']/).flatten
     x.empty? ? nil : x
+  end
+
+  # Cleans self by stripping leading/trailing spaces, and removing any ASCII
+  # characters that are sometimes reported by devices.  Also removes registered
+  # (R) characters.
+  #
+  #  'Microsoft(R) Windows(R)'.clean_string             #=> "Microsoft Windows"
+  #  "string with\u00A0 weird characters".clean_string  #=> "string with weird characters"
+  #
+  # @return [String] the cleaned up string
+  def clean_string
+    # remove registered "(R)" and trademark "(tm)" marks
+    string = self.gsub(/\(r\)|\(tm\)/i, '')
+    string.gsub!(/\s+/, ' ')
+
+    string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
   end
 
   # Attempts to grab the hardware model from self and formats it for
@@ -194,6 +220,21 @@ class String
   def hex_to_ip_address
     self.scan(/../).map {|octet| octet.hex}.join('.')
   end
+
+  # Pads self with leading zeros if needed.  Useful for properly formatting MAC addresses.
+  # Takes an optional delimiter used for splitting and returning the provided string in
+  # the proper format. The string to be formatted is expected to already be in a six-octet
+  # format.
+  #
+  #  '0:0:0:0:0:AA'.pad_mac_address  #=> "00:00:00:00:00:AA"
+  #  '0-0-0-0-AA-12'.pad_mac_address('-')  #=> "00-00-00-00-AA-12"
+  #
+  # @return [String] the padded MAC address
+  def pad_mac_address(delimiter=':')
+    self.split(delimiter).inject([]) do |mac, octet|
+      octet.length == 1 ? mac << "0#{octet}" : mac << octet
+    end.join(delimiter).upcase
+  end
   
   # Returns a new string with the architecture removed. See {String#remove_arch!}.
   #
@@ -209,22 +250,6 @@ class String
   # @return [String] returns self with architecture rmeoved
   def remove_arch!
     self.replace(self.gsub(/\s+\(*(32|64)(-|\s)*bit\)*/, ''))
-  end
-
-  # Cleans self by stripping leading/trailing spaces, and removing any ASCII
-  # characters that are sometimes reported by devices.  Also removes registered
-  # (R) characters.
-  #
-  #  'Microsoft(R) Windows(R)'.clean_string             #=> "Microsoft Windows"
-  #  "string with\u00A0 weird characters".clean_string  #=> "string with weird characters"
-  #
-  # @return [String] the cleaned up string
-  def clean_string
-    # remove registered "(R)" and trademark "(tm)" marks
-    string = self.gsub(/\(r\)|\(tm\)/i, '')
-    string.gsub!(/\s+/, ' ')
-
-    string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
   end
 
   # Allows you to specify your own delimiter to grab the string value found
