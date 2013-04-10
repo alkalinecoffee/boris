@@ -8,6 +8,7 @@ class SSHTest < Test::Unit::TestCase
       @connector = SSHConnector.new(@target_name, @cred, Options.new)
 
       @transport = mock('SSHConnector')
+      @transport.stubs(:exec!).with("\n").returns(nil)
 
       Net::SSH.stubs(:start).returns(@transport)
 
@@ -35,6 +36,11 @@ class SSHTest < Test::Unit::TestCase
         Net::SSH.stubs(:start).raises(SocketError, 'some other error')
         @connector.establish_connection
         assert(@connector.failure_message =~ /connection failed/i)
+
+        Net::SSH.stubs(:start).returns(@transport)
+        @transport.stubs(:exec!).with("\n").returns('password has expired')
+        @connector.establish_connection
+        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_PASSWORD_EXPIRED)
       end
     end
 

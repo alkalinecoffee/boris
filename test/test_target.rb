@@ -111,14 +111,14 @@ class TargetTest < Test::Unit::TestCase
       end
 
       should 'detect the best profiler for our target' do
-        Profilers::RedHat.stubs(:matches_target?).returns(true)
+        Profilers::RHEL6.stubs(:matches_target?).returns(true)
         @connector.stubs(:class).returns(Boris::SSHConnector)
-        assert_equal(Profilers::RedHat, @target.detect_profiler.class)
+        assert_equal(Profilers::RHEL6, @target.detect_profiler.class)
       end
 
       should 'allow us to force a profiler to be used for our target even if it is not ideal' do
-        @target.force_profiler_to(Profilers::RedHat)
-        assert_equal(Profilers::RedHat, @target.profiler.class)
+        @target.force_profiler_to(Profilers::RHEL6)
+        assert_equal(Profilers::RHEL6, @target.profiler.class)
       end
     end
   end

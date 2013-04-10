@@ -286,7 +286,7 @@ class SolarisCoreTest < ProfilerTestSetup
 
           @connector.stubs(:values_at).with(@showrev_command).returns(['Application architecture: sparc'])
 
-          @kstat_command = %q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}'}
+          @kstat_command = %q{/usr/bin/kstat -c net -p | egrep "ifspeed|link_(up|duplex|autoneg)" | nawk '{print $1 "|" $2}' | egrep -v "aggr|lo|dman|sppp"}
 
           @prtpicl_ethernet_command = %q{/usr/sbin/prtpicl -c network -v | egrep ':model|:driver-name|:instance|:local-mac-address|:vendor-id|:device-id|\(network' | nawk '{if ($0 ~ /\(network/) print ""; else {first=$1; $1=""; print first "|" $0}}'}
 
@@ -294,7 +294,7 @@ class SolarisCoreTest < ProfilerTestSetup
           
           @mac_mapping_command = %q{/usr/bin/netstat -pn | grep SP | nawk '{print $1 "|" $2 "|" toupper($5)}'}
           
-          @ifconfig_command = %q{/sbin/ifconfig -a | egrep 'flags|inet|zone' | nawk '{if($2~/^flags/ && $1!~/^(lo|dman|sppp)/) {current_line=$0; getline; {if($1!~/^zone/) {$1=$1; print current_line "\n" $0 "\n"}}}}'}
+          @ifconfig_command = %q{/sbin/ifconfig -a | egrep 'flags|inet|zone' | nawk '{if($2~/^flags/ && $1!~/^(aggr|lo|dman|sppp)/) {current_line=$0; getline; {if($1!~/^zone/) {$1=$1; print current_line "\n" $0 "\n"}}}}'}
         end
 
         context 'in a standard three-interface setup' do
