@@ -178,8 +178,6 @@ module Boris
         end
       end
 
-      raise PasswordExpired,  @connector.failure_message if @connector.failure_message
-
       raise NoProfilerDetected, 'no suitable profiler found' if !@profiler
 
       @profiler

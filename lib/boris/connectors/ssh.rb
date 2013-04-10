@@ -40,8 +40,17 @@ module Boris
     def establish_connection
       super
 
+      @connected = @reconnectable = false
+
       begin
         @transport = Net::SSH.start(@host, @user, @ssh_options)
+
+        # send a newline character to test if the connection is ok. if the return value
+        # is nil, then the connection should be good.
+        test_command = @transport.exec!("\n")
+        if !test_command.nil?
+          raise PasswordExpired, @failure_message if test_command =~ /password has expired/i
+        end
         debug 'connection established'
         @connected = @reconnectable = true
       rescue Net::SSH::AuthenticationFailed
@@ -51,19 +60,18 @@ module Boris
       rescue Net::SSH::HostKeyMismatch
         warn CONN_FAILURE_HOST_KEY_MISMATCH
         @failure_message = CONN_FAILURE_HOST_KEY_MISMATCH
-        @reconnectable = false
       rescue SocketError, Errno::ETIMEDOUT
         warn CONN_FAILURE_NO_HOST
         @failure_message = CONN_FAILURE_NO_HOST
-        @reconnectable = false
       rescue Errno::ECONNREFUSED
         warn CONN_FAILURE_REFUSED
         @failure_message = CONN_FAILURE_REFUSED
-        @reconnectable = false
+      rescue Boris::PasswordExpired
+        warn CONN_FAILURE_PASSWORD_EXPIRED
+        @failure_message = CONN_FAILURE_PASSWORD_EXPIRED
       rescue => error
-        message = "connection failed (#{error.message})"
-        warn message
-        @failure_message = message
+        @failure_message = "connection failed (#{error.message})"
+        warn @failure_message
         @reconnectable = true
       end
 
