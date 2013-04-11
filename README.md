@@ -151,12 +151,14 @@ Profilers contain the instructions that allow us to run commands against our tar
 **Available profilers:**
 
 * **[Big-IP Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP)**
-  * [Big-IP v10](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP/BigIP10)**
-  * [Big-IP v11](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP/BigIP11)**
+  * [Big-IP v10](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP10)
+  * [Big-IP v11](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP11)
 * **[Linux Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux)**
-  * [Red Hat Linux](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RedHat)
+  * [Red Hat Enterprise Linux 5](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RHEL5)
+  * [Red Hat Enterprise Linux 6](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RHEL6)
 * **[UNIX Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/UNIX)**
-  * [Oracle Solaris](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris)
+  * [Oracle Solaris 10](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris10)
+  * [Oracle Solaris 11](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Solaris11)
 * **[Windows Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows)**
   * [Windows 2003 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2003)
   * [Windows 2008 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008)
