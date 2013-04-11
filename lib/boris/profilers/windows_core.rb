@@ -319,8 +319,9 @@ module Boris; module Profilers
         # of this NIC's driver registry key and get the translated value from the list of options
         # (found in the \Enum subkey)
         interface_driver_config = @connector.registry_values_at(cfg_keypath)
-        h[:auto_negotiate] = false
         duplex_reg_value = interface_driver_config.select {|key, val| DUPLEX_REG_VALS.include?(key)}
+
+        h[:auto_negotiate] = false
 
         if duplex_reg_value.empty?
           h[:auto_negotiate] = true

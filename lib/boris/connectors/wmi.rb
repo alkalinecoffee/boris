@@ -120,8 +120,11 @@ module Boris
       rescue => error
         if error.message =~ /access is denied/i
           info "access denied on checking access on #{key_path}"
+        elsif error.message =~ /class not registered/i
+          info "error while checking access on #{key_path} (class not registered)"
+          info 'this could be caused by a lack of permissions or corrupted wmi installation'
         else
-          info "error while checking access on #{key_path}"
+          info "error while checking access on #{key_path} (#{error.message})"
         end
       end
 
