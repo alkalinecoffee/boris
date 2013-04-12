@@ -229,6 +229,7 @@ class String
   #  '0:0:0:0:0:AA'.pad_mac_address  #=> "00:00:00:00:00:AA"
   #  '0-0-0-0-AA-12'.pad_mac_address('-')  #=> "00-00-00-00-AA-12"
   #
+  # @param delimiter an optional delimiter for the MAC address (default is ':')
   # @return [String] the padded MAC address
   def pad_mac_address(delimiter=':')
     self.split(delimiter).inject([]) do |mac, octet|
