@@ -441,6 +441,23 @@ module Boris; module Profilers
 
       @operating_system
     end
+
+    def get_running_processes
+      super
+
+      process_data = @connector.values_at('SELECT CommandLine, CreationDate, ProcessId FROM Win32_Process')
+      process_data.each do |process|
+        h = running_process_template
+
+        h[:command] = process[:commandline]
+        h[:date_started] = DateTime.strptime(process[:creationdate], '%Y%m%d%H%M%S.%N%z')
+        h[:pid] = process[:processid]
+        
+        @running_processes << h
+      end
+
+      @running_processes
+    end
     
     def get_product_key(app_name, guid=nil)
 

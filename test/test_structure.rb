@@ -42,6 +42,15 @@ class StructureTest < Test::Unit::TestCase
       assert_equal(expected, @structure.get_hardware)
     end
 
+    should 'provide us with a share template via #hosted_share_template' do
+      expected = [
+        :name,
+        :path
+      ].to_nil_hash
+
+      assert_equal(expected, @structure.hosted_share_template)
+    end
+
     should 'provide us with an installed application template via #installed_application_template' do
       expected = [
         :date_installed,
@@ -53,6 +62,26 @@ class StructureTest < Test::Unit::TestCase
       ].to_nil_hash
 
       assert_equal(expected, @structure.installed_application_template)
+    end
+
+    should 'provide us with a patch template via #installed_patch_template' do
+      expected = [
+        :date_installed,
+        :installed_by,
+        :patch_code        
+      ].to_nil_hash
+
+      assert_equal(expected, @structure.installed_patch_template)
+    end
+
+    should 'provide us with a service template via #installed_service_template' do
+      expected = [
+        :name,
+        :install_location,
+        :start_mode        
+      ].to_nil_hash
+
+      assert_equal(expected, @structure.installed_service_template)
     end
 
     should 'provide us with a local user groups template via #local_user_groups_template' do
@@ -99,6 +128,16 @@ class StructureTest < Test::Unit::TestCase
       assert_equal(expected, @structure.network_interface_template)
     end
 
+    should 'provide us with a process template via #running_process_template' do
+      expected = [
+        :command,
+        :date_started,
+        :pid
+      ].to_nil_hash
+
+      assert_equal(expected, @structure.running_process_template)
+    end
+
     should 'provide us with an operating system template via #get_operating_system' do
       expected = [
         :date_installed,
@@ -114,23 +153,5 @@ class StructureTest < Test::Unit::TestCase
       assert_equal(expected, @structure.get_operating_system)
     end
 
-    should 'provide us with a patch template via #installed_patch_template' do
-      expected = [
-        :date_installed,
-        :installed_by,
-        :patch_code        
-      ].to_nil_hash
-
-      assert_equal(expected, @structure.installed_patch_template)
-    end
-
-    should 'provide us with a share template via #hosted_share_template' do
-      expected = [
-        :name,
-        :path
-      ].to_nil_hash
-
-      assert_equal(expected, @structure.hosted_share_template)
-    end
   end
 end

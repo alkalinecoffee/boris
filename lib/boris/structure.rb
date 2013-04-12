@@ -94,6 +94,14 @@ module Boris
       ].to_nil_hash
     end
 
+    def running_process_template
+      [
+        :command,
+        :date_started,
+        :pid
+      ].to_nil_hash
+    end
+
     def get_file_systems
       debug 'preparing to fetch file systems'
       @file_systems = []
@@ -166,6 +174,11 @@ module Boris
         :features=>[],
         :roles=>[]
       ].to_nil_hash
+    end
+
+    def get_running_processes
+      debug 'preparing to fetch running_processes'
+      @running_processes = []
     end
 
     alias get_installed_daemons get_installed_services

@@ -281,9 +281,9 @@ class WindowsCoreTest < ProfilerTestSetup
           ]
 
           @expected_data = [{
-            :name=>'Plug and Play',
-            :install_location=>'C:\WINDOWS\system32\services.exe',
-            :start_mode=>'Auto'
+            :name=>@service_data[0][:name],
+            :install_location=>@service_data[0][:pathname],
+            :start_mode=>@service_data[0][:startmode]
           }]
         end
 
@@ -504,6 +504,30 @@ class WindowsCoreTest < ProfilerTestSetup
           assert_equal(@expected_data, @profiler.operating_system)
         end
       end
+
+      context 'for running processes information' do
+        setup do
+          @process_data = [
+            :commandline=>'myscript',
+            :creationdate=>'20130101000000.000000-240',
+            :processid=>12345
+          ]
+
+          @expected_data = [{
+            :command=>@process_data[0][:commandline],
+            :date_started=>DateTime.strptime(@process_data[0][:creationdate], '%Y%m%d%H%M%S.%N%z'),
+            :pid=>@process_data[0][:processid]
+          }]
+        end
+
+        should 'return process information via #get_running_processes' do
+          @connector.stubs(:values_at).with('SELECT CommandLine, CreationDate, ProcessId FROM Win32_Process').returns(@process_data)
+          
+          @profiler.get_running_processes
+          assert_equal(@expected_data, @profiler.get_running_processes)
+        end
+      end
+
     end
   end
 end
