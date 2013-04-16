@@ -221,6 +221,26 @@ class String
     self.scan(/../).map {|octet| octet.hex}.join('.')
   end
 
+  # Pads self with leading zeros if needed.  Useful for properly formatting a String
+  # (usually from the ps command in UNIX representing elapsed time) to a more complete,
+  # zero-padded string to the format dd-hh:mm:ss.  mm::ss is the bare-minimum required
+  # String.
+  #
+  #  '00:01'.pad_elapsed_time  #=> '00-00:00:01'
+  #  '01:01'.pad_elapsed_time  #=> '00-00:01:01'
+  #  '01:01:01'.pad_elapsed_time  #=> '00-01:01:01'
+  #  '01-01:00:01'.pad_elapsed_time  #=> '01-01:01:01'
+  #
+  # @return String the padded elapsed time
+  def pad_elapsed_time
+    return self if self =~ /\d+\-\d{2}:\d{2}:\d{2}/
+
+    case self.count(':')
+    when 2; "00-#{self}"
+    when 1; "00-00:#{self}"
+    end
+  end
+
   # Pads self with leading zeros if needed.  Useful for properly formatting MAC addresses.
   # Takes an optional delimiter used for splitting and returning the provided string in
   # the proper format. The string to be formatted is expected to already be in a six-octet

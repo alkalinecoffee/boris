@@ -117,18 +117,18 @@ class UNIXCoreTest < ProfilerTestSetup
       context 'for running processes information' do
         setup do
           @now = 'Tue Apr 12 12:00:00 EDT 2013'
-          @process_data = ['12345 05:59:59 myscript -a']
+          @process_data = ['01:01:01 05:59:59 myscript -a']
 
           @expected_data = [{
             :command=>'myscript -a',
-            :date_started=>DateTime.parse('2013-04-12T06:00:01-04:00'),
-            :pid=>12345
+            :cpu_time=>'00-01:01:01',
+            :date_started=>DateTime.parse('2013-04-12T06:00:01-04:00')
           }]
         end
 
         should 'return process information via #get_running_processes' do
           @connector.stubs(:value_at).with('date').returns(@now)
-          @connector.stubs(:values_at).with('ps -eo pid,etime,comm | tail +2').returns(@process_data)
+          @connector.stubs(:values_at).with('ps -eo time,etime,comm | tail +2').returns(@process_data)
 
           @profiler.get_running_processes
 

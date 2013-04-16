@@ -445,14 +445,18 @@ module Boris; module Profilers
     def get_running_processes
       super
 
-      process_data = @connector.values_at('SELECT CommandLine, CreationDate, ProcessId FROM Win32_Process')
+      process_data = @connector.values_at('SELECT CommandLine, CreationDate, KernelModeTime, UserModeTime FROM Win32_Process')
       process_data.each do |process|
         next if process[:commandline].nil?
+        
         h = running_process_template
 
+        cpu_time = Time.at((process[:kernelmodetime] + process[:usermodetime]) / 10000000).utc
+        days = (cpu_time - Time.at(0).utc).to_i / (24 * 60 * 60)
+
         h[:command] = process[:commandline]
+        h[:cpu_time] = "#{"%02d" % days}-#{cpu_time.strftime('%H:%M:%S')}"
         h[:date_started] = DateTime.strptime(process[:creationdate], '%Y%m%d%H%M%S.%N%z')
-        h[:pid] = process[:processid]
 
         @running_processes << h
       end

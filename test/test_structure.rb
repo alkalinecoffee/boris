@@ -131,8 +131,8 @@ class StructureTest < Test::Unit::TestCase
     should 'provide us with a process template via #running_process_template' do
       expected = [
         :command,
-        :date_started,
-        :pid
+        :cpu_time,
+        :date_started
       ].to_nil_hash
 
       assert_equal(expected, @structure.running_process_template)

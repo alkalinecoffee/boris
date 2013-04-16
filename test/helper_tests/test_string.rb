@@ -145,5 +145,13 @@ class StringTest < Test::Unit::TestCase
       assert_equal('Microsoft SQL Server 2008', test_string)
     end
 
+    should 'return the padded elapsed time via #pad_elapsed_time' do
+      assert_equal('00-00:00:00', '00:00'.pad_elapsed_time)
+      assert_equal('00-00:00:01', '00:01'.pad_elapsed_time)
+      assert_equal('00-00:01:01', '01:01'.pad_elapsed_time)
+      assert_equal('00-01:01:01', '01:01:01'.pad_elapsed_time)
+      assert_equal('01-01:01:01', '01-01:01:01'.pad_elapsed_time)
+    end
+
   end
 end

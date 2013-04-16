@@ -98,8 +98,8 @@ module Boris
     def running_process_template
       [
         :command,
-        :date_started,
-        :pid
+        :cpu_time,
+        :date_started
       ].to_nil_hash
     end
 
