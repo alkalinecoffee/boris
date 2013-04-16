@@ -14,7 +14,7 @@ Out of the box, Boris has server support for Red Hat, Solaris, and Windows, as w
 ## Features
 * Server support: Red Hat Linux, Solaris, and Windows (support for OS X in the works)
 * Appliance support:  F5 BIG-IP (support for Cisco IOS devices in the works)
-* Utilizes SNMP, SSH, and WMI communication technologies
+* Utilizes SSH, and WMI communication technologies (SNMP is baked in but not currently used)
 * Expandable to include other networked devices, such as switches, load balancers, and other appliances and operating systems
 
 ## Installation
