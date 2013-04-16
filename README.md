@@ -207,6 +207,8 @@ While Boris does its best to gather data from devices without any special privil
 
 **Here is a list of known scan account requirements for each platform:**
 
+* **Big-IP**
+  * User shell set to `tmsh`
 * **Linux (any flavor)**
   * User must have `sudo` for `dmidecode`
 * **Solaris**
