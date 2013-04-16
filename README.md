@@ -70,20 +70,6 @@ if target.connected?
   # installed applications, etc.)
   target.retrieve_all
 
-  # if there is more information we want to collect but is not collected by default, we can specify
-  # our own commands to run against the target via two methods:
-  
-  # #get_values returns an Array (each line is an element of the array)
-  puts target.connector.values_at('cat /etc/redhat-release')
-
-  # #get_value, which returns a String (the first line returned from the command)
-  puts target.connector.value_at('uname -a')
-  
-  # NOTE: if this were a Windows server, you would send WMI queries instead of shell commands, ie:
-  #
-  # target.connector.values_at('SELECT * FROM Win32_ComputerSystem')
-  #
-
   puts target.to_json(:pretty_print)
 
   target.disconnect
@@ -189,18 +175,12 @@ multiple_rows_of_data = target.connector.values_at('SELECT * FROM Win32_NetworkA
 # passing to #values_at):
 multiple_rows_of_data = target.connector.values_at('SELECT * FROM MSNdis_EnumerateAdapter', :root_wmi)
 
-# you can also poll for registry keys under HKEY_LOCAL_MACHINE by providing a base key path, which returns
-# an array of keys:
+# poll registry keys under HKEY_LOCAL_MACHINE by providing a base key path, which returns an array of keys:
 registry_keys = target.connector.registry_subkeys_at('SOFTWARE\Microsoft\Windows')
 
-# and then grab values found at some key via #registry_values_at, which returns value/data elements in a
-# Hash:
+# grab values found at some key via #registry_values_at, which returns value/data elements in a Hash:
 registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Windows\CurrentVersion')
 ```
-
-**Coming soon--a write-up for SNMP devices**
-
-Boris also comes with the ability to add your own complete modules for using the framework by writing your own data collection algorithms.  I will also write-up a howto in the near future.
 
 ## System Requirements
 While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab hardware info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
