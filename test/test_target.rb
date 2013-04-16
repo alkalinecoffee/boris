@@ -38,7 +38,8 @@ class TargetTest < Test::Unit::TestCase
         "local_user_groups":null,
         "network_id":null,
         "network_interfaces":null,
-        "operating_system":null}}.join
+        "operating_system":null,
+        "running_processes":null}}.join
 
       assert_equal(long_json_string, @target.to_json)
     end

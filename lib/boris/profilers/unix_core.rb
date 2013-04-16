@@ -82,5 +82,25 @@ module Boris; module Profilers
 
     def get_network_interfaces; super; end
     def get_operating_system; super; end
+
+    def get_running_processes
+      super
+
+      now = DateTime.parse(@connector.value_at('date'))
+      process_data = @connector.values_at('ps -eo pid,etime,comm | tail +2')
+      process_data.each do |process|
+        process = process.split
+
+        h = running_process_template
+
+        h[:pid] = process.shift.to_i
+        h[:date_started] = DateTime.parse_start_date(now, process.shift)
+        h[:command] = process.join(' ')
+        
+        @running_processes << h
+      end
+
+      @running_processes
+    end
   end
 end; end

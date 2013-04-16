@@ -13,6 +13,7 @@ module Boris
       network_id
       network_interfaces
       operating_system
+      running_processes
     }
 
     CATEGORIES.each do |category|

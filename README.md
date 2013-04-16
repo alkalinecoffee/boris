@@ -140,6 +140,7 @@ Through a number of queries and algorithms, Boris efficiently polls devices on t
 * **network ID** - hostname and domain
 * **network interfaces** - ethernet and fibre channel interfaces, including IPs, MAC addresses, connection status
 * **operating system** - name, version, kernel, date installed
+* **running processes** - process command, start time and pid
 
 See [Boris::Profilers::Structure](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris/Profilers/Structure) for more details on the data structure.
 
