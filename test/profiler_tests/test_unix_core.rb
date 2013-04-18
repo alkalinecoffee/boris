@@ -128,7 +128,7 @@ class UNIXCoreTest < ProfilerTestSetup
 
         should 'return process information via #get_running_processes' do
           @connector.stubs(:value_at).with('date').returns(@now)
-          @connector.stubs(:values_at).with('ps -eo time,etime,comm | tail +2').returns(@process_data)
+          @connector.stubs(:values_at).with('ps -eo time,etime,comm | tail +2 | grep -v defunct').returns(@process_data)
 
           @profiler.get_running_processes
 
