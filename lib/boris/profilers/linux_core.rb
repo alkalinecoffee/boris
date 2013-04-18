@@ -222,7 +222,7 @@ module Boris; module Profilers
       super
 
       now = DateTime.parse(@connector.value_at('date'))
-      process_data = @connector.values_at('ps -eo time,etime,comm | tail +2 | grep -v defunct')
+      process_data = @connector.values_at('ps -eo time,etime,comm | tail -n +2 | grep -v defunct')
       process_data.each do |process|
         process = process.split
 
