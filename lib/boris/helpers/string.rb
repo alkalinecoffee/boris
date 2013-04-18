@@ -229,11 +229,13 @@ class String
   #  '00:01'.pad_elapsed_time  #=> '00-00:00:01'
   #  '01:01'.pad_elapsed_time  #=> '00-00:01:01'
   #  '01:01:01'.pad_elapsed_time  #=> '00-01:01:01'
-  #  '01-01:00:01'.pad_elapsed_time  #=> '01-01:01:01'
+  #  '1-01:00:01'.pad_elapsed_time  #=> '01-01:01:01'
   #
   # @return String the padded elapsed time
   def pad_elapsed_time
-    return self if self =~ /\d+\-\d{2}:\d{2}:\d{2}/
+    return self if self =~ /\d{2}\-\d{2}:\d{2}:\d{2}/
+
+    return "0#{self}" if self =~ /\d{1}-/
 
     case self.count(':')
     when 2; "00-#{self}"

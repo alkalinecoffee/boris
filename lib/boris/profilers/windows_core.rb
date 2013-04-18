@@ -451,7 +451,7 @@ module Boris; module Profilers
         
         h = running_process_template
 
-        cpu_time = Time.at((process[:kernelmodetime] + process[:usermodetime]) / 10000000).utc
+        cpu_time = Time.at((process[:kernelmodetime].to_i + process[:usermodetime].to_i) / 10000000).utc
         days = (cpu_time - Time.at(0).utc).to_i / (24 * 60 * 60)
 
         h[:command] = process[:commandline]

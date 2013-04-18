@@ -89,14 +89,14 @@ module Boris; module Profilers
       now = DateTime.parse(@connector.value_at('date'))
       process_data = @connector.values_at('ps -eo time,etime,comm | tail +2')
       process_data.each do |process|
-        process = process.split
+        process = process.strip.split
 
         h = running_process_template
 
         h[:cpu_time] = process.shift.pad_elapsed_time
         h[:date_started] = DateTime.parse_start_date(now, process.shift)
         h[:command] = process.join(' ')
-        
+
         @running_processes << h
       end
 

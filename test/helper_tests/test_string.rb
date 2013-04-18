@@ -151,6 +151,7 @@ class StringTest < Test::Unit::TestCase
       assert_equal('00-00:01:01', '01:01'.pad_elapsed_time)
       assert_equal('00-01:01:01', '01:01:01'.pad_elapsed_time)
       assert_equal('01-01:01:01', '01-01:01:01'.pad_elapsed_time)
+      assert_equal('01-01:01:01', '1-01:01:01'.pad_elapsed_time)
     end
 
   end
