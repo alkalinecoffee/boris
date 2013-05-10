@@ -55,22 +55,22 @@ module Boris
         @connected = @reconnectable = true
       rescue Net::SSH::AuthenticationFailed
         warn "connection failed (connection made but credentials not accepted with user #{@user})"
-        @failure_message = CONN_FAILURE_AUTH_FAILED
+        @failure_messages << CONN_FAILURE_AUTH_FAILED
         @reconnectable = true
       rescue Net::SSH::HostKeyMismatch
         warn CONN_FAILURE_HOST_KEY_MISMATCH
-        @failure_message = CONN_FAILURE_HOST_KEY_MISMATCH
+        @failure_messages << CONN_FAILURE_HOST_KEY_MISMATCH
       rescue SocketError, Errno::ETIMEDOUT
         warn CONN_FAILURE_NO_HOST
-        @failure_message = CONN_FAILURE_NO_HOST
+        @failure_messages << CONN_FAILURE_NO_HOST
       rescue Errno::ECONNREFUSED
         warn CONN_FAILURE_REFUSED
-        @failure_message = CONN_FAILURE_REFUSED
+        @failure_messages << CONN_FAILURE_REFUSED
       rescue Boris::PasswordExpired
         warn CONN_FAILURE_PASSWORD_EXPIRED
-        @failure_message = CONN_FAILURE_PASSWORD_EXPIRED
+        @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
       rescue => error
-        @failure_message = "connection failed (#{error.message})"
+        @failure_messages << "connection failed (#{error.message})"
         warn @failure_message
         @reconnectable = true
       end
@@ -138,7 +138,7 @@ module Boris
         # called when something is written to stderr
         chan.on_extended_data do |ch, type, data|
           if data =~ /password has expired/i
-            @failure_message = CONN_FAILURE_PASSWORD_EXPIRED
+            @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
             ch.close
             disconnect
           end

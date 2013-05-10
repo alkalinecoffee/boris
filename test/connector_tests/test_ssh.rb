@@ -23,24 +23,24 @@ class SSHTest < Test::Unit::TestCase
       should 'allow us to view the reason for failure' do
         Net::SSH.stubs(:start).raises(Net::SSH::AuthenticationFailed)
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_AUTH_FAILED)
+        assert_equal(@connector.failure_messages[0], Boris::CONN_FAILURE_AUTH_FAILED)
 
         Net::SSH.stubs(:start).raises(Net::SSH::HostKeyMismatch)
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_HOST_KEY_MISMATCH)
+        assert_equal(@connector.failure_messages[1], Boris::CONN_FAILURE_HOST_KEY_MISMATCH)
 
         Net::SSH.stubs(:start).raises(SocketError)
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_NO_HOST)
+        assert_equal(@connector.failure_messages[2], Boris::CONN_FAILURE_NO_HOST)
 
         Net::SSH.stubs(:start).raises(SocketError, 'some other error')
         @connector.establish_connection
-        assert(@connector.failure_message =~ /connection failed/i)
+        assert(@connector.failure_messages[3] =~ /connection failed/i)
 
         Net::SSH.stubs(:start).returns(@transport)
         @transport.stubs(:exec!).with("\n").returns('password has expired')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_PASSWORD_EXPIRED)
+        assert_equal(@connector.failure_messages[4], Boris::CONN_FAILURE_PASSWORD_EXPIRED)
       end
     end
 

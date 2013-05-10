@@ -46,6 +46,7 @@ module Boris; module Profilers
       @hardware[:memory_installed_mb] = memory_data.to_i
 
       hardware_data = @connector.values_at('/usr/bin/sudo /usr/sbin/dmidecode -t 0,1,4', true)
+
       if hardware_data.any?
         # grab the cpu speed again (because its value is usually more useful/relevant than that found via /proc/cpuinfo)
         @hardware[:cpu_speed_mhz] = hardware_data.grep(/current speed/i)[0].after_colon.scan(/\d/).join.to_i

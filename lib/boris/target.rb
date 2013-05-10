@@ -12,6 +12,7 @@ module Boris
   class Target
     include Lumberjack
     
+    attr_reader :connection_failures
     attr_reader :host
     attr_reader :unavailable_connection_types
 
@@ -40,6 +41,7 @@ module Boris
       options ||= {}
       @options = Options.new(options)
       @connector = Connector.new(@host)
+      @connection_failures = []
       @unavailable_connection_types = []
 
       if block_given?
@@ -129,7 +131,11 @@ module Boris
 
           info "connection established via #{conn_type}" if @connector.connected?
         end
+
+        @connection_failures = @connection_failures.concat(@connector.failure_messages)
       end
+
+      @connection_failures.uniq!
 
       info 'all connection attempts failed' if !@connector.connected?
 
@@ -161,7 +167,7 @@ module Boris
       raise NoActiveConnection, 'no active connection' if @connector.connected? == false
 
       @options[:profilers].each do |profiler|
-        break if @profiler || @connector.failure_message
+        break if @profiler || @connector.failure_messages.any?
 
         if profiler.connection_type == @connector.class
           debug "testing profiler: #{profiler}"

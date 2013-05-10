@@ -12,7 +12,7 @@ module Boris
     attr_reader :host
     attr_reader :options
     attr_reader :reconnectable
-    attr_reader :failure_message
+    attr_reader :failure_messages
     attr_reader :user
 
     def initialize(host, cred={})
@@ -22,6 +22,7 @@ module Boris
       @user = cred[:user]
       @password = cred[:password]
       @connected = false
+      @failure_messages = []
       @reconnectable = true
       debug 'creating connection object'
     end

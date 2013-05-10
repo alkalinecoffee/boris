@@ -82,6 +82,19 @@ class TargetTest < Test::Unit::TestCase
       end
     end
 
+    context 'that we could not connect to' do
+      setup do
+        @target.options.add_credential(@cred.merge!(:connection_types=>[:ssh]))
+      end
+
+      should 'allow all connection failure messages to be accessible via #connection_failures' do
+        Net::SSH.stubs(:start).raises(Net::SSH::HostKeyMismatch)
+        @target.connect
+
+        assert_equal(['connection failed (ssh: host key mismatch)'], @target.connection_failures)
+      end
+    end
+
     context 'that we have successfully connected to' do
       setup do
         @target.stubs(:connect).returns(@connector)

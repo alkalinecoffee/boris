@@ -25,19 +25,19 @@ class WMITest < Test::Unit::TestCase
       should 'allow us to view the reason for failure' do
         @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'access is denied')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_AUTH_FAILED)
+        assert_equal(@connector.failure_messages[0], Boris::CONN_FAILURE_AUTH_FAILED)
 
         @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'call was canceled by the message filter')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_RPC_FILTERED)
+        assert_equal(@connector.failure_messages[1], Boris::CONN_FAILURE_RPC_FILTERED)
 
         @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'rpc server is unavailable')
         @connector.establish_connection
-        assert_equal(@connector.failure_message, Boris::CONN_FAILURE_RPC_UNAVAILABLE)
+        assert_equal(@connector.failure_messages[2], Boris::CONN_FAILURE_RPC_UNAVAILABLE)
 
         @win32ole.stubs(:ConnectServer).raises(WIN32OLERuntimeError, 'some other error')
         @connector.establish_connection
-        assert(@connector.failure_message =~ /^connection failed/)
+        assert(@connector.failure_messages[3] =~ /^connection failed/)
       end
     end
 

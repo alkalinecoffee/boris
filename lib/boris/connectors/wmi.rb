@@ -59,15 +59,15 @@ module Boris
         @connected = false
         if error.message =~ /access is denied/i
           warn "connection failed (connection made but credentials not accepted with user #{@user})"
-          @failure_message = CONN_FAILURE_AUTH_FAILED
+          @failure_messages << CONN_FAILURE_AUTH_FAILED
           @reconnectable = true
         elsif error.message =~ /call was canceled by the message filter/i
           warn CONN_FAILURE_RPC_FILTERED
-          @failure_message = CONN_FAILURE_RPC_FILTERED
+          @failure_messages << CONN_FAILURE_RPC_FILTERED
           @reconnectable = false
         elsif error.message =~ /rpc server is unavailable/i
           warn CONN_FAILURE_RPC_UNAVAILABLE
-          @failure_message = CONN_FAILURE_RPC_UNAVAILABLE
+          @failure_messages << CONN_FAILURE_RPC_UNAVAILABLE
           @reconnectable = false
         elsif error.message =~ /user credentials cannot be used for local connections/i
           # clear the credentials then try to connect again
@@ -78,7 +78,7 @@ module Boris
         else
           message = "connection failed (#{error.message.gsub(/\n\s*/, '. ')})"
           warn message
-          @failure_message = message
+          @failure_messages << message
           @reconnectable = true
         end
       end

@@ -110,9 +110,9 @@ class String
     x.empty? ? nil : x
   end
 
-  # Cleans self by stripping leading/trailing spaces, and removing any ASCII
-  # characters that are sometimes reported by devices.  Also removes registered
-  # (R) characters.
+  # Cleans self by stripping leading/trailing spaces, any consecutive spaces, and
+  # removing any ASCII characters that are sometimes reported by devices.  Also
+  # removes registered (R) characters.
   #
   #  'Microsoft(R) Windows(R)'.clean_string             #=> "Microsoft Windows"
   #  "string with\u00A0 weird characters".clean_string  #=> "string with weird characters"
@@ -137,9 +137,9 @@ class String
   #  'sun fire 400'.format_model  #=> "SunFire 400"
   #  't1000'.format_model  #=> "SPARC Enterprise T1000"
   #
-  # @return [Nil, String] the formatted model, else returns self
+  # @return [String] the formatted model, else returns self
   def format_model
-    return nil if self == ''
+    return self if self == ''
 
     # delete models containing "server" or beginning with "ibm"
     # also remove configuration numbers appended (typically on IBM
