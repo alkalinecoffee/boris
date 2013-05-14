@@ -2,6 +2,7 @@ require 'boris/profiler'
 
 require 'boris/profilers/big_ip/big_ip10'
 require 'boris/profilers/big_ip/big_ip11'
+require 'boris/profilers/cisco/ios12'
 require 'boris/profilers/linux/redhat/rhel5'
 require 'boris/profilers/linux/redhat/rhel6'
 require 'boris/profilers/unix/solaris/solaris10'
