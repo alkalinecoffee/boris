@@ -49,7 +49,7 @@ module Boris; module Profilers
 
       if hardware_data.any?
         # grab the cpu speed again (because its value is usually more useful/relevant than that found via /proc/cpuinfo)
-        @hardware[:cpu_speed_mhz] = hardware_data.grep(/current speed/i)[0].after_colon.scan(/\d/).join.to_i
+        @hardware[:cpu_speed_mhz] = hardware_data.grep(/current speed/i)[0].after_colon.extract(/(\d+)/).to_i
         @hardware[:firmware_version] = hardware_data.grep(/version/i)[0].after_colon
         @hardware[:model] = hardware_data.grep(/product name/i)[0].after_colon
         @hardware[:serial] = hardware_data.grep(/serial number/i)[0].after_colon

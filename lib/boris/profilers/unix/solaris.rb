@@ -283,7 +283,7 @@ module Boris; module Profilers
         h[:type] = 'fibre'
 
         current_speed = hba.grep(/current speed/i)[0].after_colon
-        speed = current_speed.scan(/\d/).join.to_i
+        speed = current_speed.extract(/(\d+)/).to_i
         h[:current_speed_mbps] = current_speed =~ /gb/i ? speed * 1000 : speed
         
         @network_interfaces << h

@@ -61,7 +61,7 @@ module Boris; module Profilers
 
       os_base_name = os_data.grep(/^description/i)[0].after_colon
       @operating_system[:name] = os_base_name.split(/ linux /i)[0] + ' Linux'
-      @operating_system[:version] = os_base_name.scan(/linux (.*) release/i).join + ' ' + os_data.grep(/^release/i)[0].after_colon
+      @operating_system[:version] = os_base_name.extract(/linux (.+) release/i) + ' ' + os_data.grep(/^release/i)[0].after_colon
 
       @operating_system
     end
