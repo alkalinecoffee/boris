@@ -85,8 +85,7 @@ class String
   #
   # @return [Nil, String] string if value found, else returns nil
   def between_curlies
-    x = self.scan(/\{(.*)\}/)
-    x.empty? ? nil : x.join
+    self.extract(/\{(.*)\}/)
   end
 
   # Returns the string value found between a pair of parenthesis from self.
@@ -95,8 +94,7 @@ class String
   #
   # @return [Nil, String] string if value found, else returns nil
   def between_parenthesis
-    x = self.scan(/\((.*)\)/)
-    x.empty? ? nil : x.join
+    self.extract(/\((.*)\)/)
   end
 
   # Returns the string value found between a pair of quotes (single or double)
@@ -106,8 +104,7 @@ class String
   #
   # @return [Nil, String] string if value found, else returns nil
   def between_quotes
-    x = self.scan(/["|'](.*?)["|']/).flatten
-    x.empty? ? nil : x
+    self.extract(/["|'](.*?)["|']/)
   end
 
   # Cleans self by stripping leading/trailing spaces, any consecutive spaces, and
@@ -115,7 +112,7 @@ class String
   # removes registered (R) characters.
   #
   #  'Microsoft(R) Windows(R)'.clean_string             #=> "Microsoft Windows"
-  #  "string with\u00A0 weird characters".clean_string  #=> "string with weird characters"
+  #  "string with\u00A0 weird character".clean_string  #=> "string with weird character"
   #
   # @return [String] the cleaned up string
   def clean_string
@@ -124,6 +121,19 @@ class String
     string.gsub!(/\s+/, ' ')
 
     string.encode(Encoding.find('ASCII'), :undef=>:replace, :replace=>'').strip
+  end
+
+  # Attempts to pull only the first match inside the parenthesis for a given
+  # regex.  It's similar to using String#match or String#scan..join to extract
+  # the first matching value (that is, the value to match on found within the
+  # parenthesis in the regex).
+  #
+  #  'abcdef'.extract(/ab(cd)ef/)  #=> "cd"
+  #  'abcdef'.extract(/abcdef/)  #=> nil
+  #
+  # @return [String, NilClass] the matched string, else returns nil
+  def extract(regex)
+    self[regex, 1]
   end
 
   # Attempts to grab the hardware model from self and formats it for
@@ -147,15 +157,16 @@ class String
     model = self.gsub(/(^ibm|server)/i, '').split(/-*(\[|\()/)[0]
 
     model = if model =~ /^sun.*blade/i
-      'SunBlade ' + model.scan(/\d/).join
+      'SunBlade ' + model.extract(/(\d+)/)
     elsif model =~ /^sun.*fire/i
-      'SunFire ' + model.scan(/\d/).join
+      'SunFire ' + model.extract(/(\d+)/)
     elsif model =~ /^T\d{4}/
       'SPARC Enterprise ' + model
     elsif model =~ /^big-*ip/i
       model.sub(/^big-*ip/i, 'BIG-IP')
     elsif model =~ /^wsc\d{4}-*.*/i
-      'Catalyst ' + (model.scan(/\d/).join + '-' + model.scan(/[a-z]$/i).join).sub(/-$/, '')
+      model.sub!(/wsc/i, 'Catalyst ')
+      model.include?('-') ? model : model.sub(/(\d{4})(.*)/) {$2.empty? ? "#{$1}" : "#{$1}-#{$2}" }
     else
       model
     end
@@ -281,10 +292,11 @@ class String
   #
   #   'A&B&C'.value_after_character('&')  #=> "C"
   #
+  # @param delimiter
   # @return [Nil, String] returns the found value, else returns nil
   def value_after_character(delimiter)
-    x = self.scan(/^.*[#{delimiter}](.*)$/)
-    x.empty? ? nil : x.join.strip
+    x = self.extract(/^.*[#{delimiter}](.*)$/)
+    x.nil? ? nil : x.strip
   end
 
   # Allows you to specify your own delimiter to grab the string value found
@@ -293,9 +305,10 @@ class String
   #
   #   'A&B&C'.value_before_character('&')  #=> "A"
   #
+  # @param delimiter
   # @return [Nil, String] returns the found value, else returns nil
   def value_before_character(delimiter)
-    x = self.scan(/^(.*?)[#{delimiter}]/)
-    x.empty? ? nil : x.join.strip
+    x = self.extract(/(.*?)[#{delimiter}]/)
+    x.nil? ? nil : x.strip
   end
 end

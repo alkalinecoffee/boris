@@ -62,10 +62,10 @@ class StringTest < Test::Unit::TestCase
       assert_equal(nil, 'this is a test'.between_parenthesis)
     end
 
-    should 'return the value(s) found between at least one pair of single or double quotes via #between_quotes' do
-      assert_equal(['C'], 'AB"C"'.between_quotes)
-      assert_equal(['A', 'C'], '"A" B "C"'.between_quotes)
-      assert_equal(['A', 'C'], "'A' B 'C'".between_quotes)
+    should 'return the value found between at least one pair of single or double quotes via #between_quotes' do
+      assert_equal('C', 'AB"C"'.between_quotes)
+      assert_equal('A', '"A" B "C"'.between_quotes)
+      assert_equal('A', "'A' B 'C'".between_quotes)
       assert_equal(nil, 'ABC'.between_quotes)
     end
 
@@ -76,10 +76,9 @@ class StringTest < Test::Unit::TestCase
       assert_equal('registered', 'registered(r)'.clean_string)
     end
 
-    should 'return the padded mac address via #pad_mac_address' do
-      assert_equal('00:00:00:00:00:00', '0:0:0:0:0:0'.pad_mac_address)
-      assert_equal('00:00:00:00:00:00', '00:00:00:00:00:00'.pad_mac_address)
-      assert_equal('00-00-00-00-00-AA', '0-0-0-0-0-AA'.pad_mac_address('-'))
+    should 'return the matched portion of a string with a regex via #extract' do
+      assert_equal('abc', 'abcdef'.extract(/(.*)def/))
+      assert_equal(nil, 'abcdef'.extract(/(g)/))
     end
 
     should 'return the proper name of a model via #format_model' do
@@ -133,6 +132,21 @@ class StringTest < Test::Unit::TestCase
       assert_equal('255.255.255.0', 'ffffff00'.hex_to_ip_address)
     end
 
+    should 'return the padded elapsed time via #pad_elapsed_time' do
+      assert_equal('00-00:00:00', '00:00'.pad_elapsed_time)
+      assert_equal('00-00:00:01', '00:01'.pad_elapsed_time)
+      assert_equal('00-00:01:01', '01:01'.pad_elapsed_time)
+      assert_equal('00-01:01:01', '01:01:01'.pad_elapsed_time)
+      assert_equal('01-01:01:01', '01-01:01:01'.pad_elapsed_time)
+      assert_equal('01-01:01:01', '1-01:01:01'.pad_elapsed_time)
+    end
+
+    should 'return the padded mac address via #pad_mac_address' do
+      assert_equal('00:00:00:00:00:00', '0:0:0:0:0:0'.pad_mac_address)
+      assert_equal('00:00:00:00:00:00', '00:00:00:00:00:00'.pad_mac_address)
+      assert_equal('00-00-00-00-00-AA', '0-0-0-0-0-AA'.pad_mac_address('-'))
+    end
+
     should 'remove the architecture from a string via #remove_arch' do
       assert_equal('Microsoft SQL Server 2008', 'Microsoft SQL Server 2008 32 bit'.remove_arch)
       assert_equal('Microsoft SQL Server 2008', 'Microsoft SQL Server 2008 32-bit'.remove_arch)
@@ -144,15 +158,5 @@ class StringTest < Test::Unit::TestCase
       test_string.remove_arch!
       assert_equal('Microsoft SQL Server 2008', test_string)
     end
-
-    should 'return the padded elapsed time via #pad_elapsed_time' do
-      assert_equal('00-00:00:00', '00:00'.pad_elapsed_time)
-      assert_equal('00-00:00:01', '00:01'.pad_elapsed_time)
-      assert_equal('00-00:01:01', '01:01'.pad_elapsed_time)
-      assert_equal('00-01:01:01', '01:01:01'.pad_elapsed_time)
-      assert_equal('01-01:01:01', '01-01:01:01'.pad_elapsed_time)
-      assert_equal('01-01:01:01', '1-01:01:01'.pad_elapsed_time)
-    end
-
   end
 end

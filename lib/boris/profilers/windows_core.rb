@@ -258,7 +258,8 @@ module Boris; module Profilers
           members = @connector.values_at("SELECT * FROM Win32_GroupUser WHERE GroupComponent = \"Win32_Group.Domain='#{@network_id[:hostname]}',Name='#{group[:name]}'\"")
 
           members.each do |member|
-            hostname, username = member[:partcomponent].between_quotes
+            hostname, username = member[:partcomponent].scan(/["|'](.*?)["|']/).flatten
+
             group[:members] << "#{hostname}\\#{username}"
           end
         end
