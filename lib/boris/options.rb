@@ -45,12 +45,22 @@ module Boris
       @options[:auto_scrub_data] ||= true
       @options[:credentials] ||= []
       if !@options[:profilers]
-        @options[:profilers] = [Profilers::BigIP10, Profilers::BigIP11]
-        @options[:profilers].concat([Profilers::RHEL5, Profilers::RHEL6])
-        @options[:profilers].concat([Profilers::Solaris10, Profilers::Solaris11])
+        
+        @options[:profilers] = [
+          Profilers::RHEL5,
+          Profilers::RHEL6,
+          Profilers::Solaris10,
+          Profilers::Solaris11
+        ]
+
         if PLATFORM == :win32
-          @options[:profilers].concat([Profilers::Windows2003, Profilers::Windows2008, Profilers::Windows2012])
+          @options[:profilers].concat([
+            Profilers::Windows2003,
+            Profilers::Windows2008,
+            Profilers::Windows2012
+          ])
         end
+        
       end
       @options[:snmp_options] ||= {}
       @options[:ssh_options] ||= {}
