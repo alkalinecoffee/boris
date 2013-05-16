@@ -62,7 +62,7 @@ module Boris
 
       amount = limit == 1 ? 'single value' : 'multiple values'
 
-      debug "issuing request for #{amount} (#{request})"
+      debug "issuing request for #{amount} (#{request.strip})"
     end
   end
 end

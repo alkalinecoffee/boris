@@ -8,14 +8,13 @@ class SSHTest < Test::Unit::TestCase
       @connector = SSHConnector.new(@target_name, @cred, Options.new)
 
       @transport = mock('SSHConnector')
-      @transport.stubs(:exec!).with("\n").returns(nil)
-
       Net::SSH.stubs(:start).returns(@transport)
 
       @expected_data = 'SunOS'
     end
 
     should 'allow us to connect to it via SSH' do
+      @transport.stubs(:open_channel)
       assert_kind_of(SSHConnector, @connector.establish_connection)
     end
 
@@ -38,7 +37,7 @@ class SSHTest < Test::Unit::TestCase
         assert(@connector.failure_messages[3] =~ /connection failed/i)
 
         Net::SSH.stubs(:start).returns(@transport)
-        @transport.stubs(:exec!).with("\n").returns('password has expired')
+        @connector.stubs(:value_at).with("\n").returns('password has expired')
         @connector.establish_connection
         assert_equal(@connector.failure_messages[4], Boris::CONN_FAILURE_PASSWORD_EXPIRED)
       end
@@ -46,15 +45,16 @@ class SSHTest < Test::Unit::TestCase
 
     context 'to which we have already connected' do
       setup do
-        @connector.establish_connection
-
-        @channel = mock('channel')
-        @transport.stubs(:open_channel).returns(@channel).then.yields(@channel)
+        @channel = mock('Channel')
+        @transport.stubs(:open_channel).returns(@channel).yields(@channel)
+        @channel.stubs(:exec).yields(@channel, true)
         @channel.stubs(:on_data).yields(@channel, @expected_data)
         @channel.stubs(:on_extended_data).returns(@channel)
         @channel.stubs(:on_close).returns
-        @channel.expects(:exec).at_least_once
+        
         @channel.expects(:wait).at_least_once
+
+        @connector.establish_connection
       end
 
       should 'allow us to retrieve data' do

@@ -1,3 +1,4 @@
+STDOUT.sync = true
 require 'boris/connectors'
 
 module Boris
@@ -12,26 +13,31 @@ module Boris
     # @param [Hash] options an optional list of options. See {Boris::Options} for a list of all
     #   possible options.  The relevant option set here would be :ssh_options.
     def initialize(host, cred, options=Options.new)
+      super(host, cred)
+
       @ssh_options = options[:ssh_options]
-      
-      @ssh_options[:auth_methods] = ['publickey']
-      if @password
-        @ssh_options[:auth_methods] << 'password'
-        @ssh_options[:password] = @password
-      end
+
+      @reconnect_mode = false
       
       if @ssh_options
         invalid_ssh_options = @ssh_options.keys - Net::SSH::VALID_OPTIONS
         raise ArgumentError, "invalid ssh option(s): #{invalid_ssh_options.join(', ')}" if invalid_ssh_options.any?
       end
 
-      super(host, cred)
+      @ssh_options[:auth_methods] = ['publickey']
+      if @password
+        @ssh_options[:auth_methods] << 'password'
+        @ssh_options[:password] = @password
+      end
     end
 
     # Disconnect from the host.
     def disconnect
       super
+
+      @transport.close rescue nil
       @transport = nil
+      
       debug 'connections closed'
     end
     
@@ -47,11 +53,16 @@ module Boris
 
         # send a newline character to test if the connection is ok. if the return value
         # is nil, then the connection should be good.
-        test_command = @transport.exec!("\n")
-        if !test_command.nil?
-          raise PasswordExpired, @failure_message if test_command =~ /password has expired/i
+        if @reconnect_mode == false
+          test_result = value_at("\n")
+          
+          raise PasswordExpired, @failure_messages.last if (test_result && test_result =~ /password has expired/i)
+          
+          debug 'connection established'
+        else
+          debug 'connection re-established'
         end
-        debug 'connection established'
+        
         @connected = @reconnectable = true
       rescue Net::SSH::AuthenticationFailed
         warn "connection failed (connection made but credentials not accepted with user #{@user})"
@@ -69,9 +80,13 @@ module Boris
       rescue Boris::PasswordExpired
         warn CONN_FAILURE_PASSWORD_EXPIRED
         @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
+      rescue Net::SSH::Disconnect
+        @bypass_test_command = true
+        puts 'disconnected... retrying...'
+        retry
       rescue => error
         @failure_messages << "connection failed (#{error.message})"
-        warn @failure_message
+        warn @failure_messages.last
         @reconnectable = true
       end
 
@@ -106,59 +121,75 @@ module Boris
       error_messages = []
       reconnect = false
       return_data = []
+
+      if @reconnect_mode
+        disconnect
+        establish_connection
+      end
       
-      chan = @transport.open_channel do |chan|
+      channel = @transport.open_channel do |chan, success|
+        debug 'channel opened successfully' if success
+
         if request_pty
           debug 'requsting pty...'
           chan.request_pty()
           debug 'pty successfully requested'
         end
 
-        chan.on_data do |ch, data|
-          if data =~ /^\[sudo\] password for/i
-            debug 'system asking for password for sudo request'
-            if @password
-              ch.send_data "#{@password}\n"
-              debug 'password sent'
+        chan.exec(request) do |chan, success|
+          chan.on_data do |chan, data|
+            if data =~ /^\[sudo\] password for/i
+              debug 'system asking for password for sudo request'
+              if @password
+                chan.send_data "#{@password}\n"
+                debug 'password sent'
+              else
+                chan.close
+                info "channel closed (we don't have a password to supply)"
+              end
+            elsif data =~ /sorry, try again/i
+              chan.close
+              return_data = []
+              info 'channel closed (we have a password to supply but it is not accepted)'
+            elsif data =~ /permission denied/i
+              warn "permission denied for this request (#{data.gsub(/\n|\s+/, ', ')})"
             else
-              ch.close
-              info "channel closed (we don't have a password to supply)"
+              return_data << data
             end
-          elsif data =~ /sorry, try again/i
-            ch.close
-            return_data = []
-            info 'channel closed (we have a password to supply but it is not accepted)'
-          elsif data =~ /permission denied/i
-            warn "permission denied for this request (#{data.gsub(/\n|\s+/, ', ')})"
-          else
-            return_data << data
           end
-        end
-        
-        # called when something is written to stderr
-        chan.on_extended_data do |ch, type, data|
-          if data =~ /password has expired/i
-            @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
-            ch.close
-            disconnect
-          end
-          error_messages.concat(data.split(/\n/))
-        end
 
-        chan.exec(request)
+          chan.on_extended_data do |chan, data|
+            if data =~ /password has expired/i
+              @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
+              chan.close
+              disconnect
+            end
+            error_messages.concat(data.split(/\n/))
+          end
+        end
       end
 
-      chan.wait
+      begin
+        channel.wait
+      rescue Net::SSH::Disconnect
+        # some devices (namely cisco switches) tend to silently break the ssh
+        # connection after creating a session and running a command. to get around
+        # this, we will re-establish the connection (and bypassing our test command
+        # in #establish_connection) to prepare the connection for running another
+        # command.
+        info 'connection broken by remote host... we will automatically reconnect'
+        @reconnect_mode = true
+      end
 
       if !error_messages.empty?
         warn "message written to STDERR for this request (#{error_messages.join('. ')})"
       end
 
-      return_data = return_data.join.split(/\n/)
-
-      debug "#{return_data.size} row(s) returned"
+      return_data = return_data.join.gsub(/\r/, '').split(/\n/)
 
       limit = return_data.size if limit.nil?
+      
+      debug "#{return_data.size} row(s) returned"
 
       return_data[0..limit]
     end
