@@ -1,7 +1,7 @@
 require 'boris/profiler'
 
 module Boris; module Profilers
-  class BigIP < Profiler
+  class BigIP < Base
     def self.connection_type
       Boris::SSHConnector
     end

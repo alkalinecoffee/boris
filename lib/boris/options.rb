@@ -85,7 +85,7 @@ module Boris
 
     # Setter method for setting the value in the options hash
     #  puts options[:profilers] #=> [Profilers::RedHat]
-    #  options[:profilers] << Profilers::Solaris
+    #  options[:profilers] << Bases::Solaris
     #  puts options[:profilers] #=> [Profilers::RedHat, Profilers::Solaris]
     # @raise ArgumentError when invalid options are provided
     def []=(key, val)

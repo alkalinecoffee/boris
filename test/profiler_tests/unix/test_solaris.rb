@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class SolarisCoreTest < ProfilerTestSetup
+class SolarisCoreTest < BaseTestSetup
   context 'a Solaris target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})

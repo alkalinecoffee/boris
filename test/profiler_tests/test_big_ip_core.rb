@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class BigIPCoreTest < ProfilerTestSetup
+class BigIPCoreTest < BaseTestSetup
   context 'an F5 BIG-IP target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})

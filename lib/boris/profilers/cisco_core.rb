@@ -1,7 +1,7 @@
 require 'boris/profiler'
 
 module Boris; module Profilers
-  class Cisco < Profiler
+  class Cisco < Base
     def self.connection_type
       Boris::SSHConnector
     end

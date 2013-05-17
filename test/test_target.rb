@@ -27,7 +27,7 @@ class TargetTest < Test::Unit::TestCase
     end
 
     should 'allow its data (instance variables) to be produced as json' do
-      @target.profiler = Profilers::Profiler.new(Connector.new(@host))
+      @target.profiler = Profilers::Base.new(Connector.new(@host))
       long_json_string = %w{
         {"file_systems":null,
         "hardware":null,
@@ -108,7 +108,7 @@ class TargetTest < Test::Unit::TestCase
       end
 
       should 'allow us to call methods for retrieving all standard configuration items via #retrieve_all' do
-        @target.profiler = Profilers::Profiler.new(@connector)
+        @target.profiler = Profilers::Base.new(@connector)
         @target.options[:auto_scrub_data] = false
         @target.retrieve_all
 

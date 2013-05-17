@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class CiscoCoreTest < ProfilerTestSetup
+class CiscoCoreTest < BaseTestSetup
   context 'a Cisco target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})

@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class LinuxCoreTest < ProfilerTestSetup
+class LinuxCoreTest < BaseTestSetup
   context 'a Linux target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})

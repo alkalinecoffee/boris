@@ -1,7 +1,7 @@
 require 'boris/profiler'
 
 module Boris; module Profilers
-  class Windows < Profiler
+  class Windows < Base
 
     APP32_KEYPATH = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
     APP64_KEYPATH = 'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'

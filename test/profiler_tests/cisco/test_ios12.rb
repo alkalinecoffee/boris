@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class IOS12Test < ProfilerTestSetup
+class IOS12Test < BaseTestSetup
   context 'an IOS12 target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})

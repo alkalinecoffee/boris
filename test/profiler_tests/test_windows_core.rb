@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class WindowsCoreTest < ProfilerTestSetup
+class WindowsCoreTest < BaseTestSetup
   context 'a Windows target' do
     setup do
       @connector = @target.connector = WMIConnector.new(@host, {})

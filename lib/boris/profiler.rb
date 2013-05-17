@@ -2,7 +2,7 @@ require 'boris/structure'
 require 'boris/helpers'
 
 module Boris; module Profilers
-  class Profiler
+  class Base
     include Lumberjack
     include Structure
 

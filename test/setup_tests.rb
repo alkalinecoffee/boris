@@ -7,7 +7,7 @@ require 'boris'
 
 include Boris
 
-class ProfilerTestSetup < Test::Unit::TestCase
+class BaseTestSetup < Test::Unit::TestCase
   def initialize(test)
     super(test)
     @host = '0.0.0.0'

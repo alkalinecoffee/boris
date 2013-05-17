@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class UNIXCoreTest < ProfilerTestSetup
+class UNIXCoreTest < BaseTestSetup
   context 'a UNIX target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})

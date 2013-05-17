@@ -1,6 +1,6 @@
 require 'setup_tests'
 
-class Windows2008Test < ProfilerTestSetup
+class Windows2008Test < BaseTestSetup
   context 'a Windows 2008 target' do
     setup do
       @connector = @target.connector = WMIConnector.new(@host, {})
