@@ -9,7 +9,7 @@ module Boris; module Profilers
         result << item
       end
       result
-    end
+    end.sort_by {|klass| klass.to_s}
   end
 
   class Base
