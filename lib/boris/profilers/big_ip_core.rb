@@ -2,8 +2,19 @@ require 'boris/profiler'
 
 module Boris; module Profilers
   class BigIP < Base
+    
+    attr_reader :license_data, :os_data
+
     def self.connection_type
       Boris::SSHConnector
+    end
+
+    def get_license_data
+      @license_data ||= @connector.values_at('show sys license')
+    end
+
+    def get_os_data
+      @os_data ||= @connector.values_at('show sys version')
     end
 
     def get_file_systems; super; end
@@ -11,6 +22,8 @@ module Boris; module Profilers
     def get_hardware
       super
       
+      get_license_data
+
       hardware_data = @connector.values_at('show sys hardware').join("\n").split(/\n\s*\n/)
       cpu_mem_data = @connector.values_at('show sys host').join("\n").split(/\n\s*\n/)
 
@@ -24,7 +37,7 @@ module Boris; module Profilers
       @hardware[:cpu_speed_mhz] = cpu_data.grep(/cpu mhz/i)[0].split.last.to_i
       firmware = platform_data.grep(/bios revision/i)[0].split(/\s{2,}/).last
       @hardware[:firmware_version] = firmware =~ /bios|ver\:/i ? firmware.split(/bios|ver\:/i).last : firmware
-      @hardware[:model] = platform_data.grep(/name/i)[0].split(/\s{2,}/).last
+      @hardware[:model] = platform_data.grep(/name/i)[0].split(/\s{2,}/).last + " (#{@license_data.grep(/platform id/i)[0].split.last})"
       
       memory = mem_data.grep(/total/i)[0].split.last
       @hardware[:memory_installed_mb] = if memory =~ /g$/i
@@ -41,12 +54,29 @@ module Boris; module Profilers
     end
 
     def get_hosted_shares; super; end
-    def get_installed_applications; super; end
+    
+    def get_installed_applications
+      super
+
+      get_license_data
+
+      @license_data.grep(/.*\(.*\)/).each do |application|
+        h = installed_application_template
+
+        h[:license_key] = application.between_parenthesis
+        h[:name] = application.split('(')[0].strip
+        h[:vendor] = VENDOR_F5
+
+        @installed_applications << h
+      end
+
+      @installed_applications
+    end
     
     def get_installed_patches
       super
 
-      @os_data ||= @connector.values_at('show sys version')
+      get_os_data
 
       patch_data = @os_data.join("\n")
 
@@ -172,9 +202,11 @@ module Boris; module Profilers
     def get_operating_system
       super
 
-      @os_data ||= @connector.values_at('show sys version')
+      get_license_data
+      get_os_data
 
       @operating_system[:kernel] = @os_data.grep(/build/i)[0].split.last
+      @operating_system[:license_key] = @license_data.grep(/registration key/i)[0].split.last
       @operating_system[:name] = @os_data.grep(/product/i)[0].split.last
       @operating_system[:service_pack] = @os_data.grep(/edition/i)[0].split(/\s{2,}/).last
       @operating_system[:version] = @os_data.grep(/version\s+/i)[0].split.last

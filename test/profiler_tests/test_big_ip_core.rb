@@ -16,6 +16,16 @@ class BigIPCoreTest < BaseTestSetup
 
     context 'being scanned' do
       setup do
+        @license_command = 'show sys license'
+        @license_data = %{
+          Sys::License
+          Registration key      ABC-123
+          Platform ID           D100
+          Active Modules
+            Software 1 (ABC-123)
+            Software 2 (ABC-123)
+        }.strip.split(/\n/)
+
         @operating_system_command = 'show sys version'
         @operating_system_data = %q{
           Sys::Version
@@ -82,7 +92,7 @@ class BigIPCoreTest < BaseTestSetup
             :cpu_speed_mhz=>2200,
             :cpu_vendor=>nil,
             :firmware_version=>'OBJ-0001-01 - Build: 10000',
-            :model=>'BIG-IP 6900F',
+            :model=>'BIG-IP 6900F (D100)',
             :memory_installed_mb=>3891,
             :serial=>'f5-abc-123',
             :vendor=>'F5 Networks, Inc.'
@@ -90,6 +100,7 @@ class BigIPCoreTest < BaseTestSetup
         end
 
         should 'return hardware information via #get_hardware' do
+          @connector.stubs(:values_at).with(@license_command).returns(@license_data)
           @connector.stubs(:values_at).with(@hardware_command).returns(@hardware_data)
           @connector.stubs(:values_at).with(@cpu_mem_command).returns(@cpu_mem_data)
 
@@ -101,13 +112,40 @@ class BigIPCoreTest < BaseTestSetup
       # context 'for hosted shares' do
       # end
 
-      # context 'for installed applications' do
-      # end
+      context 'for installed applications' do
+        setup do
+          @expected_data = [
+            {
+              :date_installed=>nil,
+              :install_location=>nil,
+              :license_key=>'ABC-123',
+              :name=>'Software 1',
+              :vendor=>'F5 Networks, Inc.',
+              :version=>nil
+            },
+            {
+              :date_installed=>nil,
+              :install_location=>nil,
+              :license_key=>'ABC-123',
+              :name=>'Software 2',
+              :vendor=>'F5 Networks, Inc.',
+              :version=>nil
+            },
+          ]
+        end
+
+        should 'return installed applications via #get_installed_applications' do
+          @connector.stubs(:values_at).with(@license_command).returns(@license_data)
+
+          @profiler.get_installed_applications
+          assert_equal(@expected_data, @profiler.installed_applications)
+        end
+      end
 
       context 'for installed patches' do
         setup do
           @expected_data = []
-          %w{ID00000  ID00001  ID00002  ID00003  ID00004  ID00005  ID00006}.each do |patch|
+          %w{ID00000 ID00001 ID00002 ID00003 ID00004 ID00005 ID00006}.each do |patch|
             @expected_data << {:date_installed=>nil, :installed_by=>nil, :patch_code=>patch}
           end
         end
@@ -283,7 +321,7 @@ class BigIPCoreTest < BaseTestSetup
             :date_installed=>nil,
             :features=>[],
             :kernel=>'100.0',
-            :license_key=>nil,
+            :license_key=>'ABC-123',
             :name=>'BIG-IP',
             :roles=>[],
             :service_pack=>'Hotfix HF3',
@@ -292,6 +330,7 @@ class BigIPCoreTest < BaseTestSetup
         end
 
         should 'return operating system information via #get_operating_system' do
+          @connector.stubs(:values_at).with(@license_command).returns(@license_data)
           @connector.stubs(:values_at).with(@operating_system_command).returns(@operating_system_data)
           @profiler.get_operating_system
           assert_equal(@expected_data, @profiler.operating_system)
