@@ -151,10 +151,7 @@ class String
   def format_model
     return self if self == ''
 
-    # delete models containing "server" or beginning with "ibm"
-    # also remove configuration numbers appended (typically on IBM
-    # products... ex 'System x1000 M3 -[123456]-')
-    model = self.gsub(/(^ibm|server)/i, '').split(/-*(\[|\()/)[0]
+    model = self.sub(/server/i, '')
 
     model = if model =~ /^sun.*blade/i
       'SunBlade ' + model.extract(/(\d+)/)

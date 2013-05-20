@@ -90,8 +90,6 @@ class StringTest < Test::Unit::TestCase
       assert_equal('Catalyst 1000', 'WSC1000'.format_model)
       assert_equal('Catalyst 1000-E', 'WSC1000E'.format_model)
       assert_equal('Catalyst 1000-E', 'WSC1000-E'.format_model)
-      assert_equal('System x1000 M3', 'IBM System x1000 M3'.format_model)
-      assert_equal('System x1000 M3', 'IBM System x1000 M3 -[123456]-'.format_model)
     end
 
     should 'return the proper serial number via #format_serial' do
