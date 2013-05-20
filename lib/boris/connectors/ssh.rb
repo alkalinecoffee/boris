@@ -81,9 +81,8 @@ module Boris
         warn CONN_FAILURE_PASSWORD_EXPIRED
         @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
       rescue Net::SSH::Disconnect
-        @bypass_test_command = true
-        puts 'disconnected... retrying...'
-        retry
+        warn CONN_FAILURE_CONNECTION_CLOSED
+        @failure_messages << CONN_FAILURE_CONNECTION_CLOSED
       rescue => error
         @failure_messages << "connection failed (#{error.message})"
         warn @failure_messages.last
