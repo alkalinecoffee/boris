@@ -2,6 +2,9 @@ require 'boris/profiler'
 
 module Boris; module Profilers
   class Cisco < Base
+
+    attr_reader :version_data
+    
     def self.connection_type
       Boris::SSHConnector
     end
@@ -50,7 +53,7 @@ module Boris; module Profilers
 
       get_version_data
 
-      @network_id[:hostname] = @version_data.grep(/uptime is/)[0].extract(/(\w+) uptime is/i)
+      @network_id[:hostname] = @version_data.grep(/uptime is/)[0].strip.extract(/^(.+) uptime is/i)
       @network_id
     end
     
