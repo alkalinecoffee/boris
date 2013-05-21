@@ -153,7 +153,7 @@ Profilers contain the instructions that allow us to run commands against our tar
 
 ## Extending Boris
 
-**Running your own commands**
+#### Running your own commands
 
 You can also run your own commands to grab information off of systems.  For example, on a Linux device, to run your own script that is already on the target and retrieve its output:
 
@@ -185,7 +185,7 @@ registry_keys = target.connector.registry_subkeys_at('SOFTWARE\Microsoft\Windows
 registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Windows\CurrentVersion')
 ```
 
-**Creating your own profiler**
+#### Creating your own profiler
 
 More than likely, you may want to grab information off of a platform that is not supported by Boris.  It's easy to create your own profiler by using the profiler skeleton file located in the `skeleton` directory.  Simply copy the `profiler_skeleton` file to your app's directory with a `.rb` extension, and modify that file to run the proper commands and retrieve the data from your desired platform, writing the data into the already available instance variables.  Once your data retrieval methods are set, simply require your newly created file in your app, and add the class to your `Target#options[:profilers]` array, and it will be available to you.
 
