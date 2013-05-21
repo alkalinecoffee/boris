@@ -9,13 +9,13 @@
 ## Introduction
 Boris is a library that facilitates the communication between you and various networked devices over SNMP, SSH and WMI, pulling a large amount of configuration items including installed software, network settings, serial numbers, user accounts, disk utilization, and more.
 
-Out of the box, Boris has server support for Red Hat, Solaris, and Windows, as well as support for Big-IP traffic managers (and with other platforms available with future plugins), with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profilers, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms connected to their network.
+Out of the box, Boris has server support for Red Hat, Solaris, and Windows, as well as support for Big-IP traffic managers, with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profilers, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms connected to their network.
 
 ## Features
 * Server support: Red Hat Linux, Solaris, and Windows (support for OS X in the works)
 * Appliance support: F5 BIG-IP (support for Cisco IOS & NX-OS devices in the works)
 * Utilizes SSH and WMI communication technologies (SNMP is baked in but not currently used)
-* Expandable to include other networked devices, such as switches, load balancers, and other appliances and operating systems
+* Expandable to include other networked devices, such as switches, load balancers, and other appliances and server operating systems
 
 ## Installation
     gem install boris
@@ -153,7 +153,8 @@ Profilers contain the instructions that allow us to run commands against our tar
 
 ## Extending Boris
 
-### Running your own commands
+**Running your own commands**
+
 You can also run your own commands to grab information off of systems.  For example, on a Linux device, to run your own script that is already on the target and retrieve its output:
 
 ```ruby
@@ -184,18 +185,22 @@ registry_keys = target.connector.registry_subkeys_at('SOFTWARE\Microsoft\Windows
 registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Windows\CurrentVersion')
 ```
 
-### Creating your own profiler
+**Creating your own profiler**
+
 More than likely, you may want to grab information off of a platform that is not supported by Boris.  It's easy to create your own profiler by using the profiler skeleton file located in the `skeleton` directory.  Simply copy the `profiler_skeleton` file to your app's directory with a `.rb` extension, and modify that file to run the proper commands and retrieve the data from your desired platform, writing the data into the already available instance variables.  Once your data retrieval methods are set, simply require your newly created file in your app, and add the class to your `Target#options[:profilers]` array, and it will be available to you.
 
 Some recommendations on making your own profiler:
 * Create a core file (ex. WindowsCore) for your platform, and only place generalized data-retrieval methods in this file if they would apply to the majority of versions available to that platform
-* Create a new profiler file for each version of your platform (ie. Windows2012), using the core file its parent class
+* Create a new profiler file for each version of your platform (ie. Windows2012), using the core class as its parent class
   * Name your version classes with the major version number applied
   * Only use code that applies to that specific version in your version profiler files
   * Each version file should include a class method called `matches_target?`, where the logic will be to determine if this specific profiler version matches that of the device you're communicating with
-* Stick with the built-in variable names, and use the templates as described in `lib/boris/structure.rb`, and extend them as necessary.
+* Stick with the built-in variable names, and use the templates as described in `[structure.rb](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Structure)`, and extend them as necessary.
 * Be consistent by always calling `super` on your data-retrieval methods and ending the method by returning the data variable, even if that method does not apply to that platform
+* Check out the available helpers in the `lib/boris/helpers` directory (especially those in `[string.rb](http://rubydoc.info/github/alkalinecoffee/boris/master/String)`!)
 * See the profilers in the `lib/boris/profilers` directory for more guidance
+
+Also, please consider a pull request if you think your code can help others!
 
 ## System Requirements
 While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the `RedHat` profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab hardware info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
@@ -210,6 +215,9 @@ While Boris does its best to gather data from devices without any special privil
   * User must have `sudo` for `fcinfo`
 * **Windows**
   * User must be a member of local Administrator group (looking into what other groups provide required access)
+
+## Contributing
+If you have written a profiler (and tests) for a device not currently supported, please create a pull request for it.  Also, my testing sucks, so if anyone wants to help clean that up, I'm all about it.
 
 ## License
 This software is provided under the MIT license.  See the LICENSE.md file.
