@@ -1,0 +1,103 @@
+require 'boris/profiler'
+
+module Boris; module Profilers
+  class ProfilerSkeleton < Base
+
+    def self.matches_target?(connector)
+
+      # set logic to determine whether this profiler should be used.
+      # this should run a command and from its returned value, determine
+      # whether we should use this profiler by returning true or false, ie:
+
+      #   return true if connector.value_at('uname -a') =~ /linux/i
+
+    end
+    
+    def self.connection_type
+      # set the connection type to be used against this device type, ie:
+
+      #   Boris::SSHConnector
+    end
+
+    def get_file_systems
+      super
+
+      # insert data retrieval code here
+
+      @file_systems
+    end
+
+    def get_hardware
+      super
+      
+      # insert data retrieval code here
+
+      @hardware
+    end
+
+    def get_hosted_shares
+      super
+
+      # insert data retrieval code here
+
+      @hosted_shares
+    end
+
+    def get_installed_applications
+      super
+
+      # insert data retrieval code here
+
+      @installed_applications
+    end
+    
+    def get_installed_patches
+      super
+
+      # insert data retrieval code here
+
+      @installed_patches
+    end
+    
+    def get_installed_services
+      super
+
+      # insert data retrieval code here
+
+      @installed_services
+    end
+    
+    def get_local_user_groups
+      super
+
+      # insert data retrieval code here
+
+      @local_user_groups
+    end
+    
+    def get_network_id
+      super
+
+      # insert data retrieval code here
+
+      @network_id
+    end
+    
+    def get_network_interfaces
+      super
+
+      # insert data retrieval code here
+
+      @network_interfaces
+    end
+    
+    def get_operating_system
+      super
+
+      # insert data retrieval code here
+
+      @operating_system
+    end
+
+  end
+end; end
