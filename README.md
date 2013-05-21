@@ -25,7 +25,7 @@ Or if using Bundler, add to your Gemfile
     gem 'boris'
 
 ## Example
-Let's pull some information from a RedHat Enterprise Linux server on our network:
+Let's pull some information from a Red Hat Enterprise Linux server on our network:
 
 ```ruby
 require 'boris'
@@ -152,6 +152,8 @@ Profilers contain the instructions that allow us to run commands against our tar
   * [Windows 2012 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012)
 
 ## Extending Boris
+
+### Running your own commands
 You can also run your own commands to grab information off of systems.  For example, on a Linux device, to run your own script that is already on the target and retrieve its output:
 
 ```ruby
@@ -182,8 +184,21 @@ registry_keys = target.connector.registry_subkeys_at('SOFTWARE\Microsoft\Windows
 registry_values = target.connector.registry_values_at('SOFTWARE\Microsoft\Windows\CurrentVersion')
 ```
 
+### Creating your own profiler
+More than likely, you may want to grab information off of a platform that is not supported by Boris.  It's easy to create your own profiler by using the profiler skeleton file located in the `skeleton` directory.  Simply copy the `profiler_skeleton` file to your app's directory with a `.rb` extension, and modify that file to run the proper commands and retrieve the data from your desired platform, writing the data into the already available instance variables.  Once your data retrieval methods are set, simply require your newly created file in your app, and add the class to your `Target#options[:profilers]` array, and it will be available to you.
+
+Some recommendations on making your own profiler:
+* Create a core file (ex. WindowsCore) for your platform, and only place generalized data-retrieval methods in this file if they would apply to the majority of versions available to that platform
+* Create a new profiler file for each version of your platform (ie. Windows2012), using the core file its parent class
+  * Name your version classes with the major version number applied
+  * Only use code that applies to that specific version in your version profiler files
+  * Each version file should include a class method called `matches_target?`, where the logic will be to determine if this specific profiler version matches that of the device you're communicating with
+* Stick with the built-in variable names, and use the templates as described in `lib/boris/structure.rb`, and extend them as necessary.
+* Be consistent by always calling `super` on your data-retrieval methods and ending the method by returning the data variable, even if that method does not apply to that platform
+* See the profilers in the `lib/boris/profilers` directory for more guidance
+
 ## System Requirements
-While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the RedHat profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab hardware info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
+While Boris does its best to gather data from devices without any special privileges, sometimes it just can't be helped.  One example of this is the `RedHat` profiler, which requires `sudo` access for the `dmidecode` command, as there isn't a well known, reliable way to grab hardware info without `dmidecode`.  If Boris attempts to run a command that requires special access and is denied, it will throw a message to the logger and move on.
 
 **Here is a list of known scan account requirements for each platform:**
 
