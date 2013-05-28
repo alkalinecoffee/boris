@@ -96,12 +96,12 @@ module Boris; module Profilers
 
         h = network_interface_template
 
-        index = switch_port[0]
+        port_id = offset == 1 ? switch_port[1] + '/' + switch_port[2] : switch_port[1]
 
-        portshow_data = @connector.values_at("portshow #{index}")
+        portshow_data = @connector.values_at("portshow #{port_id}")
         
         h[:model] = 'Unknown Fibre Adapter'
-        h[:name] = 'fc' + index
+        h[:name] = 'fc' + port_id
         h[:port_wwn] = portshow_data.grep(/portwwn\:/i)[0].split.last.upcase
 
         h[:type] = 'fibre'
@@ -121,8 +121,6 @@ module Boris; module Profilers
             h[:remote_wwn] = remote_wwns[0].strip
           end
         end
-
-        
 
         @network_interfaces << h
       end

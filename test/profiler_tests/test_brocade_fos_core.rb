@@ -33,9 +33,9 @@ class BrocadeFOSCoreTest < BaseTestSetup
 
           Index Slot Port Address Media Speed State     Proto
           ==============================================
-            0   0   0   e00000   id    N8   Online      FC  E-Port  00:00:00:00:00:00:00:01 "SANSWITCH1" (upstream)
-            1   0   1   e00001   id     2   Online      FC  E-Port  00:00:00:00:00:00:00:02 "SANSWITCH2"
-            2   0   2   e00002   id    N8   No_Light    FC
+            0   1   0   e00000   id    N8   Online      FC  E-Port  00:00:00:00:00:00:00:01 "SANSWITCH1" (upstream)
+            1   1   1   e00001   id     2   Online      FC  E-Port  00:00:00:00:00:00:00:02 "SANSWITCH2"
+            2   1   2   e00002   id    N8   No_Light    FC
         }.strip.split(/\n/)
       end
 
@@ -133,7 +133,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
 
           @fibre_portshow_data = []
           @fibre_portshow_data << {
-            :index=>0,
+            :index=>'1/0',
             :portshow_data=>'
               portWwn: 00:00:00:00:00:00:00:01
               portWwn of device(s) connected:
@@ -142,7 +142,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
               Distance:  normal'.strip
           }
           @fibre_portshow_data << {
-            :index=>1,
+            :index=>'1/1',
             :portshow_data=>'
               portWwn: 00:00:00:00:00:00:00:02
               portWwn of device(s) connected:
@@ -150,7 +150,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
               Distance:  normal'.strip
           }
           @fibre_portshow_data << {
-            :index=>2,
+            :index=>'1/2',
             :portshow_data=>'portWwn: 00:00:00:00:00:00:00:03
               portWwn of device(s) connected:
 
@@ -162,7 +162,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
             :current_speed_mbps=>8000,
             :is_uplink=>true,
             :model=>'Unknown Fibre Adapter',
-            :name=>'fc0',
+            :name=>'fc1/0',
             :port_wwn=>'00:00:00:00:00:00:00:01',
             :status=>'up',
             :type=>'fibre',
@@ -172,7 +172,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
           @expected_interface_data << @profiler.network_interface_template.merge({
             :current_speed_mbps=>2000,
             :model=>'Unknown Fibre Adapter',
-            :name=>'fc1',
+            :name=>'fc1/1',
             :port_wwn=>'00:00:00:00:00:00:00:02',
             :remote_wwn=>'00:00:00:00:00:00:01:00',
             :status=>'up',
@@ -182,7 +182,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
 
           @expected_interface_data << @profiler.network_interface_template.merge({
             :model=>'Unknown Fibre Adapter',
-            :name=>'fc2',
+            :name=>'fc1/2',
             :port_wwn=>'00:00:00:00:00:00:00:03',
             :status=>'down',
             :type=>'fibre',
