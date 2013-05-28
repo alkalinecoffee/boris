@@ -1,3 +1,15 @@
+require 'boris/core_ext/array'
+require 'boris/core_ext/datetime'
+require 'boris/core_ext/hash'
+require 'boris/core_ext/string'
+require 'boris/core_ext/time'
+
+require 'boris/helpers/constants'
+require 'boris/helpers/scrubber'
+require 'boris/helpers/network'
+
+require 'boris/lumberjack'
+
 require 'boris/errors'
 require 'boris/options'
 require 'boris/connectors/snmp'
