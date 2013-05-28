@@ -157,13 +157,15 @@ module Boris
             end
           end
 
-          chan.on_extended_data do |chan, data|
-            if data =~ /password has expired/i
-              @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
-              chan.close
-              disconnect
+          chan.on_extended_data do |chan, type, data|
+            if type == 1
+              if data =~ /password has expired/i
+                @failure_messages << CONN_FAILURE_PASSWORD_EXPIRED
+                chan.close
+                disconnect
+              end
+              error_messages.concat(data.split(/\n/))
             end
-            error_messages.concat(data.split(/\n/))
           end
         end
       end
