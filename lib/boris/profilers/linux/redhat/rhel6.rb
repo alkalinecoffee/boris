@@ -1,4 +1,3 @@
-require 'boris/profiler'
 require 'boris/profilers/linux/redhat'
 
 module Boris; module Profilers

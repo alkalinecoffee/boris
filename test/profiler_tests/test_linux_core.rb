@@ -273,27 +273,17 @@ class LinuxCoreTest < BaseTestSetup
         end
 
         should 'return fibre channel interface information via #get_network_interfaces' do
-          @expected_data = [{
-            :auto_negotiate=>nil,
+          @expected_data = [@profiler.network_interface_template.merge({
             :current_speed_mbps=>2000,
-            :dns_servers=>[],
-            :duplex=>nil,
             :fabric_name=>'00000000aaaaaaaa',
-            :ip_addresses=>[],
-            :is_uplink=>nil,
-            :mac_address=>nil,
             :model=>'ISP2312-based 2Gb Fibre Channel to PCI-X HBA',
-            :model_id=>nil,
-            :mtu=>nil,
             :name=>'host1',
             :node_wwn=>'00000000aaaaaaaa',
             :port_wwn=>'00000000aaaaaaaa',
-            :remote_mac_address=>nil,
             :status=>'up',
             :type=>'fibre',
-            :vendor=>'QLogic Corp.',
-            :vendor_id=>nil
-          }]
+            :vendor=>'QLogic Corp.'
+          })]
 
           hardware_data = %q{
             Slot:   05:0d.0

@@ -1,4 +1,3 @@
-require 'boris/profiler'
 require 'boris/profilers/linux_core'
 
 module Boris; module Profilers

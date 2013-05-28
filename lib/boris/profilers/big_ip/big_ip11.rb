@@ -1,4 +1,3 @@
-require 'boris/profiler'
 require 'boris/profilers/big_ip_core'
 
 module Boris; module Profilers

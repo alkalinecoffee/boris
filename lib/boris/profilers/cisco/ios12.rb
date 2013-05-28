@@ -1,4 +1,3 @@
-require 'boris/profiler'
 require 'boris/profilers/cisco_core'
 
 module Boris; module Profilers
@@ -12,10 +11,8 @@ module Boris; module Profilers
     def get_operating_system
       super
 
-      get_version_data
-
       @operating_system[:name] = 'Cisco IOS'
-      @operating_system[:version] = @version_data[0].extract(/version (.*),/i)
+      @operating_system[:version] = version_data[0].extract(/version (.*),/i)
 
       @operating_system
     end

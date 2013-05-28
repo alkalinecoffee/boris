@@ -1,4 +1,3 @@
-require 'boris/profiler'
 require 'boris/profilers/cisco_core'
 
 module Boris; module Profilers

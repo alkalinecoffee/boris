@@ -177,9 +177,12 @@ class CiscoCoreTest < BaseTestSetup
         end
       end
 
-      context 'for operating system information' do
-      end
+      # context 'for operating system information' do
+      # end
 
+      # context 'for running processes information' do
+      # end
+      
     end
   end
 end

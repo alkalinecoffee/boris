@@ -99,5 +99,13 @@ module Boris; module Profilers
       @operating_system
     end
 
+    def get_running_processes
+      super
+
+      # insert data retrieval code here
+
+      @running_processes
+    end
+    
   end
 end; end

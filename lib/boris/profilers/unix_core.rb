@@ -1,7 +1,8 @@
-require 'boris/profiler'
+require 'boris/profiler_core'
 
 module Boris; module Profilers
-  class UNIX < Base
+  class UNIX
+    include ProfilerCore
 
     def self.connection_type
       Boris::SSHConnector

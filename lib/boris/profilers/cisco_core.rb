@@ -1,7 +1,8 @@
-require 'boris/profiler'
+require 'boris/profiler_core'
 
 module Boris; module Profilers
-  class Cisco < Base
+  class Cisco
+    include ProfilerCore
 
     attr_reader :version_data
     
@@ -9,7 +10,7 @@ module Boris; module Profilers
       Boris::SSHConnector
     end
 
-    def get_version_data
+    def version_data
       @version_data ||= @connector.values_at('show version | include (Version|ROM|uptime|CPU|bytes of memory)')
     end
 
@@ -18,11 +19,9 @@ module Boris; module Profilers
     def get_hardware
       super
       
-      get_version_data
+      cpu_data = version_data.grep(/cpu/i)[0]
 
-      cpu_data = @version_data.grep(/cpu/i)[0]
-
-      version_data = @version_data.join("\n")
+      hardware_version = version_data.join("\n")
 
       @hardware[:cpu_model] = cpu_data.extract(/\s*(\w+) CPU/)
       @hardware[:cpu_physical_count] = 1
@@ -30,7 +29,7 @@ module Boris; module Profilers
       cpu_speed = cpu_data.extract(/CPU at (\d+(?=[ghz|mhz]))/i).to_i
 
       @hardware[:cpu_speed_mhz] = cpu_data =~ /ghz/i ? cpu_speed * 1000 : cpu_speed
-      @hardware[:firmware_version] = version_data.extract(/ROM: (.+)/i)
+      @hardware[:firmware_version] = hardware_version.extract(/ROM: (.+)/i)
 
       hardware_data = @connector.values_at('show idprom chassis | include (OEM|Product|Serial Number)')
 
@@ -51,9 +50,8 @@ module Boris; module Profilers
     def get_network_id
       super
 
-      get_version_data
-
-      @network_id[:hostname] = @version_data.grep(/uptime is/)[0].strip.extract(/^(.+) uptime is/i)
+      @network_id[:hostname] = version_data.grep(/uptime is/)[0].strip.extract(/^(.+) uptime is/i)
+      
       @network_id
     end
     
@@ -136,11 +134,7 @@ module Boris; module Profilers
       @network_interfaces
     end
 
-    def get_operating_system
-      super
-
-      get_version_data
-    end
+    def get_operating_system; super; end
 
   end
 end; end
