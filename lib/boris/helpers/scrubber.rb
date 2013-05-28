@@ -36,6 +36,7 @@ module Boris
         interface[:node_wwn].downcase! unless !interface[:node_wwn]
         interface[:port_wwn].downcase! unless !interface[:port_wwn]
         interface[:remote_mac_address].upcase! unless !interface[:remote_mac_address]
+        interface[:remote_wwn].upcase! unless !interface[:remote_wwn]
         interface[:vendor] = interface[:vendor].format_vendor unless !interface[:vendor]
       end if @network_interfaces
       debug 'network interface data cleaned up'

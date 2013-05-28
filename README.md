@@ -151,6 +151,8 @@ Profilers contain the instructions that allow us to run commands against our tar
   * [Windows 2008 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008)
   * [Windows 2012 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012)
 
+Run [Boris#available_profilers](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris#available_profilers).
+
 ## Extending Boris
 
 #### Running your own commands

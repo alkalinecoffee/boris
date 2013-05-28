@@ -5,6 +5,7 @@
 coverage
 *_backup
 
+
 # YARD artifacts
 .yard*
 _yardoc

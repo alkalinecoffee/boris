@@ -86,6 +86,7 @@ module Boris
         :node_wwn,
         :port_wwn,
         :remote_mac_address,
+        :remote_wwn,
         :status,
         :type,
         :vendor,

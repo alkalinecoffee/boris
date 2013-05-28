@@ -2,10 +2,10 @@ module Boris
   VENDOR_ADOBE      = 'Adobe Systems, Inc.'
   VENDOR_AMD        = 'AMD, Inc.'
   VENDOR_APC        = 'APC Corp.'
-  VENDOR_BROCADE    = 'Brocade Communications Corp.'
+  VENDOR_BROCADE    = 'Brocade Communications, Inc.'
   VENDOR_CISCO      = 'Cisco Systems, Inc.'
   VENDOR_CITRIX     = 'Citrix Systems, Inc.'
-  VENDOR_DELL       = 'Dell Inc.'
+  VENDOR_DELL       = 'Dell, Inc.'
   VENDOR_EMULEX     = 'Emulex Corp.'
   VENDOR_F5         = 'F5 Networks, Inc.'
   VENDOR_HP         = 'Hewlett Packard, Inc.'
@@ -14,7 +14,7 @@ module Boris
   VENDOR_MICROSOFT  = 'Microsoft Corp.'
   VENDOR_ORACLE     = 'Oracle Corp.'
   VENDOR_QLOGIC     = 'QLogic Corp.'
-  VENDOR_REDHAT     = 'Red Hat Inc.'
+  VENDOR_REDHAT     = 'Red Hat, Inc.'
   VENDOR_SUSE       = 'SUSE Linux GmbH'
   VENDOR_VMWARE     = 'VMware, Inc.'
 
@@ -30,4 +30,6 @@ module Boris
   CONN_FAILURE_PASSWORD_EXPIRED   = 'connection failed (password expired, requires changing)'
   CONN_FAILURE_REFUSED            = 'connection failed (target actively refused the connection)'
   CONN_FAILURE_CONNECTION_CLOSED  = 'connection failed (connection closed by remote host)'
+
+  CODE_LOOKUPS = YAML::load(File.open(File.join(LIB_PATH, '..', 'code_lookups.yml')))
 end
