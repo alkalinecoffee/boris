@@ -4,14 +4,14 @@ class RedHatCoreTest < BaseTestSetup
   context 'a Red Hat target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::RedHat)
-      @target.force_profiler_to(Profilers::RedHat)
+      @target.stubs(:target_profiler).returns(Profilers::RedHatCore)
+      @target.force_profiler_to(Profilers::RedHatCore)
       @profiler = @target.profiler
       @connector.stubs(:values_at).with(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system" | cut -d '/' -f3 | cut -d '-' -f1 | cut -d '_' -f1}).returns(['redhat'])
     end
 
     should 'detect when a target should use the RedHat profile' do
-      assert_equal(Profilers::RedHat, @profiler.class)
+      assert_equal(Profilers::RedHatCore, @profiler.class)
     end
 
     context 'being scanned' do

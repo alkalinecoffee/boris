@@ -1,8 +1,7 @@
-require 'boris/profiler'
-require 'boris/profilers/unix/solaris'
+require 'boris/profilers/unix/solaris_core'
 
 module Boris; module Profilers
-  class Solaris11 < Solaris
+  class Solaris11 < SolarisCore
     
     def self.matches_target?(connector)
       release_data = connector.value_at('uname -a')

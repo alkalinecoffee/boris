@@ -4,14 +4,14 @@ class WindowsCoreTest < BaseTestSetup
   context 'a Windows target' do
     setup do
       @connector = @target.connector = WMIConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::Windows)
-      @target.force_profiler_to(Profilers::Windows)
+      @target.stubs(:target_profiler).returns(Profilers::WindowsCore)
+      @target.force_profiler_to(Profilers::WindowsCore)
       @profiler = @target.profiler
       @connector.stubs(:value_at).with('SELECT Name FROM Win32_OperatingSystem').returns({:name=>'Windows Server 2008'})
     end
 
     should 'detect when a target should use the Windows profile' do
-      assert_equal(Profilers::Windows, @profiler.class)
+      assert_equal(Profilers::WindowsCore, @profiler.class)
     end
 
     context 'being scanned' do
@@ -201,7 +201,7 @@ class WindowsCoreTest < BaseTestSetup
         end
 
         should 'return installed applications via #get_installed_applications' do
-          key_path = Profilers::Windows::APP64_KEYPATH + '\{4AB6A079-178B-4144-B21F-4D1AE71666A2}'
+          key_path = Profilers::WindowsCore::APP64_KEYPATH + '\{4AB6A079-178B-4144-B21F-4D1AE71666A2}'
 
           application_data = {
             :installdate=>'20120101',
@@ -220,10 +220,10 @@ class WindowsCoreTest < BaseTestSetup
             :version=>application_data[:displayversion]
           }
 
-          @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::ORACLE_KEYPATH).returns([])
+          @connector.stubs(:registry_subkeys_at).with(Profilers::WindowsCore::ORACLE_KEYPATH).returns([])
 
-          @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::APP32_KEYPATH).returns([])
-          @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::APP64_KEYPATH).returns([key_path])
+          @connector.stubs(:registry_subkeys_at).with(Profilers::WindowsCore::APP32_KEYPATH).returns([])
+          @connector.stubs(:registry_subkeys_at).with(Profilers::WindowsCore::APP64_KEYPATH).returns([key_path])
 
           sql_key_path = 'SOFTWARE\Microsoft\Microsoft SQL Server'
           @connector.stubs(:registry_subkeys_at).with(sql_key_path).returns(["#{sql_key_path}\\mssql10.1"])
@@ -253,7 +253,7 @@ class WindowsCoreTest < BaseTestSetup
             :installlocation=>'',
             :publisher=>'Microsoft Corporation'
           }
-          registry_patch_key_path = "#{Profilers::Windows::APP32_KEYPATH}\\#{registry_patch_data[:displayname]}"
+          registry_patch_key_path = "#{Profilers::WindowsCore::APP32_KEYPATH}\\#{registry_patch_data[:displayname]}"
 
           expected_data = [
             {:date_installed=>DateTime.parse(wmi_patch_data[:installedon]), :installed_by=>wmi_patch_data[:installedby], :patch_code=>wmi_patch_data[:hotfixid]},
@@ -262,8 +262,8 @@ class WindowsCoreTest < BaseTestSetup
 
           @connector.stubs(:values_at).with('SELECT Description, HotFixID, InstalledBy, InstalledOn, ServicePackInEffect FROM Win32_QuickFixEngineering').returns([wmi_patch_data])
 
-          @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::APP32_KEYPATH).returns([registry_patch_key_path])
-          @connector.stubs(:registry_subkeys_at).with(Profilers::Windows::APP64_KEYPATH).returns([])
+          @connector.stubs(:registry_subkeys_at).with(Profilers::WindowsCore::APP32_KEYPATH).returns([registry_patch_key_path])
+          @connector.stubs(:registry_subkeys_at).with(Profilers::WindowsCore::APP64_KEYPATH).returns([])
           @connector.stubs(:registry_values_at).with(registry_patch_key_path).returns(registry_patch_data)
 
           @profiler.get_installed_patches
@@ -398,7 +398,7 @@ class WindowsCoreTest < BaseTestSetup
           @connector.stubs(:values_at).with('SELECT Attributes, InstanceName FROM MSFC_FibrePortHBAAttributes', :root_wmi).returns([])
 
           ethernet_guid = '{1234ABCD}'
-          nic_keypath = Profilers::Windows::NIC_CFG_KEYPATH
+          nic_keypath = Profilers::WindowsCore::NIC_CFG_KEYPATH
           ethernet_data = [{
             :index=>1,
             :macaddress=>expected_ethernet_data[:mac_address],
@@ -431,7 +431,7 @@ class WindowsCoreTest < BaseTestSetup
           linkspeed_data = {:instancename=>expected_ethernet_data[:model], :ndislinkspeed=>10000000}
           @connector.stubs(:value_at).with("SELECT NdisLinkSpeed FROM MSNdis_LinkSpeed WHERE InstanceName = '#{expected_ethernet_data[:model]}'", :root_wmi).returns(linkspeed_data)
 
-          @connector.stubs(:registry_values_at).with(Profilers::Windows::TCPIP_CFG_KEYPATH + "\\#{ethernet_guid}").returns({:mtu=>1400})
+          @connector.stubs(:registry_values_at).with(Profilers::WindowsCore::TCPIP_CFG_KEYPATH + "\\#{ethernet_guid}").returns({:mtu=>1400})
 
           @profiler.get_network_interfaces
           assert_equal(@expected_ethernet_data, @profiler.network_interfaces)

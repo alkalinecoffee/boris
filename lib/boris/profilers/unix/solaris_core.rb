@@ -1,9 +1,8 @@
-require 'boris/profiler'
 require 'boris/profilers/unix_core'
-require 'boris/helpers/constants'
+#require 'boris/helpers/constants'
 
 module Boris; module Profilers
-  class Solaris < UNIX
+  class SolarisCore < UNIXCore
     
     SOLARIS_ZONE_MODEL = 'Oracle Virtual Platform'
 

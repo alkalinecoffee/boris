@@ -1,7 +1,7 @@
 require 'boris/profilers/cisco_core'
 
 module Boris; module Profilers
-  class NXOS4 < Cisco
+  class NXOS4 < CiscoCore
     
     def self.matches_target?(connector)
       return true if connector.values_at('show version') =~ /cisco nexus/i

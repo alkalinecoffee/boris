@@ -4,14 +4,14 @@ class BigIPCoreTest < BaseTestSetup
   context 'an F5 BIG-IP target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::BigIP)
-      @target.force_profiler_to(Profilers::BigIP)
+      @target.stubs(:target_profiler).returns(Profilers::BigIPCore)
+      @target.force_profiler_to(Profilers::BigIPCore)
       @profiler = @target.profiler
       @connector.stubs(:values_at).with('show sys version').returns(['Sys::Version'])
     end
 
     should 'detect when a target should use the BigIPCore profile' do
-      assert_equal(Profilers::BigIP, @profiler.class)
+      assert_equal(Profilers::BigIPCore, @profiler.class)
     end
 
     context 'being scanned' do

@@ -1,7 +1,7 @@
 require 'boris/profilers/linux_core'
 
 module Boris; module Profilers
-  class RedHat < Linux
+  class RedHatCore < LinuxCore
 
     def get_file_systems; super; end
     def get_hardware; super; end

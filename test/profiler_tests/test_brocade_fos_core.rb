@@ -4,14 +4,14 @@ class BrocadeFOSCoreTest < BaseTestSetup
   context 'an Brocade FOS target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::BrocadeFOS)
-      @target.force_profiler_to(Profilers::BrocadeFOS)
+      @target.stubs(:target_profiler).returns(Profilers::BrocadeFOSCore)
+      @target.force_profiler_to(Profilers::BrocadeFOSCore)
       @profiler = @target.profiler
       @connector.stubs(:values_at).with('version').returns(['Fabric OS'])
     end
 
     should 'detect when a target should use the BrocadeFOS profile' do
-      assert_equal(Profilers::BrocadeFOS, @profiler.class)
+      assert_equal(Profilers::BrocadeFOSCore, @profiler.class)
     end
 
     context 'being scanned' do

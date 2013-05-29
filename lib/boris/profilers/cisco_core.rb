@@ -1,7 +1,7 @@
 require 'boris/profiler_core'
 
 module Boris; module Profilers
-  class Cisco
+  class CiscoCore
     include ProfilerCore
 
     attr_reader :version_data

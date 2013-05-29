@@ -4,8 +4,8 @@ class LinuxCoreTest < BaseTestSetup
   context 'a Linux target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::Linux)
-      @target.force_profiler_to(Profilers::Linux)
+      @target.stubs(:target_profiler).returns(Profilers::LinuxCore)
+      @target.force_profiler_to(Profilers::LinuxCore)
       @profiler = @target.profiler
       @connector.stubs(:value_at).with('uname -a').returns('GNU/Linux')
     end

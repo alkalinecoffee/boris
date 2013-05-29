@@ -14,3 +14,7 @@ class BaseTestSetup < Test::Unit::TestCase
     @target = Target.new(@host)
   end
 end
+
+class DummyProfiler
+  include ProfilerCore
+end

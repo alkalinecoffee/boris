@@ -4,14 +4,14 @@ class CiscoCoreTest < BaseTestSetup
   context 'a Cisco target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::Cisco)
-      @target.force_profiler_to(Profilers::Cisco)
+      @target.stubs(:target_profiler).returns(Profilers::CiscoCore)
+      @target.force_profiler_to(Profilers::CiscoCore)
       @profiler = @target.profiler
       @connector.stubs(:value_at).with('show version | include (Version)').returns('Cisco')
     end
 
     should 'detect when a target should use the CiscoIOS profile' do
-      assert_equal(Profilers::Cisco, @profiler.class)
+      assert_equal(Profilers::CiscoCore, @profiler.class)
     end
 
     context 'being scanned' do

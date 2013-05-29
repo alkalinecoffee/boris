@@ -1,7 +1,7 @@
 require 'boris/profiler_core'
 
 module Boris; module Profilers
-  class BigIP
+  class BigIPCore
     include ProfilerCore
     
     attr_reader :license_data, :os_data

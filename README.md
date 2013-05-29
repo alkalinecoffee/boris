@@ -151,7 +151,7 @@ Profilers contain the instructions that allow us to run commands against our tar
   * [Windows 2008 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2008)
   * [Windows 2012 Server](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Windows2012)
 
-Run [Boris#available_profilers](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris#available_profilers).
+Run [Boris#available_profilers](http://www.rubydoc.info/github/alkalinecoffee/boris/Boris.available_profilers).
 
 ## Extending Boris
 
@@ -199,7 +199,7 @@ Some recommendations on making your own profiler:
   * Each version file should include a class method called `matches_target?`, where the logic will be to determine if this specific profiler version matches that of the device you're communicating with
 * Stick with the built-in variable names, and use the templates as described in [structure.rb](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Structure), and extend them as necessary.
 * Be consistent by always calling `super` on your data-retrieval methods and ending the method by returning the data variable, even if that method does not apply to that platform
-* Check out the available helpers in the `lib/boris/helpers` directory (especially those in [string.rb](http://rubydoc.info/github/alkalinecoffee/boris/master/String)!)
+* Check out the available helpers in the `lib/boris/core_ext` directory (especially those in [string.rb](http://rubydoc.info/github/alkalinecoffee/boris/master/String)!)
 * See the profilers in the `lib/boris/profilers` directory for more guidance
 
 Also, please consider a pull request if you think your code can help others!

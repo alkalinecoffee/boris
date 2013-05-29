@@ -4,14 +4,14 @@ class SolarisCoreTest < BaseTestSetup
   context 'a Solaris target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::Solaris)
-      @target.force_profiler_to(Profilers::Solaris)
+      @target.stubs(:target_profiler).returns(Profilers::SolarisCore)
+      @target.force_profiler_to(Profilers::SolarisCore)
       @profiler = @target.profiler
       @connector.stubs(:value_at).with('uname').returns('SunOS')
     end
 
     should 'detect when a target should use the Solaris profile' do
-      assert_equal(Profilers::Solaris, @target.profiler.class)
+      assert_equal(Profilers::SolarisCore, @target.profiler.class)
     end
 
     context 'being scanned' do

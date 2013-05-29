@@ -1,7 +1,7 @@
-require 'boris/profilers/linux/redhat'
+require 'boris/profilers/linux/redhat_core'
 
 module Boris; module Profilers
-  class RHEL5 < RedHat
+  class RHEL5 < RedHatCore
     
     def self.matches_target?(connector)
       release_data = connector.values_at(%q{ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb|system"}).join(' ')

@@ -4,8 +4,8 @@ class UNIXCoreTest < BaseTestSetup
   context 'a UNIX target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::UNIX)
-      @target.force_profiler_to(Profilers::UNIX)
+      @target.stubs(:target_profiler).returns(Profilers::UNIXCore)
+      @target.force_profiler_to(Profilers::UNIXCore)
       @profiler = @target.profiler
       @connector.stubs(:value_at).with('uname -a').returns('some_flavor_of_unix')
     end

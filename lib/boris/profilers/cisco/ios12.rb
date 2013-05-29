@@ -1,7 +1,7 @@
 require 'boris/profilers/cisco_core'
 
 module Boris; module Profilers
-  class IOS12 < Cisco
+  class IOS12 < CiscoCore
     
     def self.matches_target?(connector)
       version = connector.values_at('show version | include (Version|ROM)')

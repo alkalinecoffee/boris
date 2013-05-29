@@ -1,7 +1,7 @@
 require 'boris/profiler_core'
 
 module Boris; module Profilers
-  class UNIX
+  class UNIXCore
     include ProfilerCore
 
     def self.connection_type

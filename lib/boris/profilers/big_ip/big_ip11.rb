@@ -1,7 +1,7 @@
 require 'boris/profilers/big_ip_core'
 
 module Boris; module Profilers
-  class BigIP11 < BigIP
+  class BigIP11 < BigIPCore
     
     def self.matches_target?(connector)
       return true if connector.values_at('show sys version').join =~ /version  11/i
