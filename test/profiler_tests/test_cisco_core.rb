@@ -49,7 +49,7 @@ class CiscoCoreTest < BaseTestSetup
             :model=>'WS-C4506-E',
             :memory_installed_mb=>512,
             :serial=>'FOX123456789',
-            :vendor=>'Cisco Systems, Inc.'
+            :vendor=>VENDOR_CISCO
           }
         end
 
@@ -140,7 +140,7 @@ class CiscoCoreTest < BaseTestSetup
             :name=>'Vlan1',
             :status=>'up',
             :type=>'ethernet',
-            :vendor=>'Cisco Systems, Inc.'
+            :vendor=>VENDOR_CISCO
           })
 
           @expected_ethernet_data << @profiler.network_interface_template.merge({
@@ -151,7 +151,7 @@ class CiscoCoreTest < BaseTestSetup
             :name=>'GigabitEthernet1/1',
             :status=>'down',
             :type=>'ethernet',
-            :vendor=>'Cisco Systems, Inc.'
+            :vendor=>VENDOR_CISCO
           })
 
           @expected_ethernet_data << @profiler.network_interface_template.merge({
@@ -164,7 +164,7 @@ class CiscoCoreTest < BaseTestSetup
             :name=>'Port-channel1',
             :status=>'up',
             :type=>'ethernet',
-            :vendor=>'Cisco Systems, Inc.'
+            :vendor=>VENDOR_CISCO
           })
         end
 

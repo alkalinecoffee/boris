@@ -95,7 +95,7 @@ class BigIPCoreTest < BaseTestSetup
             :model=>'BIG-IP 6900F (D100)',
             :memory_installed_mb=>3891,
             :serial=>'f5-abc-123',
-            :vendor=>'F5 Networks, Inc.'
+            :vendor=>VENDOR_F5
           }
         end
 
@@ -120,7 +120,7 @@ class BigIPCoreTest < BaseTestSetup
               :install_location=>nil,
               :license_key=>'ABC-123',
               :name=>'Software 1',
-              :vendor=>'F5 Networks, Inc.',
+              :vendor=>VENDOR_F5,
               :version=>nil
             },
             {
@@ -128,7 +128,7 @@ class BigIPCoreTest < BaseTestSetup
               :install_location=>nil,
               :license_key=>'ABC-123',
               :name=>'Software 2',
-              :vendor=>'F5 Networks, Inc.',
+              :vendor=>VENDOR_F5,
               :version=>nil
             },
           ]
@@ -279,7 +279,7 @@ class BigIPCoreTest < BaseTestSetup
             :name=>'1.1',
             :status=>'up',
             :type=>'ethernet',
-            :vendor=>'F5 Networks, Inc.'
+            :vendor=>VENDOR_F5
           })
 
           @expected_ethernet_data << @expected_ethernet_data[0].merge({
@@ -299,7 +299,7 @@ class BigIPCoreTest < BaseTestSetup
             :name=>'mgmt',
             :status=>'down',
             :type=>'ethernet',
-            :vendor=>'F5 Networks, Inc.'
+            :vendor=>VENDOR_F5
           })
         end
 

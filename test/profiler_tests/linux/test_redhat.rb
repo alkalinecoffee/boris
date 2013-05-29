@@ -43,7 +43,7 @@ class RedHatCoreTest < BaseTestSetup
               :install_location=>nil,
               :license_key=>nil,
               :name=>'zip',
-              :vendor=>'Red Hat, Inc.',
+              :vendor=>VENDOR_REDHAT,
               :version=>'2.3.3'
             },
             {
@@ -51,7 +51,7 @@ class RedHatCoreTest < BaseTestSetup
               :install_location=>nil,
               :license_key=>nil,
               :name=>'zlib',
-              :vendor=>'Red Hat, Inc.',
+              :vendor=>VENDOR_REDHAT,
               :version=>'2.3.3'
             }
           ]

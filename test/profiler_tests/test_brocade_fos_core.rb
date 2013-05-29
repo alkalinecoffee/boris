@@ -58,7 +58,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
             :model=>'Brocade 3850 Switch',
             :memory_installed_mb=>nil,
             :serial=>'ABC123',
-            :vendor=>'Brocade Communications, Inc.'
+            :vendor=>VENDOR_BROCADE
           }
         end
 
@@ -128,7 +128,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
             :name=>'eth0',
             :status=>'up',
             :type=>'ethernet',
-            :vendor=>'Brocade Communications, Inc.'
+            :vendor=>VENDOR_BROCADE
           })]
 
           @fibre_portshow_data = []
@@ -166,7 +166,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
             :port_wwn=>'00:00:00:00:00:00:00:01',
             :status=>'up',
             :type=>'fibre',
-            :vendor=>'Brocade Communications, Inc.'
+            :vendor=>VENDOR_BROCADE
           })
 
           @expected_interface_data << @profiler.network_interface_template.merge({
@@ -177,7 +177,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
             :remote_wwn=>'00:00:00:00:00:00:01:00',
             :status=>'up',
             :type=>'fibre',
-            :vendor=>'Brocade Communications, Inc.'
+            :vendor=>VENDOR_BROCADE
           })
 
           @expected_interface_data << @profiler.network_interface_template.merge({
@@ -186,7 +186,7 @@ class BrocadeFOSCoreTest < BaseTestSetup
             :port_wwn=>'00:00:00:00:00:00:00:03',
             :status=>'down',
             :type=>'fibre',
-            :vendor=>'Brocade Communications, Inc.'
+            :vendor=>VENDOR_BROCADE
           })
         end
 
