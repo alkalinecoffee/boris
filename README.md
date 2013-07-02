@@ -9,11 +9,11 @@
 ## Introduction
 Boris is a library that facilitates the communication between you and various networked devices over SNMP, SSH and WMI, pulling a large amount of configuration items including installed software, network settings, serial numbers, user accounts, disk utilization, and more.
 
-Out of the box, Boris has server support for Red Hat, Solaris, and Windows, as well as support for Big-IP traffic managers, with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profilers, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms connected to their network.
+Out of the box, Boris has server support for Red Hat, Solaris, and Windows, as well as support for Cisco IOS and NX-OS (and more!), with a focus on returning precisely formatted data, no matter which platforms your organization may have deployed.  Through the use of profilers, Boris can easily be extended by the developer to include other platforms.  Highly suitable for small and large environments alike looking to pull configuration data from various platforms connected to their network.
 
 ## Features
 * Server support: Red Hat Linux, Solaris, and Windows (support for OS X in the works)
-* Appliance support: F5 BIG-IP (support for Cisco IOS & NX-OS devices in the works)
+* Appliance support: Cisco IOS, Cisco NX-OS, F5 BIG-IP LTM, Brocade FOS, and HP Onboard Administrator
 * Utilizes SSH and WMI communication technologies (SNMP is baked in but not currently used)
 * Expandable to include other networked devices, such as switches, load balancers, and other appliances and server operating systems
 
@@ -138,8 +138,16 @@ Profilers contain the instructions that allow us to run commands against our tar
 **Available profilers:**
 
 * **[Big-IP Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP)**
-  * [Big-IP v10](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP10)
-  * [Big-IP v11](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP11)
+  * [Big-IP 10](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP10)
+  * [Big-IP 11](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BigIP11)
+* **[Brocade FOS Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/BrocadeFOSCore)**
+  * [FOS 6](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/FOS6)
+* **[Cisco IOS Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/CiscoIOS)**
+  * [Cisco IOS 12](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/IOS12)
+* **[Cisco NX-OS Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/CiscoNXOS)**
+  * [Cisco NX-OS 5](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/NXOS5)
+* **[HP Onboard Administrator Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/OnboardAdministratorCore)**
+  * [OA3](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/OA3)
 * **[Linux Core](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/Linux)**
   * [Red Hat Enterprise Linux 5](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RHEL5)
   * [Red Hat Enterprise Linux 6](http://rubydoc.info/github/alkalinecoffee/boris/master/Boris/Profilers/RHEL6)
@@ -211,12 +219,18 @@ While Boris does its best to gather data from devices without any special privil
 
 * **Big-IP**
   * User shell set to `tmsh`
+* **Brocade FOS**
+  * `User` role
+* **Cisco IOS/NX-OS**
+  * User EXEC mode (privilege level 1)
+* **HP Onboard Administrator**
+  * `User` role
 * **Linux (any flavor)**
   * User must have `sudo` for `dmidecode`
 * **Solaris**
   * User must have `sudo` for `fcinfo`
 * **Windows**
-  * User must be a member of local Administrator group (looking into what other groups provide required access)
+  * User must be a member of local Administrator group
 
 ## Contributing
 If you have written a profiler (and tests) for a device not currently supported, please create a pull request for it.  Also, my testing sucks, so if anyone wants to help clean that up, I'm all about it.

@@ -1,6 +1,7 @@
 # 1.0.3
 * Added support for F5 Big-IP traffic manager appliances
 * Added support for Cisco IOS devices
+* Added support for Cisco NX-OS devices
 * Added support for Brocade FOS devices
 * Added support to handle the automatic closing of SSH connections by Cisco appliances
 * Added more error support for SSH connections
