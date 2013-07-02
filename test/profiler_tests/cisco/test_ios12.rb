@@ -10,7 +10,7 @@ class IOS12Test < BaseTestSetup
       @connector.stubs(:values_at).with('show version | include (Version|ROM)').returns(['Cisco IOS, Version 12', 'ROM: 12.1'])
     end
 
-    should 'detect when a target should use the CiscoIOS profile' do
+    should 'detect when a target should use the IOS12 profile' do
       assert_equal(Profilers::IOS12, @profiler.class)
     end
 

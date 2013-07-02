@@ -1,7 +1,7 @@
 require 'boris/profiler_core'
 
 module Boris; module Profilers
-  class CiscoCore
+  class CiscoIOSCore
     include ProfilerCore
 
     attr_reader :version_data
@@ -21,20 +21,18 @@ module Boris; module Profilers
       
       cpu_data = version_data.grep(/cpu/i)[0]
 
-      hardware_version = version_data.join("\n")
-
       @hardware[:cpu_model] = cpu_data.extract(/\s*(\w+) CPU/)
       @hardware[:cpu_physical_count] = 1
 
       cpu_speed = cpu_data.extract(/CPU at (\d+(?=[ghz|mhz]))/i).to_i
 
       @hardware[:cpu_speed_mhz] = cpu_data =~ /ghz/i ? cpu_speed * 1000 : cpu_speed
-      @hardware[:firmware_version] = hardware_version.extract(/ROM: (.+)/i)
+      @hardware[:firmware_version] = version_data.join("\n").extract(/ROM: (.+)/i)
 
-      hardware_data = @connector.values_at('show idprom chassis | include (OEM|Product|Serial Number)')
+      hardware_data = @connector.values_at('show idprom chassis | include (Product|Serial Number)')
 
       @hardware[:model] = hardware_data.grep(/product/i)[0].value_after_character('=')
-      @hardware[:memory_installed_mb] = 512
+      @hardware[:memory_installed_mb] = version_data.grep(/memory/i)[0].extract(/(\d+)K bytes/).to_i / 1024
       @hardware[:serial] = hardware_data.grep(/serial number/i)[0].value_after_character('=')
       @hardware[:vendor] = VENDOR_CISCO
 

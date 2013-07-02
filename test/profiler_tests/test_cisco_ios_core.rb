@@ -1,17 +1,17 @@
 require 'setup_tests'
 
-class CiscoCoreTest < BaseTestSetup
-  context 'a Cisco target' do
+class CiscoIOSCoreTest < BaseTestSetup
+  context 'a Cisco IOS target' do
     setup do
       @connector = @target.connector = SSHConnector.new(@host, {})
-      @target.stubs(:target_profiler).returns(Profilers::CiscoCore)
-      @target.force_profiler_to(Profilers::CiscoCore)
+      @target.stubs(:target_profiler).returns(Profilers::CiscoIOSCore)
+      @target.force_profiler_to(Profilers::CiscoIOSCore)
       @profiler = @target.profiler
-      @connector.stubs(:value_at).with('show version | include (Version)').returns('Cisco')
+      @connector.stubs(:value_at).with('show version | include (Version)').returns('Cisco IOS')
     end
 
     should 'detect when a target should use the CiscoIOS profile' do
-      assert_equal(Profilers::CiscoCore, @profiler.class)
+      assert_equal(Profilers::CiscoIOSCore, @profiler.class)
     end
 
     context 'being scanned' do
@@ -31,9 +31,8 @@ class CiscoCoreTest < BaseTestSetup
 
       context 'for hardware information' do
         setup do
-          @hardware_command = 'show idprom chassis | include (OEM|Product|Serial Number)'
+          @hardware_command = 'show idprom chassis | include (Product|Serial Number)'
           @hardware_data = %{
-            OEM String = Cisco
             Product Number = WS-C4506-E
             Serial Number = FOX123456789
           }.strip.split(/\n/)
@@ -114,7 +113,6 @@ class CiscoCoreTest < BaseTestSetup
           @show_interface_data << "\nPort-channel1 is up, line protocol is up (connected)
             Hardware is EtherChannel, address is 0000.0000.0005 (bia 0000.0000.0005)
             MTU 1500 bytes, BW 2000000 Kbit, DLY 10 usec,
-               reliability 255/255, txload 1/255, rxload 1/255
             Full-duplex, 1000Mb/s, media type is N/A
             Members in this channel: Gi1/1"
 
