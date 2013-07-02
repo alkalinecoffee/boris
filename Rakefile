@@ -1,4 +1,5 @@
 require 'rake'
+require 'rake/testtask'
 
 $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 
@@ -16,4 +17,9 @@ task :release => :build do
   system "git tag -a v#{Boris::VERSION} -m 'Pushed #{Boris::VERSION}'"
   system 'git push --tags'
   system "gem push boris-#{Boris::VERSION}.gem"
+end
+
+Rake::TestTask.new do |t|
+  t.libs = ["test"]
+  t.test_files = FileList['test/**/test*.rb']
 end
