@@ -1,4 +1,4 @@
-require 'boris/helpers/string'
+require 'boris/core_ext/string'
 
 module Boris
   module Structure
