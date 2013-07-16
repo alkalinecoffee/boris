@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.summary           = 'Boris: A networked-device scanning library.'
   s.description       = s.summary + ' Boris allows you to write programs for logging into and pulling information off of various server platforms, appliances, and other types of networked devices, producing clean and consistent data ideal for configuration managment usage.'
 
+  s.license           = 'MIT'
   s.author            = 'Joe Martin'
   s.email             = 'jwmartin83@gmail.com'
   s.homepage          = 'https://github.com/alkalinecoffee/boris'
