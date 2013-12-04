@@ -1,6 +1,7 @@
 require 'boris/profilers/big_ip/big_ip10'
 require 'boris/profilers/big_ip/big_ip11'
 require 'boris/profilers/brocade_fos/fos6'
+require 'boris/profilers/brocade_fos/fos7'
 require 'boris/profilers/cisco/ios12'
 require 'boris/profilers/cisco/nxos5'
 require 'boris/profilers/linux/redhat/rhel5'
